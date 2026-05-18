@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Klasės - Mokyklos platforma{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-8">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Klasės</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Visos mokyklos klasės</p>
+    </div>
+    {% if current_user.yra_administratorius %}
+    <a href="{{ url_for('classes.nauja') }}" class="btn-primary">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Nauja klasė
+    </a>
+    {% endif %}
+</div>
+
+{% if klases %}
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {% for klase in klases %}
+    <div class="card hover:shadow-md transition-all hover:-translate-y-1">
+        <div class="p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-900 dark:text-white">{{ klase.pavadinimas }}</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ klase.mokslo_metai }}</p>
+                </div>
+                <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400 rounded-xl flex items-center justify-center">
+                    <i data-lucide="school" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="space-y-2 mb-5">
+                <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <i data-lucide="users" class="w-4 h-4 text-slate-400"></i>
+                    <span>{{ klase.mokiniu_skaicius }} mokini{% if klase.mokiniu_skaicius == 1 %}s{% else %}ai{% endif %}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                    <i data-lucide="user-check" class="w-4 h-4 text-slate-400"></i>
+                    <span>{% if klase.vadovas %}{{ klase.vadovas.pilnas_vardas }}{% else %}<em class="text-slate-400">Vadovas nepriskirtas</em>{% endif %}</span>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <a href="{{ url_for('classes.detales', klases_id=klase.id) }}" class="btn-secondary flex-1 justify-center">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                    Peržiūrėti
+                </a>
+                {% if current_user.yra_administratorius %}
+                <a href="{{ url_for('classes.redaguoti', klases_id=klase.id) }}" class="btn-icon">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card p-12 text-center">
+    <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="school" class="w-8 h-8 text-slate-400"></i>
+    </div>
+    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Klasių dar nėra</h3>
+    <p class="text-slate-500 dark:text-slate-400 mb-6">Pradėkite kurdami pirmąją klasę</p>
+    {% if current_user.yra_administratorius %}
+    <a href="{{ url_for('classes.nauja') }}" class="btn-primary inline-flex">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Sukurti pirmą klasę
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

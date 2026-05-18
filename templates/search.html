@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Paieška: {{ uzklausa }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-slate-900 dark:text-white">
+        {% if uzklausa %}Paieškos rezultatai{% else %}Paieška{% endif %}
+    </h1>
+    {% if uzklausa %}
+    <p class="text-slate-500 dark:text-slate-400 mt-1">
+        Užklausa: <strong class="text-slate-900 dark:text-white">"{{ uzklausa }}"</strong> · Rasta: <strong>{{ bendras }}</strong> rezultat{% if bendras == 1 %}as{% else %}ai{% endif %}
+    </p>
+    {% endif %}
+</div>
+
+{% if not uzklausa or uzklausa|length < 2 %}
+<div class="card p-12 text-center">
+    <i data-lucide="search" class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3"></i>
+    <p class="text-slate-500 dark:text-slate-400">Įveskite bent 2 simbolius paieškos juostoje viršuje</p>
+</div>
+{% elif bendras == 0 %}
+<div class="card p-12 text-center">
+    <i data-lucide="search-x" class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3"></i>
+    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Nieko nerasta</h3>
+    <p class="text-slate-500 dark:text-slate-400">Pabandykite kitokius raktinius žodžius</p>
+</div>
+{% else %}
+
+{% if rezultatai.mokiniai %}
+<div class="card mb-6">
+    <div class="card-header">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="users" class="w-5 h-5 text-primary-500"></i>
+            Mokiniai ({{ rezultatai.mokiniai|length }})
+        </h2>
+    </div>
+    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for m in rezultatai.mokiniai %}
+        <a href="{{ url_for('students.detales', mokinio_id=m.id) }}"
+           class="block p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center text-sm font-semibold">
+                    {{ m.inicialai }}
+                </div>
+                <div class="flex-1">
+                    <p class="font-medium text-slate-900 dark:text-white">{{ m.pilnas_vardas }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">{{ m.klase.pavadinimas }} klasė {% if m.email %}· {{ m.email }}{% endif %}</p>
+                </div>
+                <i data-lucide="arrow-right" class="w-4 h-4 text-slate-400"></i>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if rezultatai.klases %}
+<div class="card mb-6">
+    <div class="card-header">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="school" class="w-5 h-5 text-purple-500"></i>
+            Klasės ({{ rezultatai.klases|length }})
+        </h2>
+    </div>
+    <div class="p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {% for k in rezultatai.klases %}
+        <a href="{{ url_for('classes.detales', klases_id=k.id) }}"
+           class="block p-3 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20">
+            <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ k.pavadinimas }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">{{ k.mokiniu_skaicius }} mokini{% if k.mokiniu_skaicius == 1 %}s{% else %}ai{% endif %}</p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if rezultatai.diplomai %}
+<div class="card mb-6">
+    <div class="card-header">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="award" class="w-5 h-5 text-amber-500"></i>
+            Diplomai ({{ rezultatai.diplomai|length }})
+        </h2>
+    </div>
+    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for d in rezultatai.diplomai %}
+        <div class="p-4 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ d.pavadinimas }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">{{ d.vartotojas.pilnas_vardas }}{% if d.seminaras %} · {{ d.seminaras }}{% endif %}</p>
+            </div>
+            <a href="{{ url_for('diplomas.perziureti', diplomo_id=d.id) }}" target="_blank" class="btn-icon-sm">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if rezultatai.skelbimai %}
+<div class="card mb-6">
+    <div class="card-header">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <i data-lucide="megaphone" class="w-5 h-5 text-indigo-500"></i>
+            Skelbimai ({{ rezultatai.skelbimai|length }})
+        </h2>
+    </div>
+    <div class="divide-y divide-slate-100 dark:divide-slate-700">
+        {% for s in rezultatai.skelbimai %}
+        <a href="{{ url_for('announcements.perziureti', skelbimo_id=s.id) }}"
+           class="block p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+            <div class="flex items-center gap-2 mb-1">
+                <p class="font-medium text-slate-900 dark:text-white">{{ s.pavadinimas }}</p>
+                {% if s.svarbus %}
+                <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-medium rounded">Svarbu</span>
+                {% endif %}
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-1">{{ s.turinys }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="lt" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mokyklos platforma{% endblock %}</title>
+
+    <script>
+        (function() {
+            const stored = localStorage.getItem('theme');
+            if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eef4ff', 100: '#dbe6fe', 200: '#bfd1fe',
+                            300: '#93b1fd', 400: '#6086fa', 500: '#3b62f6',
+                            600: '#2944eb', 700: '#2233d7', 800: '#222daf',
+                            900: '#222c8a', 950: '#191b54',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans antialiased transition-colors">
+
+{% if current_user.is_authenticated %}
+<div class="flex min-h-screen">
+
+    <aside class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col">
+        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
+            <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl flex items-center justify-center">
+                    <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 dark:text-white leading-tight">Mokyklos</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">Valdymo platforma</p>
+                </div>
+            </a>
+        </div>
+
+        <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            {% set active = request.endpoint or '' %}
+            <a href="{{ url_for('dashboard.index') }}"
+               class="nav-link {% if active.startswith('dashboard') %}nav-link-active{% endif %}">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Pradžia</span>
+            </a>
+            <a href="{{ url_for('announcements.saraso') }}"
+               class="nav-link {% if active.startswith('announcements') %}nav-link-active{% endif %}">
+                <i data-lucide="megaphone" class="w-4 h-4"></i>
+                <span>Skelbimai</span>
+            </a>
+            <a href="{{ url_for('classes.saraso') }}"
+               class="nav-link {% if active.startswith('classes') %}nav-link-active{% endif %}">
+                <i data-lucide="school" class="w-4 h-4"></i>
+                <span>Klasės</span>
+            </a>
+            <a href="{{ url_for('students.saraso') }}"
+               class="nav-link {% if active.startswith('students') %}nav-link-active{% endif %}">
+                <i data-lucide="users" class="w-4 h-4"></i>
+                <span>Mokiniai</span>
+            </a>
+            <a href="{{ url_for('grades.saraso') }}"
+               class="nav-link {% if active.startswith('grades') %}nav-link-active{% endif %}">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                <span>Pažymiai</span>
+            </a>
+            <a href="{{ url_for('diplomas.saraso') }}"
+               class="nav-link {% if active.startswith('diplomas') %}nav-link-active{% endif %}">
+                <i data-lucide="award" class="w-4 h-4"></i>
+                <span>Diplomai</span>
+            </a>
+            {% if current_user.yra_administratorius %}
+            <div class="pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+                <p class="px-3 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Administracija</p>
+                <a href="{{ url_for('users.saraso') }}"
+                   class="nav-link {% if active.startswith('users') %}nav-link-active{% endif %}">
+                    <i data-lucide="user-cog" class="w-4 h-4"></i>
+                    <span>Vartotojai</span>
+                </a>
+            </div>
+            {% endif %}
+        </nav>
+
+        <div class="px-3 py-4 border-t border-slate-200 dark:border-slate-700">
+            <a href="{{ url_for('profile.index') }}" class="flex items-center gap-3 p-2 mb-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 text-white flex items-center justify-center text-xs font-semibold">
+                    {{ current_user.inicialai }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ current_user.pilnas_vardas }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 capitalize">{{ current_user.role }}</p>
+                </div>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="nav-link text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span>Atsijungti</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-auto">
+
+        <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-8 py-3 flex items-center gap-4">
+                <form action="{{ url_for('search.index') }}" method="GET" class="flex-1 max-w-xl">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                        </div>
+                        <input type="text" name="q" value="{{ request.args.get('q', '') }}"
+                               placeholder="Ieškoti mokinių, klasių, diplomų, skelbimų..."
+                               class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 dark:focus:ring-primary-900">
+                    </div>
+                </form>
+
+                <button onclick="toggleTheme()" id="theme-toggle"
+                        class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        title="Perjungti temą">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+
+                <div class="text-sm text-slate-500 dark:text-slate-400 hidden md:block">
+                    <span id="dabar-laikas"></span>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto px-8 py-8">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6 space-y-2">
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">
+                            <i data-lucide="{% if category == 'success' %}check-circle{% elif category == 'danger' %}alert-circle{% elif category == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-5 h-5 flex-shrink-0"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+{% else %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-4 right-4 z-50 space-y-2 w-96">
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }} shadow-lg">{{ message }}</div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% block auth_content %}{% endblock %}
+{% endif %}
+
+<script>
+    function toggleTheme() {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        lucide.createIcons();
+    }
+
+    function atnaujintiLaika() {
+        const el = document.getElementById('dabar-laikas');
+        if (!el) return;
+        const dabar = new Date();
+        const dienos = ['Sekm.', 'Pirm.', 'Antr.', 'Treč.', 'Ketv.', 'Penkt.', 'Šešt.'];
+        const menesiai = ['saus.', 'vas.', 'kovo', 'bal.', 'geg.', 'birž.', 'liep.', 'rugp.', 'rugs.', 'spal.', 'lapkr.', 'gruod.'];
+        el.textContent = `${dienos[dabar.getDay()]}, ${dabar.getDate()} ${menesiai[dabar.getMonth()]} ${dabar.getFullYear()}`;
+    }
+    atnaujintiLaika();
+
+    lucide.createIcons();
+</script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

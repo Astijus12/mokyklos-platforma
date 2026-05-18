@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Mano profilis{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">Mano profilis</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <div class="card">
+        <div class="p-6 text-center">
+            <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-700 text-white flex items-center justify-center text-3xl font-bold mx-auto mb-4">
+                {{ current_user.inicialai }}
+            </div>
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ current_user.pilnas_vardas }}</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ current_user.email }}</p>
+
+            <div class="mt-4">
+                {% if current_user.yra_administratorius %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-sm font-medium rounded-full">
+                    <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+                    Administratorius
+                </span>
+                {% else %}
+                <span class="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-full">
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    Mokytojas
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col gap-2 mt-6">
+                <a href="{{ url_for('profile.redaguoti') }}" class="btn-secondary w-full justify-center">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                    Redaguoti duomenis
+                </a>
+                <a href="{{ url_for('profile.keisti_slaptazodi') }}" class="btn-secondary w-full justify-center">
+                    <i data-lucide="key" class="w-4 h-4"></i>
+                    Keisti slaptažodį
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="lg:col-span-2 space-y-6">
+
+        <div class="grid grid-cols-2 gap-4">
+            <div class="card p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                        <i data-lucide="award" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Mano diplomai</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ diplomu_skaicius }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <i data-lucide="megaphone" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Mano skelbimai</p>
+                        <p class="text-2xl font-bold text-slate-900 dark:text-white">{{ skelbimu_skaicius }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Mano diplomai</h2>
+                <a href="{{ url_for('diplomas.saraso') }}" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">
+                    Visi →
+                </a>
+            </div>
+            <div class="divide-y divide-slate-100 dark:divide-slate-700">
+                {% for d in mano_diplomai %}
+                <div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ d.pavadinimas }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ d.ikeltas.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                        <a href="{{ url_for('diplomas.atsisiusti', diplomo_id=d.id) }}" class="btn-icon-sm">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-slate-400 dark:text-slate-500">
+                    <i data-lucide="award" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+                    <p class="text-sm">Dar neįkėlėte diplomų</p>
+                    <a href="{{ url_for('diplomas.ikelti') }}" class="btn-primary inline-flex mt-3">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        Įkelti diplomą
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

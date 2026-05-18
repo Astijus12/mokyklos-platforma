@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Pradžia - Mokyklos platforma{% endblock %}
+
+{% block content %}
+<div class="mb-8 flex items-center justify-between flex-wrap gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Sveiki, {{ current_user.vardas }}! 👋</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Mokyklos valdymo apžvalga šiandien</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="{{ url_for('announcements.naujas') }}" class="btn-secondary">
+            <i data-lucide="megaphone" class="w-4 h-4"></i>
+            Skelbimas
+        </a>
+        <a href="{{ url_for('diplomas.ikelti') }}" class="btn-primary">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            Įkelti diplomą
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+    <div class="stat-card">
+        <div class="stat-icon bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+            <i data-lucide="users" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="stat-label">Vartotojai</p>
+            <p class="stat-value">{{ statistika.vartotoju }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400">
+            <i data-lucide="school" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="stat-label">Klasės</p>
+            <p class="stat-value">{{ statistika.klasiu }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
+            <i data-lucide="user-round" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="stat-label">Mokiniai</p>
+            <p class="stat-value">{{ statistika.mokiniu }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="stat-label">Pažymiai</p>
+            <p class="stat-value">{{ statistika.pazymiu }}</p>
+            {% if bendras_vidurkis %}
+            <p class="text-xs text-slate-500 dark:text-slate-400">Vid: {{ bendras_vidurkis }}</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400">
+            <i data-lucide="award" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="stat-label">Diplomai</p>
+            <p class="stat-value">{{ statistika.diplomu }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400">
+            <i data-lucide="megaphone" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="stat-label">Skelbimai</p>
+            <p class="stat-value">{{ statistika.skelbimu }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Mokinių pasiskirstymas pagal klases</h2>
+            <i data-lucide="bar-chart-3" class="w-5 h-5 text-slate-400"></i>
+        </div>
+        <div class="p-6">
+            <canvas id="klasiuDiagrama" height="200"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Pažymių pasiskirstymas</h2>
+            <i data-lucide="trending-up" class="w-5 h-5 text-slate-400"></i>
+        </div>
+        <div class="p-6">
+            <canvas id="pazymiuDiagrama" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <div class="lg:col-span-2 card">
+        <div class="card-header">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">📢 Naujausi skelbimai</h2>
+            <a href="{{ url_for('announcements.saraso') }}" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">
+                Visi skelbimai →
+            </a>
+        </div>
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for s in paskutiniai_skelbimai %}
+            <a href="{{ url_for('announcements.perziureti', skelbimo_id=s.id) }}"
+               class="block p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
+                        {% if s.svarbus %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400
+                        {% else %}bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400{% endif %}">
+                        <i data-lucide="{% if s.svarbus %}alert-triangle{% else %}megaphone{% endif %}" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="font-semibold text-slate-900 dark:text-white truncate">{{ s.pavadinimas }}</h3>
+                            {% if s.svarbus %}
+                            <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-medium rounded">Svarbu</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{{ s.turinys }}</p>
+                        <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            <span>{{ s.autorius.pilnas_vardas }}</span>
+                            <span>·</span>
+                            <span>{{ s.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <div class="text-center py-12 text-slate-400 dark:text-slate-500">
+                <i data-lucide="megaphone" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+                <p class="text-sm">Skelbimų dar nėra</p>
+                <a href="{{ url_for('announcements.naujas') }}" class="btn-primary inline-flex mt-4">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Sukurti skelbimą
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">🏆 Naujausi diplomai</h2>
+            <a href="{{ url_for('diplomas.saraso') }}" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">
+                Visi →
+            </a>
+        </div>
+        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+            {% for diplomas in paskutiniai_diplomai %}
+            <div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="file-text" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ diplomas.pavadinimas }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ diplomas.vartotojas.pilnas_vardas }}</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-8 text-slate-400 dark:text-slate-500">
+                <i data-lucide="award" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+                <p class="text-sm">Diplomų dar nėra</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const isDark = () => document.documentElement.classList.contains('dark');
+    const textColor = () => isDark() ? '#cbd5e1' : '#475569';
+    const gridColor = () => isDark() ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+
+    const klasiuCtx = document.getElementById('klasiuDiagrama').getContext('2d');
+    const klasiuDiagrama = new Chart(klasiuCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ klasiu_diagrama.pavadinimai|tojson }},
+            datasets: [{
+                label: 'Mokinių skaičius',
+                data: {{ klasiu_diagrama.mokiniu_skaiciai|tojson }},
+                backgroundColor: 'rgba(59, 98, 246, 0.7)',
+                borderColor: 'rgb(59, 98, 246)',
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, color: textColor() },
+                    grid: { color: gridColor() }
+                },
+                x: {
+                    ticks: { color: textColor() },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    const pazymiuCtx = document.getElementById('pazymiuDiagrama').getContext('2d');
+    const pazymiuDiagrama = new Chart(pazymiuCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ pazymiu_diagrama.labels|tojson }},
+            datasets: [{
+                label: 'Pažymių skaičius',
+                data: {{ pazymiu_diagrama.duomenys|tojson }},
+                backgroundColor: [
+                    '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+                    '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6'
+                ],
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, color: textColor() },
+                    grid: { color: gridColor() }
+                },
+                x: {
+                    ticks: { color: textColor() },
+                    grid: { display: false },
+                    title: { display: true, text: 'Pažymys', color: textColor() }
+                }
+            }
+        }
+    });
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+        setTimeout(() => {
+            klasiuDiagrama.options.scales.y.ticks.color = textColor();
+            klasiuDiagrama.options.scales.x.ticks.color = textColor();
+            klasiuDiagrama.options.scales.y.grid.color = gridColor();
+            klasiuDiagrama.update();
+            pazymiuDiagrama.options.scales.y.ticks.color = textColor();
+            pazymiuDiagrama.options.scales.x.ticks.color = textColor();
+            pazymiuDiagrama.options.scales.y.grid.color = gridColor();
+            pazymiuDiagrama.options.scales.x.title.color = textColor();
+            pazymiuDiagrama.update();
+        }, 50);
+    });
+</script>
+{% endblock %}
