@@ -14,85 +14,224 @@
     {% if mokinys %}Redaguoti mokinį: {{ mokinys.pilnas_vardas }}{% else %}Naujas mokinys{% endif %}
 </h1>
 
-<div class="card max-w-3xl">
-    <form method="POST" class="p-6 space-y-5">
+<form method="POST" class="space-y-6 max-w-4xl">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div>
-                <label class="form-label">Vardas <span class="text-red-500">*</span></label>
-                <input type="text" name="vardas" required maxlength="80"
-                       value="{{ mokinys.vardas if mokinys else '' }}"
-                       class="form-input">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">📋 Pagrindiniai duomenys</h2>
+        </div>
+        <div class="p-6 space-y-5">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="form-label">Vardas <span class="text-red-500">*</span></label>
+                    <input type="text" name="vardas" required maxlength="80"
+                           value="{{ mokinys.vardas if mokinys else '' }}"
+                           class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">Pavardė <span class="text-red-500">*</span></label>
+                    <input type="text" name="pavarde" required maxlength="80"
+                           value="{{ mokinys.pavarde if mokinys else '' }}"
+                           class="form-input">
+                </div>
             </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="form-label">Klasė <span class="text-red-500">*</span></label>
+                    <select name="klases_id" required class="form-input">
+                        <option value="">— Pasirinkite klasę —</option>
+                        {% for k in klases %}
+                        <option value="{{ k.id }}"
+                                {% if mokinys and mokinys.klases_id == k.id %}selected
+                                {% elif pradine_klase and pradine_klase == k.id %}selected{% endif %}>
+                            {{ k.pavadinimas }} ({{ k.mokslo_metai }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Gimimo data</label>
+                    <input type="date" name="gimimo_data"
+                           value="{{ mokinys.gimimo_data.strftime('%Y-%m-%d') if mokinys and mokinys.gimimo_data else '' }}"
+                           class="form-input">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="form-label">Mokinio el. paštas</label>
+                    <input type="email" name="email"
+                           value="{{ mokinys.email if mokinys else '' }}"
+                           placeholder="vardas@email.lt"
+                           class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">Mokinio telefonas</label>
+                    <input type="tel" name="telefonas"
+                           value="{{ mokinys.telefonas if mokinys else '' }}"
+                           placeholder="+370 600 00000"
+                           class="form-input">
+                </div>
+            </div>
+
             <div>
-                <label class="form-label">Pavardė <span class="text-red-500">*</span></label>
-                <input type="text" name="pavarde" required maxlength="80"
-                       value="{{ mokinys.pavarde if mokinys else '' }}"
+                <label class="form-label">Adresas</label>
+                <input type="text" name="adresas" maxlength="200"
+                       value="{{ mokinys.adresas if mokinys else '' }}"
+                       placeholder="pvz., Vilniaus g. 15, Vilnius"
                        class="form-input">
             </div>
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="heart" class="w-4 h-4 text-pink-500"></i>
+                Motinos duomenys
+            </h2>
+        </div>
+        <div class="p-6 space-y-5">
             <div>
-                <label class="form-label">Klasė <span class="text-red-500">*</span></label>
-                <select name="klases_id" required class="form-input">
-                    <option value="">— Pasirinkite klasę —</option>
-                    {% for k in klases %}
-                    <option value="{{ k.id }}"
-                            {% if mokinys and mokinys.klases_id == k.id %}selected
-                            {% elif pradine_klase and pradine_klase == k.id %}selected{% endif %}>
-                        {{ k.pavadinimas }} ({{ k.mokslo_metai }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div>
-                <label class="form-label">Gimimo data</label>
-                <input type="date" name="gimimo_data"
-                       value="{{ mokinys.gimimo_data.strftime('%Y-%m-%d') if mokinys and mokinys.gimimo_data else '' }}"
+                <label class="form-label">Vardas ir pavardė</label>
+                <input type="text" name="motinos_vardas" maxlength="160"
+                       value="{{ mokinys.motinos_vardas if mokinys else '' }}"
+                       placeholder="pvz., Jolanta Petraitienė"
                        class="form-input">
             </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="form-label">Telefonas</label>
+                    <input type="tel" name="motinos_telefonas" maxlength="30"
+                           value="{{ mokinys.motinos_telefonas if mokinys else '' }}"
+                           placeholder="+370 600 00000"
+                           class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">El. paštas</label>
+                    <input type="email" name="motinos_email" maxlength="120"
+                           value="{{ mokinys.motinos_email if mokinys else '' }}"
+                           placeholder="motina@email.lt"
+                           class="form-input">
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="briefcase" class="w-4 h-4 text-blue-500"></i>
+                Tėvo duomenys
+            </h2>
+        </div>
+        <div class="p-6 space-y-5">
             <div>
-                <label class="form-label">El. paštas</label>
-                <input type="email" name="email"
-                       value="{{ mokinys.email if mokinys else '' }}"
-                       placeholder="vardas@email.lt"
+                <label class="form-label">Vardas ir pavardė</label>
+                <input type="text" name="tevo_vardas" maxlength="160"
+                       value="{{ mokinys.tevo_vardas if mokinys else '' }}"
+                       placeholder="pvz., Andrius Petraitis"
                        class="form-input">
             </div>
-            <div>
-                <label class="form-label">Telefonas</label>
-                <input type="tel" name="telefonas"
-                       value="{{ mokinys.telefonas if mokinys else '' }}"
-                       placeholder="+370 600 00000"
-                       class="form-input">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="form-label">Telefonas</label>
+                    <input type="tel" name="tevo_telefonas" maxlength="30"
+                           value="{{ mokinys.tevo_telefonas if mokinys else '' }}"
+                           placeholder="+370 600 00000"
+                           class="form-input">
+                </div>
+                <div>
+                    <label class="form-label">El. paštas</label>
+                    <input type="email" name="tevo_email" maxlength="120"
+                           value="{{ mokinys.tevo_email if mokinys else '' }}"
+                           placeholder="tevas@email.lt"
+                           class="form-input">
+                </div>
             </div>
         </div>
+    </div>
 
-        <div>
-            <label class="form-label">Adresas</label>
-            <input type="text" name="adresas" maxlength="200"
-                   value="{{ mokinys.adresas if mokinys else '' }}"
-                   placeholder="pvz., Vilniaus g. 15, Vilnius"
-                   class="form-input">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-base font-semibold text-slate-900 dark:text-white">⚙️ Papildoma informacija</h2>
         </div>
+        <div class="p-6 space-y-5">
 
-        <div>
-            <label class="form-label">Pastabos</label>
-            <textarea name="pastabos" rows="3"
-                      placeholder="Specialūs poreikiai, alergijos, kita svarbi informacija..."
-                      class="form-input">{{ mokinys.pastabos if mokinys else '' }}</textarea>
+            <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <input type="checkbox" name="mokyklos_autobusas"
+                       {% if mokinys and mokinys.mokyklos_autobusas %}checked{% endif %}
+                       class="w-5 h-5 mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="bus" class="w-4 h-4 text-yellow-500"></i>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">Mokinį reikia vežti mokyklos autobusu</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pažymėkite jei mokinys naudojasi mokyklos transportu</p>
+                </div>
+            </label>
+
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-5">
+                <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                       id="geroves-toggle-label">
+                    <input type="checkbox" name="geroves_komisija" id="geroves_komisija"
+                           {% if mokinys and mokinys.geroves_komisija %}checked{% endif %}
+                           class="w-5 h-5 mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="heart-handshake" class="w-4 h-4 text-rose-500"></i>
+                            <span class="text-sm font-medium text-slate-900 dark:text-white">Buvo svarstomas vaiko gerovės komisijoje</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pažymėkite jei buvo svarstomas mokyklos VGK posėdyje</p>
+                    </div>
+                </label>
+
+                <div id="geroves-detales" class="ml-8 mt-3 space-y-4 {% if not mokinys or not mokinys.geroves_komisija %}hidden{% endif %}">
+                    <div>
+                        <label class="form-label">Svarstymo data</label>
+                        <input type="date" name="geroves_komisija_data"
+                               value="{{ mokinys.geroves_komisija_data.strftime('%Y-%m-%d') if mokinys and mokinys.geroves_komisija_data else '' }}"
+                               class="form-input max-w-xs">
+                    </div>
+                    <div>
+                        <label class="form-label">Pastabos / sprendimai</label>
+                        <textarea name="geroves_komisija_pastabos" rows="3"
+                                  placeholder="Trumpas svarstymo aprašymas, priimti sprendimai, rekomendacijos..."
+                                  class="form-input">{{ mokinys.geroves_komisija_pastabos if mokinys else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-5">
+                <label class="form-label">Bendros pastabos</label>
+                <textarea name="pastabos" rows="3"
+                          placeholder="Specialūs poreikiai, alergijos, kita svarbi informacija..."
+                          class="form-input">{{ mokinys.pastabos if mokinys else '' }}</textarea>
+            </div>
         </div>
+    </div>
 
-        <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+    <div class="card">
+        <div class="p-4 flex gap-3">
             <button type="submit" class="btn-primary">
                 <i data-lucide="check" class="w-4 h-4"></i>
-                {% if mokinys %}Išsaugoti{% else %}Pridėti mokinį{% endif %}
+                {% if mokinys %}Išsaugoti pakeitimus{% else %}Pridėti mokinį{% endif %}
             </button>
             <a href="{{ url_for('students.saraso') }}" class="btn-secondary">Atšaukti</a>
         </div>
-    </form>
-</div>
+    </div>
+</form>
+
+<script>
+    document.getElementById('geroves_komisija').addEventListener('change', function() {
+        const detales = document.getElementById('geroves-detales');
+        if (this.checked) {
+            detales.classList.remove('hidden');
+        } else {
+            detales.classList.add('hidden');
+        }
+    });
+</script>
 {% endblock %}

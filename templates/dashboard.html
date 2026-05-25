@@ -49,15 +49,21 @@
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400">
-            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+        <div class="stat-icon bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400">
+            <i data-lucide="bus" class="w-5 h-5"></i>
         </div>
         <div>
-            <p class="stat-label">Pažymiai</p>
-            <p class="stat-value">{{ statistika.pazymiu }}</p>
-            {% if bendras_vidurkis %}
-            <p class="text-xs text-slate-500 dark:text-slate-400">Vid: {{ bendras_vidurkis }}</p>
-            {% endif %}
+            <p class="stat-label">Autobusu</p>
+            <p class="stat-value">{{ statistika.autobusas }}</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
+            <i data-lucide="heart-handshake" class="w-5 h-5"></i>
+        </div>
+        <div>
+            <p class="stat-label">Gerovės kom.</p>
+            <p class="stat-value">{{ statistika.geroves_komisija }}</p>
         </div>
     </div>
     <div class="stat-card">
@@ -69,37 +75,40 @@
             <p class="stat-value">{{ statistika.diplomu }}</p>
         </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400">
-            <i data-lucide="megaphone" class="w-5 h-5"></i>
-        </div>
-        <div>
-            <p class="stat-label">Skelbimai</p>
-            <p class="stat-value">{{ statistika.skelbimu }}</p>
-        </div>
-    </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <div class="card">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="lg:col-span-2 card">
         <div class="card-header">
             <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Mokinių pasiskirstymas pagal klases</h2>
             <i data-lucide="bar-chart-3" class="w-5 h-5 text-slate-400"></i>
         </div>
         <div class="p-6">
-            <canvas id="klasiuDiagrama" height="200"></canvas>
+            <canvas id="klasiuDiagrama" height="180"></canvas>
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Pažymių pasiskirstymas</h2>
-            <i data-lucide="trending-up" class="w-5 h-5 text-slate-400"></i>
+    <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer"
+       class="card hover:shadow-md transition-all hover:-translate-y-1 group">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-xl font-bold">
+                    T
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">TAMO dienynas</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Pažymiai ir tvarkaraščiai</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mb-4 flex-1">
+                Atidaryti elektroninį dienyną tamo.lt naujame skirtuke - prisijunkit savo TAMO duomenimis.
+            </p>
+            <div class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400 group-hover:gap-3 transition-all">
+                <span>Atidaryti TAMO</span>
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+            </div>
         </div>
-        <div class="p-6">
-            <canvas id="pazymiuDiagrama" height="200"></canvas>
-        </div>
-    </div>
+    </a>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -219,51 +228,12 @@
         }
     });
 
-    const pazymiuCtx = document.getElementById('pazymiuDiagrama').getContext('2d');
-    const pazymiuDiagrama = new Chart(pazymiuCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ pazymiu_diagrama.labels|tojson }},
-            datasets: [{
-                label: 'Pažymių skaičius',
-                data: {{ pazymiu_diagrama.duomenys|tojson }},
-                backgroundColor: [
-                    '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
-                    '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6'
-                ],
-                borderRadius: 8,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1, color: textColor() },
-                    grid: { color: gridColor() }
-                },
-                x: {
-                    ticks: { color: textColor() },
-                    grid: { display: false },
-                    title: { display: true, text: 'Pažymys', color: textColor() }
-                }
-            }
-        }
-    });
-
     document.getElementById('theme-toggle').addEventListener('click', () => {
         setTimeout(() => {
             klasiuDiagrama.options.scales.y.ticks.color = textColor();
             klasiuDiagrama.options.scales.x.ticks.color = textColor();
             klasiuDiagrama.options.scales.y.grid.color = gridColor();
             klasiuDiagrama.update();
-            pazymiuDiagrama.options.scales.y.ticks.color = textColor();
-            pazymiuDiagrama.options.scales.x.ticks.color = textColor();
-            pazymiuDiagrama.options.scales.y.grid.color = gridColor();
-            pazymiuDiagrama.options.scales.x.title.color = textColor();
-            pazymiuDiagrama.update();
         }, 50);
     });
 </script>

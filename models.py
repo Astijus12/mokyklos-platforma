@@ -22,7 +22,6 @@ class User(UserMixin, db.Model):
     diplomai = db.relationship("Diplomas", backref="vartotojas", lazy=True, cascade="all, delete-orphan")
     vadovaujamos_klases = db.relationship("Klase", backref="vadovas", lazy=True)
     skelbimai = db.relationship("Skelbimas", backref="autorius", lazy=True, cascade="all, delete-orphan")
-    rasyti_pazymiai = db.relationship("Pazymys", backref="mokytojas", lazy=True)
 
     def nustatyti_slaptazodi(self, slaptazodis):
         self.slaptazodzio_hash = generate_password_hash(slaptazodis)
@@ -75,7 +74,23 @@ class Mokinys(db.Model):
     klases_id = db.Column(db.Integer, db.ForeignKey("klases.id"), nullable=False)
     sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
 
-    pazymiai = db.relationship("Pazymys", backref="mokinys", lazy=True, cascade="all, delete-orphan")
+    # Motinos duomenys
+    motinos_vardas = db.Column(db.String(160), nullable=True)
+    motinos_telefonas = db.Column(db.String(30), nullable=True)
+    motinos_email = db.Column(db.String(120), nullable=True)
+
+    # Tėvo duomenys
+    tevo_vardas = db.Column(db.String(160), nullable=True)
+    tevo_telefonas = db.Column(db.String(30), nullable=True)
+    tevo_email = db.Column(db.String(120), nullable=True)
+
+    # Mokyklos autobusas
+    mokyklos_autobusas = db.Column(db.Boolean, default=False, nullable=False)
+
+    # Gerovės komisija
+    geroves_komisija = db.Column(db.Boolean, default=False, nullable=False)
+    geroves_komisija_data = db.Column(db.Date, nullable=True)
+    geroves_komisija_pastabos = db.Column(db.Text, nullable=True)
 
     @property
     def pilnas_vardas(self):
@@ -84,20 +99,6 @@ class Mokinys(db.Model):
     @property
     def inicialai(self):
         return f"{self.vardas[0]}{self.pavarde[0]}".upper()
-
-    @property
-    def vidurkis(self):
-        """Bendras visų pažymių vidurkis."""
-        if not self.pazymiai:
-            return None
-        return round(sum(p.pazymys for p in self.pazymiai) / len(self.pazymiai), 2)
-
-    def vidurkis_dalyko(self, dalykas):
-        """Pažymių vidurkis konkretaus dalyko."""
-        pazymiai = [p.pazymys for p in self.pazymiai if p.dalykas == dalykas]
-        if not pazymiai:
-            return None
-        return round(sum(pazymiai) / len(pazymiai), 2)
 
 
 class Diplomas(db.Model):
@@ -126,36 +127,3 @@ class Skelbimas(db.Model):
     svarbus = db.Column(db.Boolean, default=False)
     vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-class Pazymys(db.Model):
-    """Mokinio pažymys iš konkretaus dalyko."""
-    __tablename__ = "pazymiai"
-
-    id = db.Column(db.Integer, primary_key=True)
-    mokinio_id = db.Column(db.Integer, db.ForeignKey("mokiniai.id"), nullable=False)
-    mokytojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    dalykas = db.Column(db.String(80), nullable=False)
-    pazymys = db.Column(db.Integer, nullable=False)
-    komentaras = db.Column(db.String(300), nullable=True)
-    data = db.Column(db.Date, nullable=False, default=datetime.utcnow)
-    sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-# Galimi dalykai (statinis sąrašas, kad būtų paprasčiau)
-DALYKAI = [
-    "Matematika",
-    "Lietuvių kalba",
-    "Anglų kalba",
-    "Istorija",
-    "Geografija",
-    "Biologija",
-    "Chemija",
-    "Fizika",
-    "Informatika",
-    "Kūno kultūra",
-    "Dailė",
-    "Muzika",
-    "Technologijos",
-    "Etika",
-]

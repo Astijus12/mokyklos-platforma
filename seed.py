@@ -1,7 +1,7 @@
 """Pradėtinių duomenų užpildymo skriptas.
 
 Paleidžia: python seed.py
-Sukuria demo vartotojus, klases, mokinius, pažymius ir skelbimus.
+Sukuria demo vartotojus, klases, mokinius ir skelbimus.
 """
 import sys
 import random
@@ -15,16 +15,11 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
         pass
 
 from app import create_app
-from models import db, User, Klase, Mokinys, Skelbimas, Pazymys, DALYKAI
+from models import db, User, Klase, Mokinys, Skelbimas
 
 
 def uzpildyti_db(naudoti_esama_app=False):
-    """Užpildo duomenų bazę demo duomenimis.
-
-    Args:
-        naudoti_esama_app: jei True, naudoja jau veikiančią aplikacijos kontekstą
-                          (tai naudojama deploying serverio kontekste).
-    """
+    """Užpildo duomenų bazę demo duomenimis."""
     if naudoti_esama_app:
         _uzpildyti()
     else:
@@ -84,90 +79,104 @@ def _uzpildyti():
         db.session.commit()
 
         print("Kuriami mokiniai...")
+
+        # Duomenys formatu: (vardas, pavardė, gim. data, email, tel, adresas,
+        #                    motinos_vardas, motinos_tel, motinos_email,
+        #                    tėvo_vardas, tėvo_tel, tėvo_email,
+        #                    autobusas, gerovės_kom, geroves_data, geroves_pastabos)
+
         mokiniai_5a = [
-            ("Aistė", "Adomaitytė", date(2014, 3, 15), "aiste.a@mokinys.lt", "+370 600 11111", "Vilniaus g. 15, Vilnius"),
-            ("Domas", "Butkus", date(2014, 5, 22), None, "+370 600 22222", "Gedimino pr. 5, Vilnius"),
-            ("Eglė", "Čepaitė", date(2014, 1, 10), "egle.c@mokinys.lt", None, "Žirmūnų g. 24, Vilnius"),
-            ("Gabrielius", "Dapkus", date(2014, 7, 8), None, "+370 600 44444", "Žemaitės g. 7, Vilnius"),
-            ("Ieva", "Eidukaitė", date(2014, 9, 30), "ieva.e@mokinys.lt", "+370 600 55555", "Antakalnio g. 32, Vilnius"),
+            ("Aistė", "Adomaitytė", date(2014, 3, 15), "aiste.a@mokinys.lt", "+370 600 11111", "Vilniaus g. 15, Vilnius",
+             "Jurgita Adomaitienė", "+370 612 11111", "jurgita.a@email.lt",
+             "Rimantas Adomaitis", "+370 612 11112", "rimantas.a@email.lt",
+             True, False, None, None),
+
+            ("Domas", "Butkus", date(2014, 5, 22), None, "+370 600 22222", "Kaišiadorių r., Šilonių k.",
+             "Inga Butkienė", "+370 612 22222", "inga.b@email.lt",
+             "Mindaugas Butkus", "+370 612 22223", None,
+             True, True, date(2025, 10, 15), "Aptarta mokinio adaptacijos eiga, sustiprintas individualus darbas su klasės vadovu."),
+
+            ("Eglė", "Čepaitė", date(2014, 1, 10), "egle.c@mokinys.lt", None, "Žirmūnų g. 24, Vilnius",
+             "Vilma Čepienė", "+370 612 33333", "vilma.c@email.lt",
+             None, None, None,
+             False, False, None, None),
+
+            ("Gabrielius", "Dapkus", date(2014, 7, 8), None, "+370 600 44444", "Trakų r., Lentvario sen.",
+             "Daiva Dapkienė", "+370 612 44444", "daiva.d@email.lt",
+             "Tomas Dapkus", "+370 612 44445", "tomas.d@email.lt",
+             True, False, None, None),
+
+            ("Ieva", "Eidukaitė", date(2014, 9, 30), "ieva.e@mokinys.lt", "+370 600 55555", "Antakalnio g. 32, Vilnius",
+             "Asta Eidukienė", "+370 612 55555", "asta.e@email.lt",
+             "Vytautas Eidukas", "+370 612 55556", None,
+             False, False, None, None),
         ]
+
         mokiniai_8b = [
-            ("Justas", "Gricius", date(2011, 2, 14), "justas.g@mokinys.lt", "+370 600 66666", "Vingio g. 11, Vilnius"),
-            ("Kamilė", "Jasiūnaitė", date(2011, 4, 18), None, "+370 600 77777", "Žalgirio g. 90, Vilnius"),
-            ("Lukas", "Karpavičius", date(2011, 6, 25), "lukas.k@mokinys.lt", None, "Saltoniškių g. 8, Vilnius"),
-            ("Milda", "Liutkutė", date(2011, 8, 3), None, "+370 600 88888", "Kauno g. 14, Vilnius"),
+            ("Justas", "Gricius", date(2011, 2, 14), "justas.g@mokinys.lt", "+370 600 66666", "Vingio g. 11, Vilnius",
+             "Lina Gricienė", "+370 612 66666", "lina.g@email.lt",
+             "Arūnas Gricius", "+370 612 66667", "arunas.g@email.lt",
+             False, True, date(2025, 9, 20), "Mokymosi sunkumai matematikos pamokose, rekomenduotas papildomas mokytojo konsultavimas."),
+
+            ("Kamilė", "Jasiūnaitė", date(2011, 4, 18), None, "+370 600 77777", "Trakų r., Senųjų Trakų k.",
+             "Rita Jasiūnienė", "+370 612 77777", "rita.j@email.lt",
+             "Donatas Jasiūnas", "+370 612 77778", None,
+             True, False, None, None),
+
+            ("Lukas", "Karpavičius", date(2011, 6, 25), "lukas.k@mokinys.lt", None, "Saltoniškių g. 8, Vilnius",
+             "Aurelija Karpavičienė", "+370 612 88888", "aurelija.k@email.lt",
+             "Marius Karpavičius", "+370 612 88889", "marius.k@email.lt",
+             False, False, None, None),
+
+            ("Milda", "Liutkutė", date(2011, 8, 3), None, "+370 600 88888", "Kauno g. 14, Vilnius",
+             "Gintarė Liutkienė", "+370 612 99999", "gintare.l@email.lt",
+             None, None, None,
+             False, False, None, None),
         ]
+
         mokiniai_10a = [
-            ("Nojus", "Marčiulionis", date(2009, 10, 11), "nojus.m@mokinys.lt", "+370 600 99999", "Konstitucijos pr. 21, Vilnius"),
-            ("Olga", "Norvilaitė", date(2009, 12, 27), None, "+370 600 12121", "Pylimo g. 33, Vilnius"),
-            ("Paulius", "Petraitis", date(2009, 11, 5), "paulius.p@mokinys.lt", None, "Vokiečių g. 9, Vilnius"),
+            ("Nojus", "Marčiulionis", date(2009, 10, 11), "nojus.m@mokinys.lt", "+370 600 99999", "Konstitucijos pr. 21, Vilnius",
+             "Sandra Marčiulionienė", "+370 613 11111", "sandra.m@email.lt",
+             "Arvydas Marčiulionis", "+370 613 11112", "arvydas.m@email.lt",
+             False, False, None, None),
+
+            ("Olga", "Norvilaitė", date(2009, 12, 27), None, "+370 600 12121", "Šalčininkų r., Eišiškių sen.",
+             "Tatjana Norvilienė", "+370 613 22222", "tatjana.n@email.lt",
+             "Pavel Norvila", "+370 613 22223", None,
+             True, False, None, None),
+
+            ("Paulius", "Petraitis", date(2009, 11, 5), "paulius.p@mokinys.lt", None, "Vokiečių g. 9, Vilnius",
+             "Rita Petraitienė", "+370 613 33333", "rita.p@email.lt",
+             "Saulius Petraitis", "+370 613 33334", "saulius.p@email.lt",
+             False, True, date(2025, 11, 5), "Drausminio pobūdžio incidentas. Susitarta dėl elgesio sutarties su mokiniu ir tėvais."),
         ]
 
-        visi_mokiniai = []
+        def _prideti_mokini(duomenys, klases_id):
+            (vardas, pavarde, gdata, email, tel, adr,
+             m_vardas, m_tel, m_email,
+             t_vardas, t_tel, t_email,
+             autobusas, gerov_kom, gerov_data, gerov_past) = duomenys
 
-        for vardas, pavarde, gdata, email, tel, adr in mokiniai_5a:
             m = Mokinys(
                 vardas=vardas, pavarde=pavarde, gimimo_data=gdata,
                 email=email, telefonas=tel, adresas=adr,
-                klases_id=klase_5a.id,
+                motinos_vardas=m_vardas, motinos_telefonas=m_tel, motinos_email=m_email,
+                tevo_vardas=t_vardas, tevo_telefonas=t_tel, tevo_email=t_email,
+                mokyklos_autobusas=autobusas,
+                geroves_komisija=gerov_kom,
+                geroves_komisija_data=gerov_data,
+                geroves_komisija_pastabos=gerov_past,
+                klases_id=klases_id,
             )
             db.session.add(m)
-            visi_mokiniai.append(m)
+            return m
 
-        for vardas, pavarde, gdata, email, tel, adr in mokiniai_8b:
-            m = Mokinys(
-                vardas=vardas, pavarde=pavarde, gimimo_data=gdata,
-                email=email, telefonas=tel, adresas=adr,
-                klases_id=klase_8b.id,
-            )
-            db.session.add(m)
-            visi_mokiniai.append(m)
-
-        for vardas, pavarde, gdata, email, tel, adr in mokiniai_10a:
-            m = Mokinys(
-                vardas=vardas, pavarde=pavarde, gimimo_data=gdata,
-                email=email, telefonas=tel, adresas=adr,
-                klases_id=klase_10a.id,
-            )
-            db.session.add(m)
-            visi_mokiniai.append(m)
-
-        db.session.commit()
-
-        print("Kuriami pažymiai...")
-        mokytojai = [jonas, ona, tomas]
-        komentarai_geri = [
-            "Kontrolinis darbas", "Aktyvumas pamokoje", "Atsakymas raštu",
-            "Savarankiškas darbas", "Klausimynas", "Projektas",
-        ]
-        komentarai_blogi = [
-            "Nepateikė namų darbų", "Trūksta pasiruošimo", "Neaktyvus pamokoje",
-        ]
-
-        random.seed(42)
-        for mokinys in visi_mokiniai:
-            pasirinkti_dalykai = random.sample(DALYKAI, k=random.randint(4, 7))
-            for dalykas in pasirinkti_dalykai:
-                for _ in range(random.randint(1, 4)):
-                    if random.random() < 0.7:
-                        pazymys_reiksme = random.randint(7, 10)
-                        komentaras = random.choice(komentarai_geri)
-                    else:
-                        pazymys_reiksme = random.randint(3, 6)
-                        komentaras = random.choice(komentarai_blogi)
-
-                    dienu_atgal = random.randint(1, 60)
-                    pazymio_data = date.today() - timedelta(days=dienu_atgal)
-
-                    p = Pazymys(
-                        mokinio_id=mokinys.id,
-                        mokytojo_id=random.choice(mokytojai).id,
-                        dalykas=dalykas,
-                        pazymys=pazymys_reiksme,
-                        komentaras=komentaras,
-                        data=pazymio_data,
-                    )
-                    db.session.add(p)
+        for d in mokiniai_5a:
+            _prideti_mokini(d, klase_5a.id)
+        for d in mokiniai_8b:
+            _prideti_mokini(d, klase_8b.id)
+        for d in mokiniai_10a:
+            _prideti_mokini(d, klase_10a.id)
 
         db.session.commit()
 
@@ -179,6 +188,13 @@ def _uzpildyti():
                 "svarbus": True,
                 "vartotojo_id": admin.id,
                 "dienu_atgal": 1,
+            },
+            {
+                "pavadinimas": "Vaiko gerovės komisijos posėdis",
+                "turinys": "Kitos savaitės antradienį, 15:00 vyks vaiko gerovės komisijos posėdis. Bus svarstomos kelios mokinių situacijos. Klasės vadovus prašome pateikti savo pastebėjimus iki pirmadienio.",
+                "svarbus": True,
+                "vartotojo_id": admin.id,
+                "dienu_atgal": 2,
             },
             {
                 "pavadinimas": "Atvirų durų diena - lapkričio 25 d.",
@@ -200,13 +216,6 @@ def _uzpildyti():
                 "svarbus": False,
                 "vartotojo_id": jonas.id,
                 "dienu_atgal": 7,
-            },
-            {
-                "pavadinimas": "Mokinių pažangos vertinimas",
-                "turinys": "Primename, kad mokinių pažangos vertinimo ataskaitos turi būti pateiktos iki mėnesio pabaigos. Naudokitės nauja sistema pažymių įrašymui.",
-                "svarbus": True,
-                "vartotojo_id": admin.id,
-                "dienu_atgal": 10,
             },
         ]
 
@@ -232,7 +241,6 @@ def _uzpildyti():
         print(f"Sukurta: {User.query.count()} vartotojai, "
               f"{Klase.query.count()} klasės, "
               f"{Mokinys.query.count()} mokiniai, "
-              f"{Pazymys.query.count()} pažymiai, "
               f"{Skelbimas.query.count()} skelbimai\n")
 
 

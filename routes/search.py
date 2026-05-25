@@ -27,6 +27,8 @@ def index():
                 (Mokinys.vardas.ilike(like))
                 | (Mokinys.pavarde.ilike(like))
                 | (Mokinys.email.ilike(like))
+                | (Mokinys.motinos_vardas.ilike(like))
+                | (Mokinys.tevo_vardas.ilike(like))
             )
             .order_by(Mokinys.pavarde)
             .limit(20)

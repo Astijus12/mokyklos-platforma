@@ -12,7 +12,6 @@ from routes.students import students_bp
 from routes.diplomas import diplomas_bp
 from routes.users import users_bp
 from routes.announcements import announcements_bp
-from routes.grades import grades_bp
 from routes.profile import profile_bp
 from routes.search import search_bp
 
@@ -42,7 +41,6 @@ def create_app():
     app.register_blueprint(diplomas_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(announcements_bp)
-    app.register_blueprint(grades_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(search_bp)
 

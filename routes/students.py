@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_required
 
-from models import db, Mokinys, Klase, Pazymys, DALYKAI
+from models import db, Mokinys, Klase
 
 students_bp = Blueprint("students", __name__, url_prefix="/mokiniai")
 
@@ -17,6 +17,29 @@ def _parse_data(reiksme):
         return datetime.strptime(reiksme, "%Y-%m-%d").date()
     except ValueError:
         return None
+
+
+def _surinkti_duomenis(form):
+    """Iš formos duomenų sukuria/atnaujina mokinio duomenis."""
+    return {
+        "vardas": form.get("vardas", "").strip(),
+        "pavarde": form.get("pavarde", "").strip(),
+        "gimimo_data": _parse_data(form.get("gimimo_data")),
+        "email": form.get("email", "").strip() or None,
+        "telefonas": form.get("telefonas", "").strip() or None,
+        "adresas": form.get("adresas", "").strip() or None,
+        "pastabos": form.get("pastabos", "").strip() or None,
+        "motinos_vardas": form.get("motinos_vardas", "").strip() or None,
+        "motinos_telefonas": form.get("motinos_telefonas", "").strip() or None,
+        "motinos_email": form.get("motinos_email", "").strip() or None,
+        "tevo_vardas": form.get("tevo_vardas", "").strip() or None,
+        "tevo_telefonas": form.get("tevo_telefonas", "").strip() or None,
+        "tevo_email": form.get("tevo_email", "").strip() or None,
+        "mokyklos_autobusas": form.get("mokyklos_autobusas") == "on",
+        "geroves_komisija": form.get("geroves_komisija") == "on",
+        "geroves_komisija_data": _parse_data(form.get("geroves_komisija_data")) if form.get("geroves_komisija") == "on" else None,
+        "geroves_komisija_pastabos": form.get("geroves_komisija_pastabos", "").strip() or None if form.get("geroves_komisija") == "on" else None,
+    }
 
 
 @students_bp.route("/")
@@ -63,7 +86,10 @@ def eksportas_csv():
     rasytojas = csv.writer(output, delimiter=";")
     rasytojas.writerow([
         "Vardas", "Pavardė", "Klasė", "Gimimo data",
-        "El. paštas", "Telefonas", "Adresas", "Vidurkis",
+        "El. paštas", "Telefonas", "Adresas",
+        "Motinos vardas", "Motinos telefonas", "Motinos el. paštas",
+        "Tėvo vardas", "Tėvo telefonas", "Tėvo el. paštas",
+        "Mokyklos autobusas", "Gerovės komisija", "Gerovės kom. data",
     ])
 
     for m in mokiniai:
@@ -75,7 +101,15 @@ def eksportas_csv():
             m.email or "",
             m.telefonas or "",
             m.adresas or "",
-            m.vidurkis if m.vidurkis else "",
+            m.motinos_vardas or "",
+            m.motinos_telefonas or "",
+            m.motinos_email or "",
+            m.tevo_vardas or "",
+            m.tevo_telefonas or "",
+            m.tevo_email or "",
+            "Taip" if m.mokyklos_autobusas else "Ne",
+            "Taip" if m.geroves_komisija else "Ne",
+            m.geroves_komisija_data.strftime("%Y-%m-%d") if m.geroves_komisija_data else "",
         ])
 
     failo_vardas = f"mokiniai_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
@@ -89,34 +123,9 @@ def eksportas_csv():
 @students_bp.route("/<int:mokinio_id>")
 @login_required
 def detales(mokinio_id):
-    """Detalus mokinio puslapis su pažymiais."""
+    """Detalus mokinio puslapis."""
     mokinys = Mokinys.query.get_or_404(mokinio_id)
-    pazymiai = (
-        Pazymys.query.filter_by(mokinio_id=mokinio_id)
-        .order_by(Pazymys.data.desc())
-        .all()
-    )
-
-    pazymiu_pagal_dalyka = {}
-    for p in pazymiai:
-        pazymiu_pagal_dalyka.setdefault(p.dalykas, []).append(p)
-
-    dalyku_vidurkiai = []
-    for dalykas, pps in pazymiu_pagal_dalyka.items():
-        vidurkis = round(sum(p.pazymys for p in pps) / len(pps), 2)
-        dalyku_vidurkiai.append({
-            "dalykas": dalykas,
-            "vidurkis": vidurkis,
-            "skaicius": len(pps),
-        })
-    dalyku_vidurkiai.sort(key=lambda x: x["dalykas"])
-
-    return render_template(
-        "students/detail.html",
-        mokinys=mokinys,
-        pazymiai=pazymiai,
-        dalyku_vidurkiai=dalyku_vidurkiai,
-    )
+    return render_template("students/detail.html", mokinys=mokinys)
 
 
 @students_bp.route("/naujas", methods=["GET", "POST"])
@@ -127,19 +136,13 @@ def naujas():
         if not klases_id:
             flash("Pasirinkite klasę.", "danger")
         else:
-            mokinys = Mokinys(
-                vardas=request.form.get("vardas", "").strip(),
-                pavarde=request.form.get("pavarde", "").strip(),
-                gimimo_data=_parse_data(request.form.get("gimimo_data")),
-                email=request.form.get("email", "").strip() or None,
-                telefonas=request.form.get("telefonas", "").strip() or None,
-                adresas=request.form.get("adresas", "").strip() or None,
-                pastabos=request.form.get("pastabos", "").strip() or None,
-                klases_id=klases_id,
-            )
-            if not mokinys.vardas or not mokinys.pavarde:
+            duomenys = _surinkti_duomenis(request.form)
+            duomenys["klases_id"] = klases_id
+
+            if not duomenys["vardas"] or not duomenys["pavarde"]:
                 flash("Vardas ir pavardė yra privalomi.", "danger")
             else:
+                mokinys = Mokinys(**duomenys)
                 db.session.add(mokinys)
                 db.session.commit()
                 flash(f"Mokinys {mokinys.pilnas_vardas} pridėtas.", "success")
@@ -160,13 +163,9 @@ def redaguoti(mokinio_id):
     mokinys = Mokinys.query.get_or_404(mokinio_id)
 
     if request.method == "POST":
-        mokinys.vardas = request.form.get("vardas", "").strip()
-        mokinys.pavarde = request.form.get("pavarde", "").strip()
-        mokinys.gimimo_data = _parse_data(request.form.get("gimimo_data"))
-        mokinys.email = request.form.get("email", "").strip() or None
-        mokinys.telefonas = request.form.get("telefonas", "").strip() or None
-        mokinys.adresas = request.form.get("adresas", "").strip() or None
-        mokinys.pastabos = request.form.get("pastabos", "").strip() or None
+        duomenys = _surinkti_duomenis(request.form)
+        for laukas, reiksme in duomenys.items():
+            setattr(mokinys, laukas, reiksme)
         mokinys.klases_id = request.form.get("klases_id", type=int)
         db.session.commit()
         flash(f"Mokinio {mokinys.pilnas_vardas} duomenys atnaujinti.", "success")
