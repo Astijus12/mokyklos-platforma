@@ -35,8 +35,8 @@ def _uzpildyti():
 
         print("Kuriami vartotojai...")
         admin = User(
-            vardas="Rasa",
-            pavarde="Petraitienė",
+            vardas="ADMIN",
+            pavarde="",
             email="admin@mokykla.lt",
             role="administratorius",
         )

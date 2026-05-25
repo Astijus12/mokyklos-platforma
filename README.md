@@ -1,6 +1,6 @@
-# Mokyklos valdymo platforma
+# Noriūnų Jono Černiaus mokyklos sistema
 
-Modernios web platformos prototipas mokyklai. Skirtas mokytojams ir administracijai valdyti klases, mokinius ir diplomus iš seminarų.
+Modernios web platformos prototipas Noriūnų Jono Černiaus mokyklai. Skirtas mokytojams ir administracijai valdyti klases, mokinius ir diplomus iš seminarų.
 
 ## Technologijos
 

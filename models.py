@@ -31,6 +31,8 @@ class User(UserMixin, db.Model):
 
     @property
     def pilnas_vardas(self):
+        if not self.pavarde:
+            return self.vardas
         return f"{self.vardas} {self.pavarde}"
 
     @property
@@ -39,6 +41,8 @@ class User(UserMixin, db.Model):
 
     @property
     def inicialai(self):
+        if not self.pavarde:
+            return self.vardas[:2].upper()
         return f"{self.vardas[0]}{self.pavarde[0]}".upper()
 
 
