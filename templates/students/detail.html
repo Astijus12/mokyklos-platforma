@@ -1,240 +1,183 @@
 {% extends "base.html" %}
 
-{% block title %}{{ mokinys.pilnas_vardas }} - Mokinio profilis{% endblock %}
+{% block title %}{{ mokinys.pilnas_vardas }} - Mokyklos platforma{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('students.saraso') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Atgal į mokinių sąrašą
+<div class="mb-4">
+    <a href="{{ url_for('students.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Visi mokiniai
     </a>
 </div>
 
-<div class="card mb-6">
-    <div class="p-6 sm:p-8">
-        <div class="flex flex-col sm:flex-row items-start gap-6">
-            <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-700 text-white flex items-center justify-center text-3xl font-bold flex-shrink-0">
-                {{ mokinys.inicialai }}
-            </div>
-
-            <div class="flex-1">
-                <h1 class="text-3xl font-bold text-slate-900 dark:text-white">{{ mokinys.pilnas_vardas }}</h1>
-                <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-500 dark:text-slate-400">
-                    <a href="{{ url_for('classes.detales', klases_id=mokinys.klase.id) }}"
-                       class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 font-medium hover:bg-primary-200 dark:hover:bg-primary-900/60">
-                        <i data-lucide="school" class="w-3 h-3"></i>
-                        {{ mokinys.klase.pavadinimas }} klasė
-                    </a>
-                    {% if mokinys.gimimo_data %}
-                    <div class="flex items-center gap-1">
-                        <i data-lucide="cake" class="w-3.5 h-3.5"></i>
-                        <span>{{ mokinys.gimimo_data.strftime('%Y-%m-%d') }}</span>
-                    </div>
-                    {% endif %}
+<div class="card mb-4">
+    <div class="p-5">
+        <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex items-start gap-4">
+                <div class="w-14 h-14 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center text-lg font-semibold flex-shrink-0">
+                    {{ mokinys.inicialai }}
                 </div>
-
-                <div class="flex flex-wrap gap-2 mt-3">
-                    {% if mokinys.mokyklos_autobusas %}
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300">
-                        <i data-lucide="bus" class="w-3.5 h-3.5"></i>
-                        Važiuoja mokyklos autobusu
-                    </span>
-                    {% endif %}
-                    {% if mokinys.geroves_komisija %}
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">
-                        <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i>
-                        Svarstomas gerovės komisijoje
-                    </span>
-                    {% endif %}
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                    {% if mokinys.email %}
-                    <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                        <i data-lucide="mail" class="w-4 h-4 text-slate-400"></i>
-                        <a href="mailto:{{ mokinys.email }}" class="hover:text-primary-600">{{ mokinys.email }}</a>
+                <div>
+                    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">{{ mokinys.pilnas_vardas }}</h1>
+                    <div class="flex flex-wrap items-center gap-2 mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                        <a href="{{ url_for('classes.detales', klases_id=mokinys.klase.id) }}" class="tag tag-brand hover:underline">
+                            {{ mokinys.klase.pavadinimas }} klasė
+                        </a>
+                        {% if mokinys.gimimo_data %}
+                        <span class="text-slate-300 dark:text-slate-600">•</span>
+                        <span>Gimęs(-usi) {{ mokinys.gimimo_data.strftime('%Y-%m-%d') }}</span>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    {% if mokinys.telefonas %}
-                    <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                        <i data-lucide="phone" class="w-4 h-4 text-slate-400"></i>
-                        <a href="tel:{{ mokinys.telefonas }}" class="hover:text-primary-600">{{ mokinys.telefonas }}</a>
+                    <div class="flex flex-wrap gap-1.5 mt-2.5">
+                        {% if mokinys.mokyklos_autobusas %}
+                        <span class="tag tag-warning">
+                            <i data-lucide="bus" class="w-3 h-3"></i>
+                            Mokyklos autobusas
+                        </span>
+                        {% endif %}
+                        {% if mokinys.geroves_komisija %}
+                        <span class="tag tag-danger">
+                            Vaiko gerovės komisija
+                        </span>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    {% if mokinys.adresas %}
-                    <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 sm:col-span-2">
-                        <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i>
-                        <span>{{ mokinys.adresas }}</span>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
 
-            <div class="flex gap-2 flex-shrink-0">
-                <a href="{{ url_for('students.redaguoti', mokinio_id=mokinys.id) }}" class="btn-primary">
-                    <i data-lucide="pencil" class="w-4 h-4"></i>
+            <div class="flex gap-1.5">
+                <a href="{{ url_for('students.redaguoti', mokinio_id=mokinys.id) }}" class="btn-secondary">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                     Redaguoti
                 </a>
                 <form method="POST" action="{{ url_for('students.salinti', mokinio_id=mokinys.id) }}"
                       onsubmit="return confirm('Ar tikrai norite pašalinti šį mokinį?');">
-                    <button type="submit" class="btn-icon-danger">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <button type="submit" class="btn-icon-danger" title="Šalinti">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                 </form>
             </div>
         </div>
-
-        {% if mokinys.pastabos %}
-        <div class="mt-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <div class="flex items-start gap-2">
-                <i data-lucide="sticky-note" class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"></i>
-                <div>
-                    <p class="text-xs font-semibold text-amber-800 dark:text-amber-200 uppercase tracking-wider mb-1">Pastabos</p>
-                    <p class="text-sm text-amber-900 dark:text-amber-100 whitespace-pre-wrap">{{ mokinys.pastabos }}</p>
-                </div>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="heart" class="w-5 h-5 text-pink-500"></i>
-                Motina
-            </h2>
+            <h2>Mokinio kontaktai</h2>
         </div>
-        <div class="p-6">
-            {% if mokinys.motinos_vardas or mokinys.motinos_telefonas or mokinys.motinos_email %}
-            <div class="space-y-3">
-                {% if mokinys.motinos_vardas %}
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Vardas, pavardė</p>
-                        <p class="text-sm font-medium text-slate-900 dark:text-white">{{ mokinys.motinos_vardas }}</p>
-                    </div>
-                </div>
-                {% endif %}
-                {% if mokinys.motinos_telefonas %}
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
-                        <i data-lucide="phone" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Telefonas</p>
-                        <a href="tel:{{ mokinys.motinos_telefonas }}" class="text-sm font-medium text-slate-900 dark:text-white hover:text-primary-600">{{ mokinys.motinos_telefonas }}</a>
-                    </div>
-                </div>
-                {% endif %}
-                {% if mokinys.motinos_email %}
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
-                        <i data-lucide="mail" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">El. paštas</p>
-                        <a href="mailto:{{ mokinys.motinos_email }}" class="text-sm font-medium text-slate-900 dark:text-white hover:text-primary-600">{{ mokinys.motinos_email }}</a>
-                    </div>
-                </div>
-                {% endif %}
+        <dl class="p-4 space-y-3 text-sm">
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">El. paštas</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.email %}
+                        <a href="mailto:{{ mokinys.email }}" class="hover:text-brand-700 dark:hover:text-brand-400">{{ mokinys.email }}</a>
+                    {% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
             </div>
-            {% else %}
-            <div class="text-center py-6 text-slate-400 dark:text-slate-500">
-                <i data-lucide="user-x" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
-                <p class="text-sm">Duomenys nepateikti</p>
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Telefonas</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.telefonas %}
+                        <a href="tel:{{ mokinys.telefonas }}" class="hover:text-brand-700 dark:hover:text-brand-400">{{ mokinys.telefonas }}</a>
+                    {% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
             </div>
-            {% endif %}
-        </div>
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Adresas</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.adresas %}{{ mokinys.adresas }}{% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
+            </div>
+        </dl>
     </div>
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="briefcase" class="w-5 h-5 text-blue-500"></i>
-                Tėvas
-            </h2>
+            <h2>Motina</h2>
         </div>
-        <div class="p-6">
-            {% if mokinys.tevo_vardas or mokinys.tevo_telefonas or mokinys.tevo_email %}
-            <div class="space-y-3">
-                {% if mokinys.tevo_vardas %}
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                        <i data-lucide="user" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Vardas, pavardė</p>
-                        <p class="text-sm font-medium text-slate-900 dark:text-white">{{ mokinys.tevo_vardas }}</p>
-                    </div>
-                </div>
-                {% endif %}
-                {% if mokinys.tevo_telefonas %}
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
-                        <i data-lucide="phone" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Telefonas</p>
-                        <a href="tel:{{ mokinys.tevo_telefonas }}" class="text-sm font-medium text-slate-900 dark:text-white hover:text-primary-600">{{ mokinys.tevo_telefonas }}</a>
-                    </div>
-                </div>
-                {% endif %}
-                {% if mokinys.tevo_email %}
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center">
-                        <i data-lucide="mail" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">El. paštas</p>
-                        <a href="mailto:{{ mokinys.tevo_email }}" class="text-sm font-medium text-slate-900 dark:text-white hover:text-primary-600">{{ mokinys.tevo_email }}</a>
-                    </div>
-                </div>
-                {% endif %}
+        <dl class="p-4 space-y-3 text-sm">
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Vardas, pavardė</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.motinos_vardas %}{{ mokinys.motinos_vardas }}{% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
             </div>
-            {% else %}
-            <div class="text-center py-6 text-slate-400 dark:text-slate-500">
-                <i data-lucide="user-x" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
-                <p class="text-sm">Duomenys nepateikti</p>
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Telefonas</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.motinos_telefonas %}
+                        <a href="tel:{{ mokinys.motinos_telefonas }}" class="hover:text-brand-700 dark:hover:text-brand-400">{{ mokinys.motinos_telefonas }}</a>
+                    {% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
             </div>
-            {% endif %}
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">El. paštas</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.motinos_email %}
+                        <a href="mailto:{{ mokinys.motinos_email }}" class="hover:text-brand-700 dark:hover:text-brand-400">{{ mokinys.motinos_email }}</a>
+                    {% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
+            </div>
+        </dl>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Tėvas</h2>
         </div>
+        <dl class="p-4 space-y-3 text-sm">
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Vardas, pavardė</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.tevo_vardas %}{{ mokinys.tevo_vardas }}{% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Telefonas</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.tevo_telefonas %}
+                        <a href="tel:{{ mokinys.tevo_telefonas }}" class="hover:text-brand-700 dark:hover:text-brand-400">{{ mokinys.tevo_telefonas }}</a>
+                    {% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">El. paštas</dt>
+                <dd class="text-slate-900 dark:text-white">
+                    {% if mokinys.tevo_email %}
+                        <a href="mailto:{{ mokinys.tevo_email }}" class="hover:text-brand-700 dark:hover:text-brand-400">{{ mokinys.tevo_email }}</a>
+                    {% else %}<span class="text-slate-400">—</span>{% endif %}
+                </dd>
+            </div>
+        </dl>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="bus" class="w-5 h-5 text-yellow-500"></i>
-                Mokyklos autobusas
-            </h2>
+            <h2>Mokyklos transportas</h2>
         </div>
-        <div class="p-6">
+        <div class="p-4 text-sm">
             {% if mokinys.mokyklos_autobusas %}
-            <div class="flex items-center gap-4 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
-                <div class="w-12 h-12 rounded-full bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 flex items-center justify-center">
-                    <i data-lucide="check-circle" class="w-6 h-6"></i>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-md bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="bus" class="w-4 h-4"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-semibold text-yellow-900 dark:text-yellow-100">Taip - vežamas autobusu</p>
-                    <p class="text-xs text-yellow-700 dark:text-yellow-300">Mokinys naudojasi mokyklos transportu</p>
+                    <p class="font-medium text-slate-900 dark:text-white">Taip, vežamas mokyklos autobusu</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Mokinys naudojasi mokyklos transportu</p>
                 </div>
             </div>
             {% else %}
-            <div class="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
-                <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center">
-                    <i data-lucide="x-circle" class="w-6 h-6"></i>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="bus" class="w-4 h-4"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Ne - autobusu nevažiuoja</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Mokinys į mokyklą atvyksta savo transportu</p>
+                    <p class="font-medium text-slate-700 dark:text-slate-300">Mokyklos autobusu nevažiuoja</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Į mokyklą atvyksta savo transportu</p>
                 </div>
             </div>
             {% endif %}
@@ -243,39 +186,34 @@
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="heart-handshake" class="w-5 h-5 text-rose-500"></i>
-                Vaiko gerovės komisija
-            </h2>
+            <h2>Vaiko gerovės komisija</h2>
         </div>
-        <div class="p-6">
+        <div class="p-4 text-sm">
             {% if mokinys.geroves_komisija %}
-            <div class="space-y-3">
-                <div class="flex items-center gap-4 p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800">
-                    <div class="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 flex items-center justify-center">
-                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                <div class="flex items-start gap-3 mb-3">
+                    <div class="w-9 h-9 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="check" class="w-4 h-4"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-sm font-semibold text-rose-900 dark:text-rose-100">Taip - buvo svarstomas</p>
+                        <p class="font-medium text-slate-900 dark:text-white">Mokinys buvo svarstomas</p>
                         {% if mokinys.geroves_komisija_data %}
-                        <p class="text-xs text-rose-700 dark:text-rose-300">Data: {{ mokinys.geroves_komisija_data.strftime('%Y-%m-%d') }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Svarstymo data: {{ mokinys.geroves_komisija_data.strftime('%Y-%m-%d') }}</p>
                         {% endif %}
                     </div>
                 </div>
                 {% if mokinys.geroves_komisija_pastabos %}
-                <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Pastabos</p>
-                    <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap">{{ mokinys.geroves_komisija_pastabos }}</p>
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Pastabos</p>
+                    <p class="text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{{ mokinys.geroves_komisija_pastabos }}</p>
                 </div>
                 {% endif %}
-            </div>
             {% else %}
-            <div class="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
-                <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center">
-                    <i data-lucide="x-circle" class="w-6 h-6"></i>
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="minus" class="w-4 h-4"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Ne - nebuvo svarstomas</p>
+                    <p class="font-medium text-slate-700 dark:text-slate-300">Nebuvo svarstomas</p>
                     <p class="text-xs text-slate-500 dark:text-slate-400">Komisijos svarstymų nėra</p>
                 </div>
             </div>
@@ -283,4 +221,15 @@
         </div>
     </div>
 </div>
+
+{% if mokinys.pastabos %}
+<div class="card">
+    <div class="card-header">
+        <h2>Pastabos</h2>
+    </div>
+    <div class="p-4">
+        <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{{ mokinys.pastabos }}</p>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

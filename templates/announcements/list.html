@@ -3,67 +3,46 @@
 {% block title %}Skelbimai - Mokyklos platforma{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-8">
+<div class="mb-5 flex items-end justify-between flex-wrap gap-3">
     <div>
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Skelbimai</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Mokyklos pranešimai darbuotojams</p>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Skelbimai</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Mokyklos pranešimai darbuotojams</p>
     </div>
     <a href="{{ url_for('announcements.naujas') }}" class="btn-primary">
-        <i data-lucide="plus" class="w-4 h-4"></i>
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
         Naujas skelbimas
     </a>
 </div>
 
 {% if skelbimai %}
-<div class="space-y-4">
+<div class="card divide-y divide-slate-100 dark:divide-slate-700">
     {% for s in skelbimai %}
     <a href="{{ url_for('announcements.perziureti', skelbimo_id=s.id) }}"
-       class="card block hover:shadow-md transition-all hover:-translate-y-0.5">
-        <div class="p-6">
-            <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
-                    {% if s.svarbus %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400
-                    {% else %}bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400{% endif %}">
-                    <i data-lucide="{% if s.svarbus %}alert-triangle{% else %}megaphone{% endif %}" class="w-6 h-6"></i>
+       class="block px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+        <div class="flex items-start gap-3">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                    {% if s.svarbus %}<span class="tag tag-danger">Svarbu</span>{% endif %}
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-white">{{ s.pavadinimas }}</h3>
                 </div>
-
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">{{ s.pavadinimas }}</h3>
-                        {% if s.svarbus %}
-                        <span class="px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-semibold rounded-md uppercase tracking-wider">
-                            Svarbu
-                        </span>
-                        {% endif %}
-                    </div>
-                    <p class="text-slate-600 dark:text-slate-300 line-clamp-2 mb-3">{{ s.turinys }}</p>
-                    <div class="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-                        <div class="flex items-center gap-1.5">
-                            <i data-lucide="user" class="w-3.5 h-3.5"></i>
-                            <span>{{ s.autorius.pilnas_vardas }}</span>
-                        </div>
-                        <span>·</span>
-                        <div class="flex items-center gap-1.5">
-                            <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                            <span>{{ s.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
-                        </div>
-                    </div>
+                <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-2">{{ s.turinys }}</p>
+                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span>{{ s.autorius.pilnas_vardas }}</span>
+                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                    <span>{{ s.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
                 </div>
             </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 flex-shrink-0 mt-1"></i>
         </div>
     </a>
     {% endfor %}
 </div>
 {% else %}
 <div class="card p-12 text-center">
-    <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <i data-lucide="megaphone" class="w-8 h-8 text-indigo-600 dark:text-indigo-400"></i>
-    </div>
-    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Skelbimų dar nėra</h3>
-    <p class="text-slate-500 dark:text-slate-400 mb-6">Sukurkite pirmąjį skelbimą darbuotojams</p>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Skelbimų sąraše dar nėra</p>
     <a href="{{ url_for('announcements.naujas') }}" class="btn-primary inline-flex">
-        <i data-lucide="plus" class="w-4 h-4"></i>
-        Sukurti skelbimą
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        Sukurti pirmą skelbimą
     </a>
 </div>
 {% endif %}

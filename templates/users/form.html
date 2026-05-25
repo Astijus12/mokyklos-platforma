@@ -3,21 +3,24 @@
 {% block title %}{% if vartotojas %}Redaguoti vartotoją{% else %}Naujas vartotojas{% endif %}{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('users.saraso') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Atgal į vartotojų sąrašą
+<div class="mb-4">
+    <a href="{{ url_for('users.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Visi vartotojai
     </a>
 </div>
 
-<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">
-    {% if vartotojas %}Redaguoti: {{ vartotojas.pilnas_vardas }}{% else %}Naujas vartotojas{% endif %}
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-5">
+    {% if vartotojas %}Redaguoti vartotoją{% else %}Naujas vartotojas{% endif %}
 </h1>
 
 <div class="card max-w-2xl">
-    <form method="POST" class="p-6 space-y-5">
+    <div class="card-header">
+        <h2>Vartotojo duomenys</h2>
+    </div>
+    <form method="POST" class="p-5 space-y-4">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="form-label">Vardas <span class="text-red-500">*</span></label>
                 <input type="text" name="vardas" required maxlength="80"
@@ -53,15 +56,14 @@
                 Slaptažodis {% if not vartotojas %}<span class="text-red-500">*</span>{% endif %}
             </label>
             <input type="password" name="slaptazodis" {% if not vartotojas %}required{% endif %}
-                   placeholder="{% if vartotojas %}Palikite tuščią, jei nenorite keisti{% else %}Mažiausiai 6 simboliai{% endif %}"
+                   placeholder="{% if vartotojas %}Palikite tuščia, jei nenorite keisti{% else %}Mažiausiai 6 simboliai{% endif %}"
                    minlength="6"
                    class="form-input">
         </div>
 
-        <div class="flex gap-3 pt-4 border-t border-slate-100">
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
             <button type="submit" class="btn-primary">
-                <i data-lucide="check" class="w-4 h-4"></i>
-                {% if vartotojas %}Išsaugoti{% else %}Sukurti vartotoją{% endif %}
+                {% if vartotojas %}Išsaugoti pakeitimus{% else %}Sukurti vartotoją{% endif %}
             </button>
             <a href="{{ url_for('users.saraso') }}" class="btn-secondary">Atšaukti</a>
         </div>

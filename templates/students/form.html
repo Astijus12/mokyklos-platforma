@@ -3,26 +3,31 @@
 {% block title %}{% if mokinys %}Redaguoti mokinį{% else %}Naujas mokinys{% endif %}{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('students.saraso') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Atgal į mokinių sąrašą
+<div class="mb-4">
+    <a href="{{ url_for('students.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Visi mokiniai
     </a>
 </div>
 
-<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">
-    {% if mokinys %}Redaguoti mokinį: {{ mokinys.pilnas_vardas }}{% else %}Naujas mokinys{% endif %}
-</h1>
+<div class="mb-5">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
+        {% if mokinys %}Redaguoti mokinį{% else %}Naujas mokinys{% endif %}
+    </h1>
+    {% if mokinys %}
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ mokinys.pilnas_vardas }}</p>
+    {% endif %}
+</div>
 
-<form method="POST" class="space-y-6 max-w-4xl">
+<form method="POST" class="space-y-4 max-w-3xl">
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">📋 Pagrindiniai duomenys</h2>
+            <h2>Pagrindiniai duomenys</h2>
         </div>
-        <div class="p-6 space-y-5">
+        <div class="p-5 space-y-4">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Vardas <span class="text-red-500">*</span></label>
                     <input type="text" name="vardas" required maxlength="80"
@@ -37,7 +42,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Klasė <span class="text-red-500">*</span></label>
                     <select name="klases_id" required class="form-input">
@@ -59,16 +64,16 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="form-label">Mokinio el. paštas</label>
+                    <label class="form-label">El. paštas</label>
                     <input type="email" name="email"
                            value="{{ mokinys.email if mokinys else '' }}"
                            placeholder="vardas@email.lt"
                            class="form-input">
                 </div>
                 <div>
-                    <label class="form-label">Mokinio telefonas</label>
+                    <label class="form-label">Telefonas</label>
                     <input type="tel" name="telefonas"
                            value="{{ mokinys.telefonas if mokinys else '' }}"
                            placeholder="+370 600 00000"
@@ -88,20 +93,17 @@
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="heart" class="w-4 h-4 text-pink-500"></i>
-                Motinos duomenys
-            </h2>
+            <h2>Motinos duomenys</h2>
         </div>
-        <div class="p-6 space-y-5">
+        <div class="p-5 space-y-4">
             <div>
-                <label class="form-label">Vardas ir pavardė</label>
+                <label class="form-label">Vardas, pavardė</label>
                 <input type="text" name="motinos_vardas" maxlength="160"
                        value="{{ mokinys.motinos_vardas if mokinys else '' }}"
                        placeholder="pvz., Jolanta Petraitienė"
                        class="form-input">
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Telefonas</label>
                     <input type="tel" name="motinos_telefonas" maxlength="30"
@@ -122,20 +124,17 @@
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                <i data-lucide="briefcase" class="w-4 h-4 text-blue-500"></i>
-                Tėvo duomenys
-            </h2>
+            <h2>Tėvo duomenys</h2>
         </div>
-        <div class="p-6 space-y-5">
+        <div class="p-5 space-y-4">
             <div>
-                <label class="form-label">Vardas ir pavardė</label>
+                <label class="form-label">Vardas, pavardė</label>
                 <input type="text" name="tevo_vardas" maxlength="160"
                        value="{{ mokinys.tevo_vardas if mokinys else '' }}"
                        placeholder="pvz., Andrius Petraitis"
                        class="form-input">
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label">Telefonas</label>
                     <input type="tel" name="tevo_telefonas" maxlength="30"
@@ -156,39 +155,32 @@
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-base font-semibold text-slate-900 dark:text-white">⚙️ Papildoma informacija</h2>
+            <h2>Papildoma informacija</h2>
         </div>
-        <div class="p-6 space-y-5">
+        <div class="p-5 space-y-4">
 
-            <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+            <label class="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" name="mokyklos_autobusas"
                        {% if mokinys and mokinys.mokyklos_autobusas %}checked{% endif %}
-                       class="w-5 h-5 mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                       class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
                 <div class="flex-1">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="bus" class="w-4 h-4 text-yellow-500"></i>
-                        <span class="text-sm font-medium text-slate-900 dark:text-white">Mokinį reikia vežti mokyklos autobusu</span>
-                    </div>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pažymėkite jei mokinys naudojasi mokyklos transportu</p>
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">Mokinį reikia vežti mokyklos autobusu</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pažymėkite, jei mokinys naudojasi mokyklos transportu</p>
                 </div>
             </label>
 
-            <div class="border-t border-slate-100 dark:border-slate-700 pt-5">
-                <label class="flex items-start gap-3 cursor-pointer p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
-                       id="geroves-toggle-label">
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+                <label class="flex items-start gap-3 cursor-pointer">
                     <input type="checkbox" name="geroves_komisija" id="geroves_komisija"
                            {% if mokinys and mokinys.geroves_komisija %}checked{% endif %}
-                           class="w-5 h-5 mt-0.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                           class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
                     <div class="flex-1">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="heart-handshake" class="w-4 h-4 text-rose-500"></i>
-                            <span class="text-sm font-medium text-slate-900 dark:text-white">Buvo svarstomas vaiko gerovės komisijoje</span>
-                        </div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pažymėkite jei buvo svarstomas mokyklos VGK posėdyje</p>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">Buvo svarstomas vaiko gerovės komisijoje</span>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pažymėkite, jei buvo svarstomas mokyklos VGK posėdyje</p>
                     </div>
                 </label>
 
-                <div id="geroves-detales" class="ml-8 mt-3 space-y-4 {% if not mokinys or not mokinys.geroves_komisija %}hidden{% endif %}">
+                <div id="geroves-detales" class="ml-7 mt-3 space-y-3 {% if not mokinys or not mokinys.geroves_komisija %}hidden{% endif %}">
                     <div>
                         <label class="form-label">Svarstymo data</label>
                         <input type="date" name="geroves_komisija_data"
@@ -196,7 +188,7 @@
                                class="form-input max-w-xs">
                     </div>
                     <div>
-                        <label class="form-label">Pastabos / sprendimai</label>
+                        <label class="form-label">Pastabos, sprendimai</label>
                         <textarea name="geroves_komisija_pastabos" rows="3"
                                   placeholder="Trumpas svarstymo aprašymas, priimti sprendimai, rekomendacijos..."
                                   class="form-input">{{ mokinys.geroves_komisija_pastabos if mokinys else '' }}</textarea>
@@ -204,7 +196,7 @@
                 </div>
             </div>
 
-            <div class="border-t border-slate-100 dark:border-slate-700 pt-5">
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
                 <label class="form-label">Bendros pastabos</label>
                 <textarea name="pastabos" rows="3"
                           placeholder="Specialūs poreikiai, alergijos, kita svarbi informacija..."
@@ -213,14 +205,11 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="p-4 flex gap-3">
-            <button type="submit" class="btn-primary">
-                <i data-lucide="check" class="w-4 h-4"></i>
-                {% if mokinys %}Išsaugoti pakeitimus{% else %}Pridėti mokinį{% endif %}
-            </button>
-            <a href="{{ url_for('students.saraso') }}" class="btn-secondary">Atšaukti</a>
-        </div>
+    <div class="flex gap-2 pt-2">
+        <button type="submit" class="btn-primary">
+            {% if mokinys %}Išsaugoti pakeitimus{% else %}Pridėti mokinį{% endif %}
+        </button>
+        <a href="{{ url_for('students.saraso') }}" class="btn-secondary">Atšaukti</a>
     </div>
 </form>
 

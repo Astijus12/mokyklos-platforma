@@ -3,56 +3,39 @@
 {% block title %}{{ skelbimas.pavadinimas }}{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('announcements.saraso') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Atgal į skelbimų sąrašą
+<div class="mb-4">
+    <a href="{{ url_for('announcements.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Visi skelbimai
     </a>
 </div>
 
-<article class="card max-w-4xl">
-    <div class="p-8">
-        <div class="flex items-start gap-4 mb-6">
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0
-                {% if skelbimas.svarbus %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400
-                {% else %}bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400{% endif %}">
-                <i data-lucide="{% if skelbimas.svarbus %}alert-triangle{% else %}megaphone{% endif %}" class="w-7 h-7"></i>
-            </div>
-            <div class="flex-1">
-                {% if skelbimas.svarbus %}
-                <span class="inline-block px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-semibold rounded-md uppercase tracking-wider mb-2">
-                    Svarbu
-                </span>
-                {% endif %}
-                <h1 class="text-3xl font-bold text-slate-900 dark:text-white">{{ skelbimas.pavadinimas }}</h1>
-                <div class="flex items-center gap-3 mt-2 text-sm text-slate-500 dark:text-slate-400">
-                    <div class="flex items-center gap-1.5">
-                        <i data-lucide="user" class="w-4 h-4"></i>
-                        <span>{{ skelbimas.autorius.pilnas_vardas }}</span>
-                    </div>
-                    <span>·</span>
-                    <div class="flex items-center gap-1.5">
-                        <i data-lucide="calendar" class="w-4 h-4"></i>
-                        <span>{{ skelbimas.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
-                    </div>
-                </div>
+<article class="card max-w-3xl">
+    <div class="p-6">
+        <div class="mb-4">
+            {% if skelbimas.svarbus %}<span class="tag tag-danger mb-3 inline-flex">Svarbu</span>{% endif %}
+            <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">{{ skelbimas.pavadinimas }}</h1>
+            <div class="flex items-center gap-2 mt-2 text-sm text-slate-500 dark:text-slate-400">
+                <span>{{ skelbimas.autorius.pilnas_vardas }}</span>
+                <span class="text-slate-300 dark:text-slate-600">•</span>
+                <span>{{ skelbimas.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
             </div>
         </div>
 
-        <div class="prose dark:prose-invert max-w-none">
-            <div class="text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{{ skelbimas.turinys }}</div>
+        <div class="prose dark:prose-invert max-w-none mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
+            <p class="text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{{ skelbimas.turinys }}</p>
         </div>
 
         {% if current_user.yra_administratorius or skelbimas.vartotojo_id == current_user.id %}
-        <div class="flex gap-2 mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
+        <div class="flex gap-2 mt-6 pt-5 border-t border-slate-100 dark:border-slate-700">
             <a href="{{ url_for('announcements.redaguoti', skelbimo_id=skelbimas.id) }}" class="btn-secondary">
-                <i data-lucide="pencil" class="w-4 h-4"></i>
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                 Redaguoti
             </a>
             <form method="POST" action="{{ url_for('announcements.salinti', skelbimo_id=skelbimas.id) }}"
                   onsubmit="return confirm('Ar tikrai norite pašalinti šį skelbimą?');">
                 <button type="submit" class="btn-icon-danger">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
             </form>
         </div>

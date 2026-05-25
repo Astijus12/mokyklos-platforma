@@ -3,26 +3,29 @@
 {% block title %}{% if klase %}Redaguoti{% else %}Nauja{% endif %} klasė{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('classes.saraso') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Atgal į klasių sąrašą
+<div class="mb-4">
+    <a href="{{ url_for('classes.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Visos klasės
     </a>
 </div>
 
-<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-8">
-    {% if klase %}Redaguoti klasę {{ klase.pavadinimas }}{% else %}Nauja klasė{% endif %}
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-5">
+    {% if klase %}Redaguoti klasę{% else %}Nauja klasė{% endif %}
 </h1>
 
 <div class="card max-w-2xl">
-    <form method="POST" class="p-6 space-y-5">
+    <div class="card-header">
+        <h2>Klasės duomenys</h2>
+    </div>
+    <form method="POST" class="p-5 space-y-4">
         <div>
             <label class="form-label">Klasės pavadinimas <span class="text-red-500">*</span></label>
             <input type="text" name="pavadinimas" required maxlength="20"
                    value="{{ klase.pavadinimas if klase else '' }}"
                    placeholder="pvz., 5A, 10B, IIA"
                    class="form-input">
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Bus paversta į didžiąsias raides</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Įvesta bus konvertuota į didžiąsias raides</p>
         </div>
 
         <div>
@@ -38,15 +41,14 @@
                 <option value="">— Nepriskirtas —</option>
                 {% for m in mokytojai %}
                 <option value="{{ m.id }}" {% if klase and klase.vadovo_id == m.id %}selected{% endif %}>
-                    {{ m.pilnas_vardas }} ({{ m.role }})
+                    {{ m.pilnas_vardas }}
                 </option>
                 {% endfor %}
             </select>
         </div>
 
-        <div class="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-700">
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
             <button type="submit" class="btn-primary">
-                <i data-lucide="check" class="w-4 h-4"></i>
                 {% if klase %}Išsaugoti pakeitimus{% else %}Sukurti klasę{% endif %}
             </button>
             <a href="{{ url_for('classes.saraso') }}" class="btn-secondary">Atšaukti</a>

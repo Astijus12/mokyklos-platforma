@@ -1,23 +1,38 @@
 /* ============================================
    Mokyklos platformos stiliai
-   Su dark mode palaikymu
+   Profesionalus, restrained dizainas
    ============================================ */
 
-/* Šoninės juostos navigacijos nuorodos */
+:root {
+    --color-brand: #1e3a8a;
+    --color-brand-hover: #1e40af;
+    --color-brand-light: #dbeafe;
+    --color-brand-light-hover: #bfdbfe;
+}
+
+body {
+    font-feature-settings: "cv11", "ss01", "ss03";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* ============================================
+   ŠONINĖS JUOSTOS NAVIGACIJA
+   ============================================ */
 .nav-link {
     display: flex;
     align-items: center;
     gap: 0.625rem;
     padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: 6px;
     color: rgb(71 85 105);
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.15s ease;
+    transition: all 0.1s ease;
 }
 
 .dark .nav-link {
-    color: rgb(203 213 225);
+    color: rgb(148 163 184);
 }
 
 .nav-link:hover {
@@ -26,74 +41,98 @@
 }
 
 .dark .nav-link:hover {
-    background-color: rgb(51 65 85);
-    color: white;
+    background-color: rgb(30 41 59);
+    color: rgb(241 245 249);
 }
 
 .nav-link-active {
-    background-color: rgb(219 230 254);
-    color: rgb(34 51 215);
+    background-color: rgb(241 245 249);
+    color: rgb(30 58 138);
+    font-weight: 600;
+    position: relative;
+}
+
+.nav-link-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 1.25rem;
+    background-color: rgb(30 58 138);
+    border-radius: 0 2px 2px 0;
 }
 
 .dark .nav-link-active {
-    background-color: rgb(34 51 215 / 0.2);
-    color: rgb(147 177 253);
+    background-color: rgb(30 41 59);
+    color: rgb(147 197 253);
 }
 
-.nav-link-active:hover {
-    background-color: rgb(191 209 254);
-    color: rgb(34 45 175);
+.dark .nav-link-active::before {
+    background-color: rgb(147 197 253);
 }
 
-.dark .nav-link-active:hover {
-    background-color: rgb(34 51 215 / 0.3);
-    color: rgb(191 209 254);
-}
-
-/* Mygtukai */
+/* ============================================
+   MYGTUKAI
+   ============================================ */
 .btn-primary {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: linear-gradient(to bottom right, rgb(59 98 246), rgb(34 51 215));
+    padding: 0.5rem 0.875rem;
+    background-color: rgb(30 58 138);
     color: white;
     font-size: 0.875rem;
     font-weight: 500;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    transition: all 0.15s ease;
-    border: none;
+    border-radius: 6px;
+    transition: background-color 0.1s ease;
+    border: 1px solid rgb(30 58 138);
     cursor: pointer;
     white-space: nowrap;
+    line-height: 1.25;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(to bottom right, rgb(41 68 235), rgb(34 45 175));
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    transform: translateY(-1px);
+    background-color: rgb(30 64 175);
+    border-color: rgb(30 64 175);
+}
+
+.btn-primary:active {
+    background-color: rgb(30 58 138);
+}
+
+.dark .btn-primary {
+    background-color: rgb(37 99 235);
+    border-color: rgb(37 99 235);
+}
+
+.dark .btn-primary:hover {
+    background-color: rgb(59 130 246);
+    border-color: rgb(59 130 246);
 }
 
 .btn-secondary {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.875rem;
     background-color: white;
     color: rgb(51 65 85);
     font-size: 0.875rem;
     font-weight: 500;
     border: 1px solid rgb(226 232 240);
-    border-radius: 0.5rem;
-    transition: all 0.15s ease;
+    border-radius: 6px;
+    transition: all 0.1s ease;
     cursor: pointer;
     white-space: nowrap;
+    line-height: 1.25;
 }
 
 .dark .btn-secondary {
-    background-color: rgb(51 65 85);
+    background-color: rgb(30 41 59);
     color: rgb(203 213 225);
-    border-color: rgb(71 85 105);
+    border-color: rgb(51 65 85);
 }
 
 .btn-secondary:hover {
@@ -102,23 +141,24 @@
 }
 
 .dark .btn-secondary:hover {
-    background-color: rgb(71 85 105);
-    border-color: rgb(100 116 139);
+    background-color: rgb(51 65 85);
+    border-color: rgb(71 85 105);
 }
 
 .btn-ghost {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 0.875rem;
     color: rgb(100 116 139);
     font-size: 0.875rem;
     font-weight: 500;
-    border-radius: 0.5rem;
-    transition: all 0.15s ease;
+    border-radius: 6px;
+    transition: all 0.1s ease;
     cursor: pointer;
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
+    line-height: 1.25;
 }
 
 .dark .btn-ghost {
@@ -126,13 +166,13 @@
 }
 
 .btn-ghost:hover {
-    color: rgb(51 65 85);
+    color: rgb(15 23 42);
     background-color: rgb(241 245 249);
 }
 
 .dark .btn-ghost:hover {
-    color: rgb(226 232 240);
-    background-color: rgb(51 65 85);
+    color: rgb(241 245 249);
+    background-color: rgb(30 41 59);
 }
 
 .btn-icon {
@@ -143,15 +183,15 @@
     color: rgb(71 85 105);
     background-color: white;
     border: 1px solid rgb(226 232 240);
-    border-radius: 0.5rem;
-    transition: all 0.15s ease;
+    border-radius: 6px;
+    transition: all 0.1s ease;
     cursor: pointer;
 }
 
 .dark .btn-icon {
     color: rgb(203 213 225);
-    background-color: rgb(51 65 85);
-    border-color: rgb(71 85 105);
+    background-color: rgb(30 41 59);
+    border-color: rgb(51 65 85);
 }
 
 .btn-icon:hover {
@@ -161,7 +201,7 @@
 }
 
 .dark .btn-icon:hover {
-    background-color: rgb(71 85 105);
+    background-color: rgb(51 65 85);
     color: white;
 }
 
@@ -169,19 +209,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
+    width: 1.875rem;
+    height: 1.875rem;
     padding: 0;
-    color: rgb(71 85 105);
-    border-radius: 0.375rem;
-    transition: all 0.15s ease;
+    color: rgb(100 116 139);
+    border-radius: 5px;
+    transition: all 0.1s ease;
     cursor: pointer;
     background: transparent;
     border: none;
 }
 
 .dark .btn-icon-sm {
-    color: rgb(203 213 225);
+    color: rgb(148 163 184);
 }
 
 .btn-icon-sm:hover {
@@ -199,36 +239,40 @@
     align-items: center;
     justify-content: center;
     padding: 0.5rem;
-    color: rgb(220 38 38);
+    color: rgb(185 28 28);
     background-color: white;
-    border: 1px solid rgb(254 202 202);
-    border-radius: 0.5rem;
-    transition: all 0.15s ease;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 6px;
+    transition: all 0.1s ease;
     cursor: pointer;
 }
 
 .dark .btn-icon-danger {
-    background-color: rgb(51 65 85);
-    border-color: rgb(127 29 29);
+    background-color: rgb(30 41 59);
+    border-color: rgb(51 65 85);
     color: rgb(252 165 165);
 }
 
 .btn-icon-danger:hover {
     background-color: rgb(254 242 242);
     border-color: rgb(252 165 165);
+    color: rgb(153 27 27);
 }
 
 .dark .btn-icon-danger:hover {
     background-color: rgb(127 29 29 / 0.3);
+    border-color: rgb(153 27 27);
 }
 
-/* Formų laukai */
+/* ============================================
+   FORMOS LAUKAI
+   ============================================ */
 .form-label {
     display: block;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: rgb(51 65 85);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .dark .form-label {
@@ -238,25 +282,31 @@
 .form-input {
     display: block;
     width: 100%;
-    padding: 0.625rem 0.875rem;
+    padding: 0.5rem 0.75rem;
     background-color: white;
     color: rgb(15 23 42);
     font-size: 0.875rem;
-    border: 1px solid rgb(203 213 225);
-    border-radius: 0.5rem;
-    transition: all 0.15s ease;
+    border: 1px solid rgb(226 232 240);
+    border-radius: 6px;
+    transition: all 0.1s ease;
+    line-height: 1.5;
 }
 
 .dark .form-input {
-    background-color: rgb(30 41 59);
+    background-color: rgb(15 23 42);
     color: rgb(241 245 249);
-    border-color: rgb(71 85 105);
+    border-color: rgb(51 65 85);
 }
 
 .form-input:focus {
     outline: none;
-    border-color: rgb(59 98 246);
-    box-shadow: 0 0 0 3px rgb(59 98 246 / 0.1);
+    border-color: rgb(30 58 138);
+    box-shadow: 0 0 0 3px rgb(30 58 138 / 0.1);
+}
+
+.dark .form-input:focus {
+    border-color: rgb(59 130 246);
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 0.15);
 }
 
 .form-input::placeholder {
@@ -264,16 +314,17 @@
 }
 
 .dark .form-input::placeholder {
-    color: rgb(100 116 139);
+    color: rgb(71 85 105);
 }
 
-/* Kortelės */
+/* ============================================
+   KORTELĖS
+   ============================================ */
 .card {
     background-color: white;
     border: 1px solid rgb(226 232 240);
-    border-radius: 0.75rem;
+    border-radius: 8px;
     overflow: hidden;
-    transition: all 0.15s ease;
 }
 
 .dark .card {
@@ -282,27 +333,41 @@
 }
 
 .card-header {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgb(241 245 249);
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid rgb(226 232 240);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background-color: rgb(248 250 252);
 }
 
 .dark .card-header {
+    background-color: rgb(15 23 42 / 0.5);
     border-bottom-color: rgb(51 65 85);
 }
 
-/* Statistikos kortelės */
+.card-header h2,
+.card-header h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgb(30 41 59);
+    letter-spacing: -0.01em;
+}
+
+.dark .card-header h2,
+.dark .card-header h3 {
+    color: rgb(241 245 249);
+}
+
+/* ============================================
+   STATISTIKOS KORTELĖS
+   ============================================ */
 .stat-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
     background-color: white;
     border: 1px solid rgb(226 232 240);
-    border-radius: 0.75rem;
-    transition: all 0.15s ease;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    transition: border-color 0.1s ease;
 }
 
 .dark .stat-card {
@@ -311,26 +376,18 @@
 }
 
 .stat-card:hover {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    transform: translateY(-2px);
+    border-color: rgb(203 213 225);
 }
 
-.stat-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.625rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
+.dark .stat-card:hover {
+    border-color: rgb(71 85 105);
 }
 
 .stat-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 500;
     color: rgb(100 116 139);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
 }
 
 .dark .stat-label {
@@ -339,29 +396,33 @@
 
 .stat-value {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
     color: rgb(15 23 42);
-    line-height: 1.2;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
 }
 
 .dark .stat-value {
     color: white;
 }
 
-/* Flash pranešimai */
+/* ============================================
+   FLASH PRANEŠIMAI
+   ============================================ */
 .flash {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
+    gap: 0.625rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 6px;
     font-size: 0.875rem;
     border: 1px solid;
 }
 
 .flash-success {
     background-color: rgb(240 253 244);
-    color: rgb(22 101 52);
+    color: rgb(21 128 61);
     border-color: rgb(187 247 208);
 }
 
@@ -373,7 +434,7 @@
 
 .flash-danger {
     background-color: rgb(254 242 242);
-    color: rgb(153 27 27);
+    color: rgb(185 28 28);
     border-color: rgb(254 202 202);
 }
 
@@ -385,7 +446,7 @@
 
 .flash-warning {
     background-color: rgb(255 251 235);
-    color: rgb(146 64 14);
+    color: rgb(161 98 7);
     border-color: rgb(253 230 138);
 }
 
@@ -397,7 +458,7 @@
 
 .flash-info {
     background-color: rgb(239 246 255);
-    color: rgb(30 64 175);
+    color: rgb(29 78 216);
     border-color: rgb(191 219 254);
 }
 
@@ -407,7 +468,9 @@
     border-color: rgb(30 64 175);
 }
 
-/* Line clamp pagalbinė klasė */
+/* ============================================
+   PAGALBINĖS KLASĖS
+   ============================================ */
 .line-clamp-1 {
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -422,21 +485,115 @@
     overflow: hidden;
 }
 
-/* Scrollbar pritaikymas dark mode */
-.dark ::-webkit-scrollbar {
+/* Lentelės subtilūs pakeitimai */
+.data-table tbody tr {
+    transition: background-color 0.1s ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: rgb(248 250 252);
+}
+
+.dark .data-table tbody tr:hover {
+    background-color: rgb(30 41 59 / 0.5);
+}
+
+/* Žymos (Pills/Tags) */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.tag-default {
+    background-color: rgb(241 245 249);
+    color: rgb(51 65 85);
+}
+
+.dark .tag-default {
+    background-color: rgb(51 65 85);
+    color: rgb(203 213 225);
+}
+
+.tag-brand {
+    background-color: rgb(219 234 254);
+    color: rgb(30 64 175);
+}
+
+.dark .tag-brand {
+    background-color: rgb(30 58 138 / 0.4);
+    color: rgb(147 197 253);
+}
+
+.tag-warning {
+    background-color: rgb(254 243 199);
+    color: rgb(146 64 14);
+}
+
+.dark .tag-warning {
+    background-color: rgb(120 53 15 / 0.4);
+    color: rgb(253 230 138);
+}
+
+.tag-danger {
+    background-color: rgb(254 226 226);
+    color: rgb(153 27 27);
+}
+
+.dark .tag-danger {
+    background-color: rgb(127 29 29 / 0.4);
+    color: rgb(252 165 165);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 
-.dark ::-webkit-scrollbar-track {
-    background: rgb(15 23 42);
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(203 213 225);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(148 163 184);
 }
 
 .dark ::-webkit-scrollbar-thumb {
     background: rgb(51 65 85);
-    border-radius: 5px;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
     background: rgb(71 85 105);
+}
+
+/* Aktyvių elementų focus žiedas */
+:focus-visible {
+    outline: 2px solid rgb(30 58 138);
+    outline-offset: 2px;
+}
+
+.dark :focus-visible {
+    outline-color: rgb(59 130 246);
+}
+
+/* Padarykim selection gražesnį */
+::selection {
+    background-color: rgb(191 219 254);
+    color: rgb(30 58 138);
+}
+
+.dark ::selection {
+    background-color: rgb(30 58 138);
+    color: rgb(219 234 254);
 }

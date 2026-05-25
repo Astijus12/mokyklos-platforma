@@ -1,111 +1,108 @@
 {% extends "base.html" %}
 
-{% block title %}{{ klase.pavadinimas }} klasė{% endblock %}
+{% block title %}{{ klase.pavadinimas }} klasė - Mokyklos platforma{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{{ url_for('classes.saraso') }}" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        Atgal į klasių sąrašą
+<div class="mb-4">
+    <a href="{{ url_for('classes.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Visos klasės
     </a>
 </div>
 
-<div class="flex items-start justify-between mb-8 flex-wrap gap-4">
-    <div class="flex items-center gap-4">
-        <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center text-white text-2xl font-bold">
-            {{ klase.pavadinimas }}
-        </div>
-        <div>
-            <h1 class="text-3xl font-bold text-slate-900 dark:text-white">{{ klase.pavadinimas }} klasė</h1>
-            <div class="flex items-center gap-3 mt-1 text-sm text-slate-500 dark:text-slate-400 flex-wrap">
-                <span>{{ klase.mokslo_metai }}</span>
-                <span>·</span>
-                <span>{{ mokiniai|length }} mokini{% if mokiniai|length == 1 %}s{% else %}ai{% endif %}</span>
-                {% if klase.vadovas %}
-                <span>·</span>
-                <span>Vadovas: {{ klase.vadovas.pilnas_vardas }}</span>
-                {% endif %}
+<div class="card mb-4">
+    <div class="p-5 flex items-start justify-between flex-wrap gap-3">
+        <div class="flex items-start gap-4">
+            <div class="w-14 h-14 rounded-md bg-brand-900 dark:bg-brand-700 text-white flex items-center justify-center text-xl font-semibold flex-shrink-0">
+                {{ klase.pavadinimas }}
+            </div>
+            <div>
+                <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">{{ klase.pavadinimas }} klasė</h1>
+                <div class="flex flex-wrap items-center gap-2 mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    <span>{{ klase.mokslo_metai }} m. m.</span>
+                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                    <span>{{ mokiniai|length }} mokini{% if mokiniai|length == 1 %}s{% else %}ai{% endif %}</span>
+                    {% if klase.vadovas %}
+                    <span class="text-slate-300 dark:text-slate-600">•</span>
+                    <span>Vadovas: {{ klase.vadovas.pilnas_vardas }}</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
-    <div class="flex gap-2">
-        <a href="{{ url_for('students.naujas', klases_id=klase.id) }}" class="btn-primary">
-            <i data-lucide="user-plus" class="w-4 h-4"></i>
-            Pridėti mokinį
-        </a>
-        {% if current_user.yra_administratorius %}
-        <a href="{{ url_for('classes.redaguoti', klases_id=klase.id) }}" class="btn-secondary">
-            <i data-lucide="pencil" class="w-4 h-4"></i>
-            Redaguoti
-        </a>
-        <form method="POST" action="{{ url_for('classes.salinti', klases_id=klase.id) }}"
-              onsubmit="return confirm('Ar tikrai norite pašalinti klasę {{ klase.pavadinimas }}? Visi mokiniai taip pat bus pašalinti.');">
-            <button type="submit" class="btn-icon-danger">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-        </form>
-        {% endif %}
+        <div class="flex gap-1.5">
+            <a href="{{ url_for('students.naujas', klases_id=klase.id) }}" class="btn-primary">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                Pridėti mokinį
+            </a>
+            {% if current_user.yra_administratorius %}
+            <a href="{{ url_for('classes.redaguoti', klases_id=klase.id) }}" class="btn-secondary">
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+            </a>
+            <form method="POST" action="{{ url_for('classes.salinti', klases_id=klase.id) }}"
+                  onsubmit="return confirm('Ar tikrai norite pašalinti klasę {{ klase.pavadinimas }}? Visi mokiniai bus pašalinti.');">
+                <button type="submit" class="btn-icon-danger">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+            </form>
+            {% endif %}
+        </div>
     </div>
 </div>
 
 <div class="card">
     <div class="card-header">
-        <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Mokinių sąrašas</h2>
+        <h2>Mokinių sąrašas</h2>
+        <span class="text-xs text-slate-500 dark:text-slate-400">{{ mokiniai|length }} įrašai</span>
     </div>
 
     {% if mokiniai %}
     <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-700">
-                <tr>
-                    <th class="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mokinys</th>
-                    <th class="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Vidurkis</th>
-                    <th class="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gimimo data</th>
-                    <th class="text-left px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">El. paštas</th>
-                    <th class="text-right px-6 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Veiksmai</th>
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mokinys</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Žymos</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Gimimo data</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Kontaktai</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider"></th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                 {% for m in mokiniai %}
-                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer"
+                <tr class="cursor-pointer"
                     onclick="window.location='{{ url_for('students.detales', mokinio_id=m.id) }}'">
-                    <td class="px-6 py-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 flex items-center justify-center text-sm font-semibold">
+                    <td class="px-4 py-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center text-xs font-semibold flex-shrink-0">
                                 {{ m.inicialai }}
                             </div>
-                            <span class="font-medium text-slate-900 dark:text-white">{{ m.pilnas_vardas }}</span>
+                            <span class="text-sm font-medium text-slate-900 dark:text-white">{{ m.pilnas_vardas }}</span>
                         </div>
                     </td>
-                    <td class="px-6 py-3">
-                        {% if m.vidurkis %}
-                            <span class="font-bold
-                                {% if m.vidurkis >= 9 %}text-emerald-600 dark:text-emerald-400
-                                {% elif m.vidurkis >= 7 %}text-blue-600 dark:text-blue-400
-                                {% elif m.vidurkis >= 5 %}text-amber-600 dark:text-amber-400
-                                {% else %}text-red-600 dark:text-red-400{% endif %}">
-                                {{ m.vidurkis }}
-                            </span>
-                        {% else %}
-                            <span class="text-slate-400">—</span>
-                        {% endif %}
+                    <td class="px-4 py-3">
+                        <div class="flex flex-wrap gap-1">
+                            {% if m.mokyklos_autobusas %}<span class="tag tag-warning">Autobusas</span>{% endif %}
+                            {% if m.geroves_komisija %}<span class="tag tag-danger">VGK</span>{% endif %}
+                            {% if not m.mokyklos_autobusas and not m.geroves_komisija %}<span class="text-slate-300 dark:text-slate-600 text-sm">—</span>{% endif %}
+                        </div>
                     </td>
-                    <td class="px-6 py-3 text-sm text-slate-600 dark:text-slate-300">
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                         {{ m.gimimo_data.strftime('%Y-%m-%d') if m.gimimo_data else '—' }}
                     </td>
-                    <td class="px-6 py-3 text-sm text-slate-600 dark:text-slate-300">{{ m.email or '—' }}</td>
-                    <td class="px-6 py-3 text-right" onclick="event.stopPropagation()">
-                        <div class="inline-flex gap-1">
-                            <a href="{{ url_for('students.detales', mokinio_id=m.id) }}" class="btn-icon-sm" title="Detalės">
-                                <i data-lucide="eye" class="w-4 h-4"></i>
-                            </a>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                        {% if m.telefonas %}<div class="text-xs">{{ m.telefonas }}</div>{% endif %}
+                        {% if m.email %}<div class="text-xs truncate max-w-[200px]">{{ m.email }}</div>{% endif %}
+                        {% if not m.telefonas and not m.email %}—{% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-right" onclick="event.stopPropagation()">
+                        <div class="inline-flex gap-0.5">
                             <a href="{{ url_for('students.redaguoti', mokinio_id=m.id) }}" class="btn-icon-sm" title="Redaguoti">
-                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                             </a>
                             <form method="POST" action="{{ url_for('students.salinti', mokinio_id=m.id) }}"
                                   onsubmit="return confirm('Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?');" class="inline">
-                                <button type="submit" class="btn-icon-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title="Šalinti">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>
                             </form>
                         </div>
@@ -116,11 +113,10 @@
         </table>
     </div>
     {% else %}
-    <div class="text-center py-12 px-6">
-        <i data-lucide="users" class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3"></i>
-        <p class="text-slate-500 dark:text-slate-400 mb-4">Šioje klasėje dar nėra mokinių</p>
+    <div class="text-center py-10 px-6">
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Šioje klasėje dar nėra mokinių</p>
         <a href="{{ url_for('students.naujas', klases_id=klase.id) }}" class="btn-primary inline-flex">
-            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             Pridėti pirmą mokinį
         </a>
     </div>

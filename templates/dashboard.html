@@ -3,155 +3,110 @@
 {% block title %}Pradžia - Mokyklos platforma{% endblock %}
 
 {% block content %}
-<div class="mb-8 flex items-center justify-between flex-wrap gap-4">
+<div class="mb-6 flex items-end justify-between flex-wrap gap-3">
     <div>
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Sveiki, {{ current_user.vardas }}! 👋</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Mokyklos valdymo apžvalga šiandien</p>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Sveiki sugrįžę, {{ current_user.vardas }}</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Mokyklos valdymo apžvalga</p>
     </div>
     <div class="flex gap-2">
         <a href="{{ url_for('announcements.naujas') }}" class="btn-secondary">
-            <i data-lucide="megaphone" class="w-4 h-4"></i>
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             Skelbimas
         </a>
         <a href="{{ url_for('diplomas.ikelti') }}" class="btn-primary">
-            <i data-lucide="upload" class="w-4 h-4"></i>
+            <i data-lucide="upload" class="w-3.5 h-3.5"></i>
             Įkelti diplomą
         </a>
     </div>
 </div>
 
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
     <div class="stat-card">
-        <div class="stat-icon bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
-            <i data-lucide="users" class="w-5 h-5"></i>
-        </div>
-        <div>
-            <p class="stat-label">Vartotojai</p>
-            <p class="stat-value">{{ statistika.vartotoju }}</p>
-        </div>
+        <p class="stat-label">Vartotojai</p>
+        <p class="stat-value">{{ statistika.vartotoju }}</p>
     </div>
     <div class="stat-card">
-        <div class="stat-icon bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400">
-            <i data-lucide="school" class="w-5 h-5"></i>
-        </div>
-        <div>
-            <p class="stat-label">Klasės</p>
-            <p class="stat-value">{{ statistika.klasiu }}</p>
-        </div>
+        <p class="stat-label">Klasės</p>
+        <p class="stat-value">{{ statistika.klasiu }}</p>
     </div>
     <div class="stat-card">
-        <div class="stat-icon bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
-            <i data-lucide="user-round" class="w-5 h-5"></i>
-        </div>
-        <div>
-            <p class="stat-label">Mokiniai</p>
-            <p class="stat-value">{{ statistika.mokiniu }}</p>
-        </div>
+        <p class="stat-label">Mokiniai</p>
+        <p class="stat-value">{{ statistika.mokiniu }}</p>
     </div>
     <div class="stat-card">
-        <div class="stat-icon bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400">
-            <i data-lucide="bus" class="w-5 h-5"></i>
-        </div>
-        <div>
-            <p class="stat-label">Autobusu</p>
-            <p class="stat-value">{{ statistika.autobusas }}</p>
-        </div>
+        <p class="stat-label">Vežami autobusu</p>
+        <p class="stat-value">{{ statistika.autobusas }}</p>
     </div>
     <div class="stat-card">
-        <div class="stat-icon bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400">
-            <i data-lucide="heart-handshake" class="w-5 h-5"></i>
-        </div>
-        <div>
-            <p class="stat-label">Gerovės kom.</p>
-            <p class="stat-value">{{ statistika.geroves_komisija }}</p>
-        </div>
+        <p class="stat-label">Gerovės komisija</p>
+        <p class="stat-value">{{ statistika.geroves_komisija }}</p>
     </div>
     <div class="stat-card">
-        <div class="stat-icon bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400">
-            <i data-lucide="award" class="w-5 h-5"></i>
-        </div>
-        <div>
-            <p class="stat-label">Diplomai</p>
-            <p class="stat-value">{{ statistika.diplomu }}</p>
-        </div>
+        <p class="stat-label">Diplomai</p>
+        <p class="stat-value">{{ statistika.diplomu }}</p>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
     <div class="lg:col-span-2 card">
         <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">Mokinių pasiskirstymas pagal klases</h2>
-            <i data-lucide="bar-chart-3" class="w-5 h-5 text-slate-400"></i>
+            <h2>Mokinių pasiskirstymas pagal klases</h2>
         </div>
-        <div class="p-6">
+        <div class="p-5">
             <canvas id="klasiuDiagrama" height="180"></canvas>
         </div>
     </div>
 
     <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer"
-       class="card hover:shadow-md transition-all hover:-translate-y-1 group">
-        <div class="p-6 h-full flex flex-col">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center text-xl font-bold">
-                    T
-                </div>
+       class="card hover:border-slate-300 dark:hover:border-slate-600 transition-colors group">
+        <div class="p-5 h-full flex flex-col">
+            <div class="flex items-start justify-between mb-3">
                 <div>
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">TAMO dienynas</h2>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Pažymiai ir tvarkaraščiai</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-medium mb-1">Išorinė sistema</p>
+                    <h2 class="text-base font-semibold text-slate-900 dark:text-white">TAMO dienynas</h2>
                 </div>
+                <i data-lucide="external-link" class="w-4 h-4 text-slate-400 group-hover:text-brand-700 dark:group-hover:text-brand-400 transition-colors"></i>
             </div>
-            <p class="text-sm text-slate-600 dark:text-slate-300 mb-4 flex-1">
-                Atidaryti elektroninį dienyną tamo.lt naujame skirtuke - prisijunkit savo TAMO duomenimis.
+            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed flex-1">
+                Elektroninis dienynas pažymiams, tvarkaraščiams ir bendravimui su mokiniais bei tėvais.
             </p>
-            <div class="inline-flex items-center gap-2 text-sm font-medium text-primary-600 dark:text-primary-400 group-hover:gap-3 transition-all">
-                <span>Atidaryti TAMO</span>
-                <i data-lucide="external-link" class="w-4 h-4"></i>
+            <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <span class="text-xs font-medium text-brand-700 dark:text-brand-400">tamo.lt →</span>
             </div>
         </div>
     </a>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
     <div class="lg:col-span-2 card">
         <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">📢 Naujausi skelbimai</h2>
-            <a href="{{ url_for('announcements.saraso') }}" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">
-                Visi skelbimai →
+            <h2>Naujausi skelbimai</h2>
+            <a href="{{ url_for('announcements.saraso') }}" class="text-xs text-brand-700 dark:text-brand-400 hover:underline font-medium">
+                Visi →
             </a>
         </div>
-        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+        <div class="divide-y divide-slate-100 dark:divide-slate-800">
             {% for s in paskutiniai_skelbimai %}
             <a href="{{ url_for('announcements.perziureti', skelbimo_id=s.id) }}"
-               class="block p-5 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0
-                        {% if s.svarbus %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400
-                        {% else %}bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400{% endif %}">
-                        <i data-lucide="{% if s.svarbus %}alert-triangle{% else %}megaphone{% endif %}" class="w-5 h-5"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
-                            <h3 class="font-semibold text-slate-900 dark:text-white truncate">{{ s.pavadinimas }}</h3>
-                            {% if s.svarbus %}
-                            <span class="px-1.5 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-xs font-medium rounded">Svarbu</span>
-                            {% endif %}
-                        </div>
-                        <p class="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{{ s.turinys }}</p>
-                        <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                            <span>{{ s.autorius.pilnas_vardas }}</span>
-                            <span>·</span>
-                            <span>{{ s.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
-                        </div>
-                    </div>
+               class="block px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <div class="flex items-start gap-2 mb-1">
+                    {% if s.svarbus %}
+                    <span class="tag tag-danger mt-0.5">Svarbu</span>
+                    {% endif %}
+                    <h3 class="text-sm font-medium text-slate-900 dark:text-white">{{ s.pavadinimas }}</h3>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{{ s.turinys }}</p>
+                <div class="flex items-center gap-2 mt-2 text-xs text-slate-500 dark:text-slate-500">
+                    <span>{{ s.autorius.pilnas_vardas }}</span>
+                    <span class="text-slate-300 dark:text-slate-700">•</span>
+                    <span>{{ s.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
                 </div>
             </a>
             {% else %}
-            <div class="text-center py-12 text-slate-400 dark:text-slate-500">
-                <i data-lucide="megaphone" class="w-12 h-12 mx-auto mb-3 opacity-50"></i>
+            <div class="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
                 <p class="text-sm">Skelbimų dar nėra</p>
-                <a href="{{ url_for('announcements.naujas') }}" class="btn-primary inline-flex mt-4">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
+                <a href="{{ url_for('announcements.naujas') }}" class="btn-secondary inline-flex mt-3">
                     Sukurti skelbimą
                 </a>
             </div>
@@ -161,27 +116,19 @@
 
     <div class="card">
         <div class="card-header">
-            <h2 class="text-lg font-semibold text-slate-900 dark:text-white">🏆 Naujausi diplomai</h2>
-            <a href="{{ url_for('diplomas.saraso') }}" class="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">
+            <h2>Naujausi diplomai</h2>
+            <a href="{{ url_for('diplomas.saraso') }}" class="text-xs text-brand-700 dark:text-brand-400 hover:underline font-medium">
                 Visi →
             </a>
         </div>
-        <div class="divide-y divide-slate-100 dark:divide-slate-700">
+        <div class="divide-y divide-slate-100 dark:divide-slate-800">
             {% for diplomas in paskutiniai_diplomai %}
-            <div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="file-text" class="w-5 h-5"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ diplomas.pavadinimas }}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 truncate">{{ diplomas.vartotojas.pilnas_vardas }}</p>
-                    </div>
-                </div>
+            <div class="px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ diplomas.pavadinimas }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{{ diplomas.vartotojas.pilnas_vardas }}</p>
             </div>
             {% else %}
-            <div class="text-center py-8 text-slate-400 dark:text-slate-500">
-                <i data-lucide="award" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+            <div class="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
                 <p class="text-sm">Diplomų dar nėra</p>
             </div>
             {% endfor %}
@@ -193,8 +140,8 @@
 {% block scripts %}
 <script>
     const isDark = () => document.documentElement.classList.contains('dark');
-    const textColor = () => isDark() ? '#cbd5e1' : '#475569';
-    const gridColor = () => isDark() ? 'rgba(148, 163, 184, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+    const textColor = () => isDark() ? '#94a3b8' : '#64748b';
+    const gridColor = () => isDark() ? 'rgba(148, 163, 184, 0.08)' : 'rgba(15, 23, 42, 0.06)';
 
     const klasiuCtx = document.getElementById('klasiuDiagrama').getContext('2d');
     const klasiuDiagrama = new Chart(klasiuCtx, {
@@ -204,25 +151,26 @@
             datasets: [{
                 label: 'Mokinių skaičius',
                 data: {{ klasiu_diagrama.mokiniu_skaiciai|tojson }},
-                backgroundColor: 'rgba(59, 98, 246, 0.7)',
-                borderColor: 'rgb(59, 98, 246)',
-                borderWidth: 2,
-                borderRadius: 8,
+                backgroundColor: 'rgba(30, 58, 138, 0.9)',
+                borderRadius: 4,
+                barThickness: 32,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { legend: { display: false }, tooltip: { padding: 8, titleFont: { size: 12 }, bodyFont: { size: 12 } } },
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { stepSize: 1, color: textColor() },
-                    grid: { color: gridColor() }
+                    ticks: { stepSize: 1, color: textColor(), font: { size: 11 } },
+                    grid: { color: gridColor(), drawBorder: false },
+                    border: { display: false }
                 },
                 x: {
-                    ticks: { color: textColor() },
-                    grid: { display: false }
+                    ticks: { color: textColor(), font: { size: 11 } },
+                    grid: { display: false },
+                    border: { display: false }
                 }
             }
         }

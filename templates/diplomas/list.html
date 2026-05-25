@@ -3,95 +3,85 @@
 {% block title %}Diplomai - Mokyklos platforma{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-8 flex-wrap gap-3">
+<div class="mb-5 flex items-end justify-between flex-wrap gap-3">
     <div>
-        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Diplomai ir pažymos</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">
-            {% if rodyti_visus or current_user.yra_administratorius %}
-                Visi įkelti dokumentai
-            {% else %}
-                Jūsų įkelti dokumentai
-            {% endif %}
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Diplomai ir pažymos</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            {% if rodyti_visus or current_user.yra_administratorius %}Visi įkelti dokumentai{% else %}Jūsų įkelti dokumentai{% endif %}
         </p>
     </div>
     <div class="flex gap-2">
         {% if not current_user.yra_administratorius %}
             {% if rodyti_visus %}
-            <a href="{{ url_for('diplomas.saraso') }}" class="btn-secondary">
-                <i data-lucide="user" class="w-4 h-4"></i>
-                Tik mano
-            </a>
+            <a href="{{ url_for('diplomas.saraso') }}" class="btn-secondary">Tik mano</a>
             {% else %}
-            <a href="{{ url_for('diplomas.saraso', visi=1) }}" class="btn-secondary">
-                <i data-lucide="users" class="w-4 h-4"></i>
-                Visi diplomai
-            </a>
+            <a href="{{ url_for('diplomas.saraso', visi=1) }}" class="btn-secondary">Visi diplomai</a>
             {% endif %}
         {% endif %}
         <a href="{{ url_for('diplomas.ikelti') }}" class="btn-primary">
-            <i data-lucide="upload" class="w-4 h-4"></i>
-            Įkelti diplomą
+            <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+            Įkelti
         </a>
     </div>
 </div>
 
 {% if diplomai %}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for d in diplomai %}
-    <div class="card group hover:shadow-md transition-all hover:-translate-y-1 flex flex-col">
-        <div class="p-5 flex-1">
-            <div class="flex items-start gap-3 mb-3">
-                <div class="w-12 h-12 rounded-xl
-                    {% if d.failo_tipas == 'pdf' %}bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400
-                    {% else %}bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400{% endif %}
+    <div class="card hover:border-slate-300 dark:hover:border-slate-600 transition-colors flex flex-col">
+        <div class="p-4 flex-1">
+            <div class="flex items-start gap-2.5 mb-3">
+                <div class="w-9 h-9 rounded-md
+                    {% if d.failo_tipas == 'pdf' %}bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400
+                    {% else %}bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300{% endif %}
                     flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="{% if d.failo_tipas == 'pdf' %}file-text{% else %}image{% endif %}" class="w-6 h-6"></i>
+                    <i data-lucide="{% if d.failo_tipas == 'pdf' %}file-text{% else %}image{% endif %}" class="w-4 h-4"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-slate-900 dark:text-white line-clamp-2">{{ d.pavadinimas }}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 uppercase">{{ d.failo_tipas }}</p>
+                    <h3 class="text-sm font-medium text-slate-900 dark:text-white line-clamp-2">{{ d.pavadinimas }}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 uppercase tracking-wider">{{ d.failo_tipas }}</p>
                 </div>
             </div>
 
-            {% if d.seminaras %}
-            <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mb-1">
-                <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400"></i>
-                <span class="truncate">{{ d.seminaras }}</span>
-            </div>
-            {% endif %}
-
-            {% if d.isdavimo_data %}
-            <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 mb-1">
-                <i data-lucide="calendar" class="w-4 h-4 text-slate-400"></i>
-                <span>{{ d.isdavimo_data.strftime('%Y-%m-%d') }}</span>
-            </div>
-            {% endif %}
-
-            <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
-                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
-                <span class="truncate">{{ d.vartotojas.pilnas_vardas }}</span>
-            </div>
+            <dl class="text-xs space-y-1.5 text-slate-600 dark:text-slate-400">
+                {% if d.seminaras %}
+                <div class="flex gap-1.5">
+                    <dt class="text-slate-500 dark:text-slate-500 shrink-0">Seminaras:</dt>
+                    <dd class="truncate">{{ d.seminaras }}</dd>
+                </div>
+                {% endif %}
+                {% if d.isdavimo_data %}
+                <div class="flex gap-1.5">
+                    <dt class="text-slate-500 dark:text-slate-500 shrink-0">Data:</dt>
+                    <dd>{{ d.isdavimo_data.strftime('%Y-%m-%d') }}</dd>
+                </div>
+                {% endif %}
+                <div class="flex gap-1.5">
+                    <dt class="text-slate-500 dark:text-slate-500 shrink-0">Įkėlė:</dt>
+                    <dd class="truncate">{{ d.vartotojas.pilnas_vardas }}</dd>
+                </div>
+            </dl>
 
             {% if d.aprasymas %}
-            <p class="text-sm text-slate-600 dark:text-slate-400 mt-3 line-clamp-2">{{ d.aprasymas }}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-3 line-clamp-2">{{ d.aprasymas }}</p>
             {% endif %}
         </div>
 
-        <div class="px-5 pb-5 flex gap-2">
+        <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex gap-1.5">
             <a href="{{ url_for('diplomas.perziureti', diplomo_id=d.id) }}"
-               target="_blank" class="btn-secondary flex-1 justify-center text-sm">
-                <i data-lucide="eye" class="w-4 h-4"></i>
+               target="_blank" class="btn-secondary flex-1 justify-center text-xs py-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                 Peržiūrėti
             </a>
             <a href="{{ url_for('diplomas.atsisiusti', diplomo_id=d.id) }}"
                class="btn-icon" title="Atsisiųsti">
-                <i data-lucide="download" class="w-4 h-4"></i>
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
             </a>
             {% if current_user.yra_administratorius or d.vartotojo_id == current_user.id %}
             <form method="POST" action="{{ url_for('diplomas.salinti', diplomo_id=d.id) }}"
                   onsubmit="return confirm('Ar tikrai norite pašalinti šį diplomą?');">
                 <button type="submit" class="btn-icon-danger" title="Šalinti">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
             </form>
             {% endif %}
@@ -101,14 +91,10 @@
 </div>
 {% else %}
 <div class="card p-12 text-center">
-    <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <i data-lucide="award" class="w-8 h-8 text-amber-600 dark:text-amber-400"></i>
-    </div>
-    <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">Diplomų dar nėra</h3>
-    <p class="text-slate-500 dark:text-slate-400 mb-6">Įkelkite savo pirmąjį diplomą ar pažymą</p>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Diplomų dar nėra įkelta</p>
     <a href="{{ url_for('diplomas.ikelti') }}" class="btn-primary inline-flex">
-        <i data-lucide="upload" class="w-4 h-4"></i>
-        Įkelti diplomą
+        <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+        Įkelti pirmą diplomą
     </a>
 </div>
 {% endif %}
