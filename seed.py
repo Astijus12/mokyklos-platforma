@@ -86,66 +86,66 @@ def _uzpildyti():
         #                    autobusas, gerovės_kom, geroves_data, geroves_pastabos)
 
         mokiniai_5a = [
-            ("Aistė", "Adomaitytė", date(2014, 3, 15), "aiste.a@mokinys.lt", "+370 600 11111", "Vilniaus g. 15, Vilnius",
+            ("Aistė", "Adomaitytė", date(2014, 3, 15), "aiste.a@mokinys.lt", "+370 600 11111", "Noriūnų k., Kupiškio r.",
              "Jurgita Adomaitienė", "+370 612 11111", "jurgita.a@email.lt",
              "Rimantas Adomaitis", "+370 612 11112", "rimantas.a@email.lt",
              True, False, None, None),
 
-            ("Domas", "Butkus", date(2014, 5, 22), None, "+370 600 22222", "Kaišiadorių r., Šilonių k.",
+            ("Domas", "Butkus", date(2014, 5, 22), None, "+370 600 22222", "Mokyklos g. 5, Noriūnai, Kupiškio r.",
              "Inga Butkienė", "+370 612 22222", "inga.b@email.lt",
              "Mindaugas Butkus", "+370 612 22223", None,
              True, True, date(2025, 10, 15), "Aptarta mokinio adaptacijos eiga, sustiprintas individualus darbas su klasės vadovu."),
 
-            ("Eglė", "Čepaitė", date(2014, 1, 10), "egle.c@mokinys.lt", None, "Žirmūnų g. 24, Vilnius",
+            ("Eglė", "Čepaitė", date(2014, 1, 10), "egle.c@mokinys.lt", None, "Adomynės k., Kupiškio r.",
              "Vilma Čepienė", "+370 612 33333", "vilma.c@email.lt",
              None, None, None,
              False, False, None, None),
 
-            ("Gabrielius", "Dapkus", date(2014, 7, 8), None, "+370 600 44444", "Trakų r., Lentvario sen.",
+            ("Gabrielius", "Dapkus", date(2014, 7, 8), None, "+370 600 44444", "Šimonių k., Kupiškio r.",
              "Daiva Dapkienė", "+370 612 44444", "daiva.d@email.lt",
              "Tomas Dapkus", "+370 612 44445", "tomas.d@email.lt",
              True, False, None, None),
 
-            ("Ieva", "Eidukaitė", date(2014, 9, 30), "ieva.e@mokinys.lt", "+370 600 55555", "Antakalnio g. 32, Vilnius",
+            ("Ieva", "Eidukaitė", date(2014, 9, 30), "ieva.e@mokinys.lt", "+370 600 55555", "Vilniaus g. 8, Kupiškis",
              "Asta Eidukienė", "+370 612 55555", "asta.e@email.lt",
              "Vytautas Eidukas", "+370 612 55556", None,
              False, False, None, None),
         ]
 
         mokiniai_8b = [
-            ("Justas", "Gricius", date(2011, 2, 14), "justas.g@mokinys.lt", "+370 600 66666", "Vingio g. 11, Vilnius",
+            ("Justas", "Gricius", date(2011, 2, 14), "justas.g@mokinys.lt", "+370 600 66666", "Vytauto g. 12, Kupiškis",
              "Lina Gricienė", "+370 612 66666", "lina.g@email.lt",
              "Arūnas Gricius", "+370 612 66667", "arunas.g@email.lt",
              False, True, date(2025, 9, 20), "Mokymosi sunkumai matematikos pamokose, rekomenduotas papildomas mokytojo konsultavimas."),
 
-            ("Kamilė", "Jasiūnaitė", date(2011, 4, 18), None, "+370 600 77777", "Trakų r., Senųjų Trakų k.",
+            ("Kamilė", "Jasiūnaitė", date(2011, 4, 18), None, "+370 600 77777", "Subačiaus k., Kupiškio r.",
              "Rita Jasiūnienė", "+370 612 77777", "rita.j@email.lt",
              "Donatas Jasiūnas", "+370 612 77778", None,
              True, False, None, None),
 
-            ("Lukas", "Karpavičius", date(2011, 6, 25), "lukas.k@mokinys.lt", None, "Saltoniškių g. 8, Vilnius",
+            ("Lukas", "Karpavičius", date(2011, 6, 25), "lukas.k@mokinys.lt", None, "Salamiesčio k., Kupiškio r.",
              "Aurelija Karpavičienė", "+370 612 88888", "aurelija.k@email.lt",
              "Marius Karpavičius", "+370 612 88889", "marius.k@email.lt",
              False, False, None, None),
 
-            ("Milda", "Liutkutė", date(2011, 8, 3), None, "+370 600 88888", "Kauno g. 14, Vilnius",
+            ("Milda", "Liutkutė", date(2011, 8, 3), None, "+370 600 88888", "Gedimino g. 22, Kupiškis",
              "Gintarė Liutkienė", "+370 612 99999", "gintare.l@email.lt",
              None, None, None,
              False, False, None, None),
         ]
 
         mokiniai_10a = [
-            ("Nojus", "Marčiulionis", date(2009, 10, 11), "nojus.m@mokinys.lt", "+370 600 99999", "Konstitucijos pr. 21, Vilnius",
+            ("Nojus", "Marčiulionis", date(2009, 10, 11), "nojus.m@mokinys.lt", "+370 600 99999", "Skapiškio k., Kupiškio r.",
              "Sandra Marčiulionienė", "+370 613 11111", "sandra.m@email.lt",
              "Arvydas Marčiulionis", "+370 613 11112", "arvydas.m@email.lt",
              False, False, None, None),
 
-            ("Olga", "Norvilaitė", date(2009, 12, 27), None, "+370 600 12121", "Šalčininkų r., Eišiškių sen.",
+            ("Olga", "Norvilaitė", date(2009, 12, 27), None, "+370 600 12121", "Antašavos k., Kupiškio r.",
              "Tatjana Norvilienė", "+370 613 22222", "tatjana.n@email.lt",
              "Pavel Norvila", "+370 613 22223", None,
              True, False, None, None),
 
-            ("Paulius", "Petraitis", date(2009, 11, 5), "paulius.p@mokinys.lt", None, "Vokiečių g. 9, Vilnius",
+            ("Paulius", "Petraitis", date(2009, 11, 5), "paulius.p@mokinys.lt", None, "Aušros g. 4, Kupiškis",
              "Rita Petraitienė", "+370 613 33333", "rita.p@email.lt",
              "Saulius Petraitis", "+370 613 33334", "saulius.p@email.lt",
              False, True, date(2025, 11, 5), "Drausminio pobūdžio incidentas. Susitarta dėl elgesio sutarties su mokiniu ir tėvais."),
