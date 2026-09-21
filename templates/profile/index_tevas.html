@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Mano profilis - Tėvų portalas{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Mano profilis</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Jūsų asmeninė paskyros informacija.
+    </p>
+</div>
+
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 mb-5">
+    <div class="flex items-start gap-4">
+        <div class="w-16 h-16 rounded-full bg-brand-100 dark:bg-brand-900/40 text-brand-800 dark:text-brand-300 flex items-center justify-center text-xl font-bold flex-shrink-0">
+            {{ current_user.inicialai }}
+        </div>
+        <div class="flex-1">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ current_user.pilnas_vardas }}</h2>
+            <span class="tag tag-purple mt-1 inline-flex">Tėvas / Globėjas</span>
+        </div>
+    </div>
+
+    <div class="mt-5 pt-5 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">El. paštas</dt>
+            <dd class="text-sm text-slate-900 dark:text-white">{{ current_user.email }}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Telefonas</dt>
+            <dd class="text-sm text-slate-900 dark:text-white">{{ current_user.telefonas or "—" }}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Paskyros sukurta</dt>
+            <dd class="text-sm text-slate-900 dark:text-white">{{ current_user.sukurtas.strftime('%Y-%m-%d') }}</dd>
+        </div>
+        <div>
+            <dt class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Priskirtų vaikų</dt>
+            <dd class="text-sm text-slate-900 dark:text-white">{{ vaikai|length }}</dd>
+        </div>
+    </div>
+
+    <div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800 flex gap-2 flex-wrap">
+        <a href="{{ url_for('profile.redaguoti') }}" class="btn-secondary">
+            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+            Redaguoti profilį
+        </a>
+        <a href="{{ url_for('profile.keisti_slaptazodi') }}" class="btn-secondary">
+            <i data-lucide="key" class="w-3.5 h-3.5"></i>
+            Keisti slaptažodį
+        </a>
+        <a href="{{ url_for('security.busena') }}" class="btn-secondary">
+            <i data-lucide="shield" class="w-3.5 h-3.5"></i>
+            2FA
+            {% if current_user.dvfa_ijungtas %}
+            <span class="tag tag-brand ml-1">Įjungta</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('security.api_tokenas') }}" class="btn-secondary">
+            <i data-lucide="key" class="w-3.5 h-3.5"></i>
+            API tokenas
+        </a>
+    </div>
+</div>
+
+{% if vaikai %}
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5">
+    <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+        <i data-lucide="users" class="w-4 h-4"></i>
+        Mano vaikai
+    </h2>
+    <div class="space-y-2">
+        {% for v in vaikai %}
+        <a href="{{ url_for('parents.vaikas', vaiko_id=v.id) }}"
+           class="flex items-center justify-between p-3 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-brand-500 dark:hover:border-brand-500 transition-colors">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center text-xs font-semibold">
+                    {{ v.inicialai }}
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">{{ v.pilnas_vardas }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">
+                        {% if v.klase %}{{ v.klase.pavadinimas }} klasė{% else %}Klasė nepriskirta{% endif %}
+                    </p>
+                </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

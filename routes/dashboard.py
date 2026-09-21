@@ -1,8 +1,9 @@
 """Pagrindinis (Dashboard) puslapis su statistika ir diagramomis."""
 from flask import Blueprint, render_template, redirect, url_for
-from flask_login import login_required, current_user
+from flask_login import current_user
 
 from models import User, Klase, Mokinys, Diplomas, Skelbimas
+from routes.auth import personalas_required
 
 dashboard_bp = Blueprint("dashboard", __name__)
 
@@ -10,12 +11,14 @@ dashboard_bp = Blueprint("dashboard", __name__)
 @dashboard_bp.route("/")
 def root():
     if current_user.is_authenticated:
+        if current_user.yra_tevas:
+            return redirect(url_for("parents.dashboard"))
         return redirect(url_for("dashboard.index"))
     return redirect(url_for("auth.login"))
 
 
 @dashboard_bp.route("/dashboard")
-@login_required
+@personalas_required
 def index():
     visi_mokiniai = Mokinys.query.all()
 

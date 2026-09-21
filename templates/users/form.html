@@ -35,12 +35,21 @@
             </div>
         </div>
 
-        <div>
-            <label class="form-label">El. paštas <span class="text-red-500">*</span></label>
-            <input type="email" name="email" required maxlength="120"
-                   value="{{ vartotojas.email if vartotojas else '' }}"
-                   placeholder="vardas@mokykla.lt"
-                   class="form-input">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="form-label">El. paštas <span class="text-red-500">*</span></label>
+                <input type="email" name="email" required maxlength="120"
+                       value="{{ vartotojas.email if vartotojas else '' }}"
+                       placeholder="vardas@mokykla.lt"
+                       class="form-input">
+            </div>
+            <div>
+                <label class="form-label">Telefonas</label>
+                <input type="tel" name="telefonas" maxlength="30"
+                       value="{{ vartotojas.telefonas if vartotojas else '' }}"
+                       placeholder="+370..."
+                       class="form-input">
+            </div>
         </div>
 
         <div>
@@ -48,7 +57,11 @@
             <select name="role" required class="form-input">
                 <option value="mokytojas" {% if vartotojas and vartotojas.role == 'mokytojas' %}selected{% endif %}>Mokytojas</option>
                 <option value="administratorius" {% if vartotojas and vartotojas.role == 'administratorius' %}selected{% endif %}>Administratorius</option>
+                <option value="tevas" {% if vartotojas and vartotojas.role == 'tevas' %}selected{% endif %}>Tėvas / Globėjas</option>
             </select>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Tėvo paskyra mato tik savo vaikų duomenis. Vaikai priskiriami tėvui iš mokinio detalaus puslapio.
+            </p>
         </div>
 
         <div>

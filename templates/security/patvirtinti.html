@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}2FA patvirtinimas{% endblock %}
+
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+    <div class="w-full max-w-sm">
+
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 bg-brand-800 dark:bg-brand-700 rounded-lg mb-4">
+                <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+            </div>
+            <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
+                Dviejų veiksnių patvirtinimas
+            </h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+                Sveiki, {{ vartotojas.vardas }}!
+            </p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6">
+            <p class="text-sm text-slate-700 dark:text-slate-300 mb-4 text-center">
+                Įveskite 6 skaitmenų kodą iš autentikatoriaus programėlės:
+            </p>
+
+            <form method="POST" class="space-y-4">
+                <input type="text" name="kodas" required
+                       inputmode="numeric" pattern="[0-9\s]{6,}" maxlength="7"
+                       autocomplete="one-time-code" autofocus
+                       placeholder="123 456"
+                       class="form-input text-center text-2xl font-mono tracking-widest py-3">
+
+                <button type="submit" class="btn-primary w-full justify-center py-2.5">
+                    <i data-lucide="unlock" class="w-4 h-4"></i>
+                    Patvirtinti ir prisijungti
+                </button>
+            </form>
+
+            <div class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-800 text-center">
+                <a href="{{ url_for('auth.login') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300">
+                    ← Grįžti į prisijungimą
+                </a>
+            </div>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 dark:text-slate-500 mt-6">
+            Kodas keičiasi kas 30 sekundžių
+        </p>
+    </div>
+</div>
+{% endblock %}

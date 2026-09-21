@@ -23,6 +23,11 @@
             <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1 flex-wrap">
                     {% if s.svarbus %}<span class="tag tag-danger">Svarbu</span>{% endif %}
+                    {% if s.matomas_tevams %}
+                    <span class="tag tag-purple" title="Šis skelbimas matomas ir tėvams">
+                        <i data-lucide="users" class="w-2.5 h-2.5 inline"></i> Tėvams
+                    </span>
+                    {% endif %}
                     <h3 class="text-sm font-semibold text-slate-900 dark:text-white">{{ s.pavadinimas }}</h3>
                 </div>
                 <p class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-2">{{ s.turinys }}</p>

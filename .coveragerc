@@ -1,0 +1,23 @@
+[run]
+source = .
+omit =
+    venv/*
+    tests/*
+    # Vienkartiniai dokumentų generavimo skriptai (ne runtime kodas)
+    paruosti_ataskaita.py
+    pataisyti_*.py
+    prideti_*.py
+    uzpildyti_*.py
+    sutrumpinti_*.py
+    extract_text.py
+    fix_quotes.py
+    sukurti_demo_teva.py
+    migruoti_tevu_portala.py
+    seed.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+    raise NotImplementedError
+    def __repr__

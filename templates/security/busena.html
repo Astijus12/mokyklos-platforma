@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Saugumas - 2FA{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('profile.index') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Mano profilis
+    </a>
+</div>
+
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
+    Dviejų veiksnių autentikacija (2FA)
+</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
+    Papildomas saugumo sluoksnis, kuris apsaugo jūsų paskyrą net jei slaptažodis būtų atskleistas.
+</p>
+
+<div class="card max-w-2xl">
+    <div class="card-header flex items-center justify-between">
+        <h2>Būsena</h2>
+        {% if current_user.dvfa_ijungtas %}
+        <span class="tag tag-brand">
+            <i data-lucide="shield-check" class="w-3 h-3"></i>
+            Įjungta
+        </span>
+        {% else %}
+        <span class="tag tag-warning">
+            <i data-lucide="shield-off" class="w-3 h-3"></i>
+            Išjungta
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="p-5">
+        {% if current_user.dvfa_ijungtas %}
+            <div class="flex items-start gap-3 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 mb-4">
+                <i data-lucide="check-circle" class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <p class="text-sm font-medium text-green-900 dark:text-green-200">
+                        2FA yra įjungta ir aktyvi
+                    </p>
+                    <p class="text-xs text-green-800 dark:text-green-300 mt-1">
+                        Kiekvieną kartą prisijungiant, būsite paprašyti įvesti 6 skaitmenų kodą iš autentikatoriaus programėlės.
+                    </p>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('security.isjungti') }}"
+                  onsubmit="return confirm('Ar tikrai norite išjungti dviejų veiksnių autentikaciją? Tai sumažins jūsų paskyros saugumą.');"
+                  class="border-t border-slate-100 dark:border-slate-700 pt-4">
+                <p class="text-sm text-slate-700 dark:text-slate-300 mb-3">
+                    Jei norite išjungti 2FA — patvirtinkite savo slaptažodžiu:
+                </p>
+                <div class="flex gap-2">
+                    <input type="password" name="slaptazodis" required placeholder="Slaptažodis"
+                           class="form-input max-w-xs">
+                    <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
+                        Išjungti 2FA
+                    </button>
+                </div>
+            </form>
+        {% else %}
+            <div class="flex items-start gap-3 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 mb-4">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <p class="text-sm font-medium text-amber-900 dark:text-amber-200">
+                        Rekomenduojame įjungti 2FA
+                    </p>
+                    <p class="text-xs text-amber-800 dark:text-amber-300 mt-1">
+                        Ypač svarbu vartotojams, kurie tvarko mokinių asmens duomenis (administratoriai, klasių vadovai).
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-sm text-slate-700 dark:text-slate-300 mb-4">
+                Norėdami įjungti 2FA, jums reikės autentikatoriaus programėlės:
+            </p>
+            <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-1 mb-5 pl-5 list-disc">
+                <li>Google Authenticator (Android / iOS)</li>
+                <li>Microsoft Authenticator (Android / iOS)</li>
+                <li>Authy (Android / iOS / Desktop)</li>
+                <li>1Password, Bitwarden ir kt.</li>
+            </ul>
+
+            <a href="{{ url_for('security.ijungti') }}" class="btn-primary">
+                <i data-lucide="shield-plus" class="w-3.5 h-3.5"></i>
+                Įjungti 2FA dabar
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

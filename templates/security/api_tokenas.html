@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}API tokenas{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('profile.index') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Mano profilis
+    </a>
+</div>
+
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
+    API prieigos tokenas
+</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
+    Naudojamas mobiliajai aplikacijai arba automatiniams įrankiams prisijungti prie sistemos.
+</p>
+
+{% if naujas_tokenas %}
+<div class="card max-w-3xl mb-5 border-green-300 dark:border-green-700">
+    <div class="p-5">
+        <div class="flex items-start gap-3">
+            <i data-lucide="key" class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"></i>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-slate-900 dark:text-white mb-2">
+                    Naujas API tokenas sukurtas
+                </p>
+                <p class="text-xs text-red-700 dark:text-red-400 mb-3">
+                    ⚠️ Nukopijuokite dabar! Antrą kartą jo pamatyti negalėsite (saugumo sumetimais DB saugomas tik hash).
+                </p>
+                <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md p-3 font-mono text-xs break-all select-all">
+                    {{ naujas_tokenas }}
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                    Naudokite antraštėje: <code class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Authorization: Bearer {{ naujas_tokenas[:12] }}...</code>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="card max-w-3xl">
+    <div class="card-header">
+        <h2>Būsena</h2>
+    </div>
+    <div class="p-5">
+        {% if current_user.api_token_hash %}
+            <div class="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 mb-4">
+                <div>
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">Aktyvus tokenas yra</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Sukurtas: {{ current_user.api_token_data.strftime('%Y-%m-%d %H:%M') }}
+                    </p>
+                </div>
+                <span class="tag tag-brand">
+                    <i data-lucide="check-circle" class="w-3 h-3"></i>
+                    Aktyvus
+                </span>
+            </div>
+
+            <div class="flex gap-2">
+                <form method="POST" onsubmit="return confirm('Sugeneravus naują tokeną, senasis nustos veikti visose vietose, kur naudojamas. Tęsti?');">
+                    <input type="hidden" name="veiksmas" value="generuoti">
+                    <button type="submit" class="btn-primary">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                        Sugeneruoti naują
+                    </button>
+                </form>
+                <form method="POST" onsubmit="return confirm('Anuliavus tokeną, mobilios aplikacijos prieiga bus atsijungta. Tęsti?');">
+                    <input type="hidden" name="veiksmas" value="anuliuoti">
+                    <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
+                        <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
+                        Anuliuoti tokeną
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="flex items-start gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-800 mb-4">
+                <i data-lucide="info" class="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <p class="text-sm font-medium text-slate-900 dark:text-white">
+                        Nėra aktyvaus tokeno
+                    </p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Sugeneruokite tokeną, kad galėtumėte pasiekti sistemą per REST API.
+                    </p>
+                </div>
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="veiksmas" value="generuoti">
+                <button type="submit" class="btn-primary">
+                    <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                    Generuoti API tokeną
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card max-w-3xl mt-5">
+    <div class="card-header">
+        <h2>Kaip naudoti</h2>
+    </div>
+    <div class="p-5 space-y-3">
+        <p class="text-sm text-slate-700 dark:text-slate-300">
+            Visose užklausose į <code class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs">/api/v1/*</code> pridėkite antraštę:
+        </p>
+        <pre class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md p-3 text-xs font-mono overflow-x-auto">Authorization: Bearer &lt;jūsų tokenas&gt;</pre>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700">
+            <p class="text-sm font-medium text-slate-900 dark:text-white mb-2">Pavyzdys (curl):</p>
+            <pre class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md p-3 text-xs font-mono overflow-x-auto">curl -H "Authorization: Bearer YOUR_TOKEN" \
+     http://127.0.0.1:5000/api/v1/me</pre>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-700">
+            <p class="text-sm font-medium text-slate-900 dark:text-white mb-2">Prieinami maršrutai:</p>
+            <ul class="text-xs text-slate-600 dark:text-slate-400 space-y-1 font-mono">
+                <li><code class="text-brand-700 dark:text-brand-400">POST</code> /api/v1/auth/token — prisijungimas</li>
+                <li><code class="text-brand-700 dark:text-brand-400">POST</code> /api/v1/auth/logout — atsijungimas</li>
+                <li><code class="text-green-700 dark:text-green-400">GET</code>&nbsp; /api/v1/me — mano info</li>
+                <li><code class="text-green-700 dark:text-green-400">GET</code>&nbsp; /api/v1/children — mano vaikai (tėvams)</li>
+                <li><code class="text-green-700 dark:text-green-400">GET</code>&nbsp; /api/v1/children/&lt;id&gt; — vaiko duomenys</li>
+                <li><code class="text-green-700 dark:text-green-400">GET</code>&nbsp; /api/v1/announcements — skelbimai</li>
+                <li><code class="text-green-700 dark:text-green-400">GET</code>&nbsp; /api/v1/contacts — kontaktai</li>
+                <li><code class="text-green-700 dark:text-green-400">GET</code>&nbsp; /api/v1/health — būsenos patikra (be autentikacijos)</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

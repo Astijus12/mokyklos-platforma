@@ -1,0 +1,63 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+.coverage
+.coveragerc
+htmlcov/
+
+# Virtualios aplinkos
+venv/
+env/
+ENV/
+
+# IDE ir OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.github/
+
+# DB ir įkelti failai
+*.db
+*.sqlite
+*.sqlite3
+static/uploads/*
+!static/uploads/.gitkeep
+duomenys/*
+!duomenys/.gitkeep
+
+# Testai
+tests/
+pytest.ini
+
+# Dokumentacija ir dokumentų generavimas (nereikalingi runtime)
+*.docx
+*.pdf
+paruosti_ataskaita.py
+pataisyti_*.py
+prideti_*.py
+uzpildyti_*.py
+sutrumpinti_*.py
+extract_text.py
+fix_quotes.py
+sukurti_demo_teva.py
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Kiti
+*.log
+*.tmp
+README.md
+DEPLOY.md

@@ -10,6 +10,13 @@ profile_bp = Blueprint("profile", __name__, url_prefix="/profilis")
 @profile_bp.route("/")
 @login_required
 def index():
+    if current_user.yra_tevas:
+        vaikai = current_user.vaikai.all()
+        return render_template(
+            "profile/index_tevas.html",
+            vaikai=vaikai,
+        )
+
     diplomu_skaicius = Diplomas.query.filter_by(vartotojo_id=current_user.id).count()
     skelbimu_skaicius = Skelbimas.query.filter_by(vartotojo_id=current_user.id).count()
     mano_diplomai = (
@@ -33,6 +40,7 @@ def redaguoti():
         current_user.vardas = request.form.get("vardas", "").strip()
         current_user.pavarde = request.form.get("pavarde", "").strip()
         current_user.email = request.form.get("email", "").strip().lower()
+        current_user.telefonas = request.form.get("telefonas", "").strip() or None
         db.session.commit()
         flash("Profilio duomenys atnaujinti.", "success")
         return redirect(url_for("profile.index"))

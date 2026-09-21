@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Įjungti 2FA{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('security.busena') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Atgal
+    </a>
+</div>
+
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
+    Įjungti dviejų veiksnių autentikaciją
+</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
+    Atlikite 3 paprastus žingsnius.
+</p>
+
+<div class="card max-w-3xl">
+    <div class="p-6 space-y-6">
+
+        <div>
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-7 h-7 rounded-full bg-brand-800 text-white flex items-center justify-center text-xs font-bold">1</div>
+                <h2 class="text-base font-semibold text-slate-900 dark:text-white">
+                    Nuskenuokite QR kodą
+                </h2>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 pl-10">
+                Atidarykite autentikatoriaus programėlę savo telefone (Google Authenticator, Microsoft Authenticator, Authy...)
+                ir nuskenuokite šį QR kodą.
+            </p>
+
+            <div class="pl-10 flex flex-col sm:flex-row items-start gap-5">
+                <div class="p-3 bg-white border border-slate-200 rounded-lg inline-block">
+                    <img src="{{ qr_data_uri }}" alt="2FA QR kodas" class="w-48 h-48">
+                </div>
+
+                <div class="flex-1">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                        Jei negalite nuskenuoti QR — įveskite šį raktą rankiniu būdu:
+                    </p>
+                    <div class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md p-3 font-mono text-xs break-all select-all">
+                        {{ paslaptis }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-100 dark:border-slate-700 pt-5">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-7 h-7 rounded-full bg-brand-800 text-white flex items-center justify-center text-xs font-bold">2</div>
+                <h2 class="text-base font-semibold text-slate-900 dark:text-white">
+                    Įveskite 6 skaitmenų kodą
+                </h2>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 pl-10">
+                Programėlė parodys 6 skaitmenų kodą, kuris keičiasi kas 30 sekundžių. Įveskite jį čia:
+            </p>
+
+            <form method="POST" class="pl-10">
+                <div class="flex gap-2 items-start">
+                    <input type="text" name="kodas" required
+                           inputmode="numeric" pattern="[0-9\s]{6,}" maxlength="7"
+                           autocomplete="one-time-code" autofocus
+                           placeholder="123 456"
+                           class="form-input max-w-[180px] text-center text-xl font-mono tracking-widest">
+                    <button type="submit" class="btn-primary">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                        Patvirtinti ir įjungti
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                    <i data-lucide="info" class="w-3 h-3 inline"></i>
+                    Kai patvirtinsite kodą — 2FA bus įjungta ir kito prisijungimo metu jums reikės įvesti tokį kodą.
+                </p>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

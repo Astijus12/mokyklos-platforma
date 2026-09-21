@@ -50,13 +50,15 @@
 
     <aside class="w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
         <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-            <a href="{{ url_for('dashboard.index') }}" class="flex items-center gap-2.5">
+            <a href="{% if current_user.yra_tevas %}{{ url_for('parents.dashboard') }}{% else %}{{ url_for('dashboard.index') }}{% endif %}" class="flex items-center gap-2.5">
                 <div class="w-8 h-8 bg-brand-800 dark:bg-brand-700 rounded-md flex items-center justify-center">
                     <i data-lucide="graduation-cap" class="w-4 h-4 text-white"></i>
                 </div>
                 <div>
                     <h1 class="text-sm font-semibold text-slate-900 dark:text-white leading-tight tracking-tight">Noriūnų J. Černiaus</h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">mokyklos sistema</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">
+                        {% if current_user.yra_tevas %}tėvų portalas{% else %}mokyklos sistema{% endif %}
+                    </p>
                 </div>
             </a>
         </div>
@@ -64,6 +66,46 @@
         <nav class="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
             {% set active = request.endpoint or '' %}
 
+            {% if current_user.yra_tevas %}
+            {# ============ TĖVŲ MENIU ============ #}
+            <p class="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pagrindinis</p>
+
+            <a href="{{ url_for('parents.dashboard') }}"
+               class="nav-link {% if active == 'parents.dashboard' %}nav-link-active{% endif %}">
+                <i data-lucide="home" class="w-4 h-4"></i>
+                <span>Pradžia</span>
+            </a>
+            <a href="{{ url_for('parents.skelbimai') }}"
+               class="nav-link {% if active == 'parents.skelbimai' %}nav-link-active{% endif %}">
+                <i data-lucide="megaphone" class="w-4 h-4"></i>
+                <span>Skelbimai</span>
+            </a>
+
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Mano šeima</p>
+
+            {% for vaikas in current_user.vaikai %}
+            <a href="{{ url_for('parents.vaikas', vaiko_id=vaikas.id) }}"
+               class="nav-link {% if active == 'parents.vaikas' and request.view_args.get('vaiko_id') == vaikas.id %}nav-link-active{% endif %}">
+                <i data-lucide="user" class="w-4 h-4"></i>
+                <span class="truncate">{{ vaikas.pilnas_vardas }}</span>
+            </a>
+            {% endfor %}
+
+            <a href="{{ url_for('parents.kontaktai') }}"
+               class="nav-link {% if active == 'parents.kontaktai' %}nav-link-active{% endif %}">
+                <i data-lucide="phone" class="w-4 h-4"></i>
+                <span>Kontaktai</span>
+            </a>
+
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Išorinės sistemos</p>
+
+            <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer" class="nav-link">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+                <span>TAMO dienynas</span>
+            </a>
+
+            {% else %}
+            {# ============ DARBUOTOJŲ MENIU ============ #}
             <p class="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pagrindinis</p>
 
             <a href="{{ url_for('dashboard.index') }}"
@@ -110,6 +152,7 @@
                 <span>Vartotojai</span>
             </a>
             {% endif %}
+            {% endif %}
         </nav>
 
         <div class="px-2.5 py-3 border-t border-slate-200 dark:border-slate-800">
@@ -130,6 +173,7 @@
 
         <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
             <div class="max-w-7xl mx-auto px-6 py-2.5 flex items-center gap-3">
+                {% if not current_user.yra_tevas %}
                 <form action="{{ url_for('search.index') }}" method="GET" class="flex-1 max-w-md">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400 pointer-events-none">
@@ -140,6 +184,7 @@
                                class="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:border-brand-800 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
                     </div>
                 </form>
+                {% endif %}
 
                 <div class="flex-1"></div>
 

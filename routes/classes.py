@@ -1,6 +1,7 @@
 """Klasių valdymo puslapiai."""
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_required, current_user
+from flask_login import login_required
+from routes.auth import personalas_required, current_user
 
 from models import db, Klase, User, Mokinys
 from routes.auth import admin_required
@@ -9,14 +10,14 @@ classes_bp = Blueprint("classes", __name__, url_prefix="/klases")
 
 
 @classes_bp.route("/")
-@login_required
+@personalas_required
 def saraso():
     klases = Klase.query.order_by(Klase.pavadinimas).all()
     return render_template("classes/list.html", klases=klases)
 
 
 @classes_bp.route("/<int:klases_id>")
-@login_required
+@personalas_required
 def detales(klases_id):
     klase = Klase.query.get_or_404(klases_id)
     mokiniai = (

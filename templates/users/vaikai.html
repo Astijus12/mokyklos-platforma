@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Priskirti vaikus - {{ tevas.pilnas_vardas }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('users.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Visi vartotojai
+    </a>
+</div>
+
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
+    Priskirti vaikus tėvui
+</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
+    <span class="font-medium text-slate-700 dark:text-slate-300">{{ tevas.pilnas_vardas }}</span>
+    <span class="text-slate-400">·</span>
+    {{ tevas.email }}
+</p>
+
+<form method="POST" class="card max-w-3xl">
+    <div class="card-header">
+        <h2>Vaikų (mokinių) sąrašas pagal klases</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Pažymėkite tuos mokinius, kurių tėvas / globėjas yra šis vartotojas.
+        </p>
+    </div>
+
+    <div class="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
+        {% for klase in klases %}
+        {% if klase.mokiniai %}
+        <div>
+            <div class="flex items-center gap-2 mb-2">
+                <i data-lucide="school" class="w-4 h-4 text-slate-400"></i>
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ klase.pavadinimas }}</h3>
+                <span class="text-xs text-slate-400">({{ klase.mokiniai|length }})</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-6">
+                {% for m in klase.mokiniai|sort(attribute='pavarde') %}
+                <label class="flex items-center gap-2 p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+                    <input type="checkbox" name="vaiku_ids" value="{{ m.id }}"
+                           {% if m.id in priskirtu_ids %}checked{% endif %}
+                           class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-brand-800 focus:ring-brand-500">
+                    <span class="text-sm text-slate-700 dark:text-slate-300">{{ m.pilnas_vardas }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        {% if not klases %}
+        <p class="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
+            Sistemoje dar nėra klasių su mokiniais.
+        </p>
+        {% endif %}
+    </div>
+
+    <div class="flex gap-2 p-4 border-t border-slate-100 dark:border-slate-700">
+        <button type="submit" class="btn-primary">Išsaugoti priskyrimą</button>
+        <a href="{{ url_for('users.saraso') }}" class="btn-secondary">Atšaukti</a>
+    </div>
+</form>
+{% endblock %}

@@ -34,7 +34,7 @@
                       class="form-input">{{ skelbimas.turinys if skelbimas else '' }}</textarea>
         </div>
 
-        <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+        <div class="border-t border-slate-100 dark:border-slate-700 pt-4 space-y-3">
             <label class="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" name="svarbus"
                        {% if skelbimas and skelbimas.svarbus %}checked{% endif %}
@@ -42,6 +42,19 @@
                 <div>
                     <span class="text-sm font-medium text-slate-900 dark:text-white">Pažymėti kaip svarbų skelbimą</span>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Svarbūs skelbimai bus rodomi sąrašo viršuje su žyma</p>
+                </div>
+            </label>
+
+            <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" name="matomas_tevams"
+                       {% if skelbimas and skelbimas.matomas_tevams %}checked{% endif %}
+                       class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
+                <div>
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">Matomas tėvams</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Kai pažymėta — skelbimas bus rodomas ir tėvų portale.
+                        Nepažymėtas skelbimas matomas tik mokyklos darbuotojams.
+                    </p>
                 </div>
             </label>
         </div>

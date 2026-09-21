@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Skelbimai - Tėvų portalas{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Mokyklos skelbimai</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Visi aktualūs mokyklos pranešimai tėvams.
+    </p>
+</div>
+
+{% if skelbimai %}
+<div class="space-y-3">
+    {% for skelbimas in skelbimai %}
+    <div class="bg-white dark:bg-slate-900 border {% if skelbimas.svarbus %}border-red-300 dark:border-red-800{% else %}border-slate-200 dark:border-slate-800{% endif %} rounded-lg p-5">
+        <div class="flex items-start gap-3 mb-2">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-white">{{ skelbimas.pavadinimas }}</h2>
+                    {% if skelbimas.svarbus %}
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                        <i data-lucide="alert-circle" class="w-3 h-3"></i>
+                        Svarbu
+                    </span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {{ skelbimas.autorius.pilnas_vardas }} · {{ skelbimas.sukurtas.strftime('%Y-%m-%d %H:%M') }}
+                </p>
+            </div>
+        </div>
+        <div class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{{ skelbimas.turinys }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-12 text-center">
+    <i data-lucide="megaphone-off" class="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3"></i>
+    <p class="text-slate-500 dark:text-slate-400">Kol kas skelbimų nėra.</p>
+</div>
+{% endif %}
+{% endblock %}

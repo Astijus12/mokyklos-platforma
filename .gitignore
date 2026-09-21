@@ -10,3 +10,17 @@ static/uploads/*
 .vscode/
 .idea/
 *.log
+
+# Testai
+.pytest_cache/
+.coverage
+htmlcov/
+tests/_uploads_tmp/
+
+# Docker atsarginės kopijos
+duomenys/atsargines_kopijos/
+
+# Docs / Word failai
+*.docx
+*.pdf
+!README*.pdf

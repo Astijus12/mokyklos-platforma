@@ -1,6 +1,7 @@
 """Skelbimų / pranešimų valdymas."""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
-from flask_login import login_required, current_user
+from flask_login import login_required
+from routes.auth import personalas_required, current_user
 
 from models import db, Skelbimas
 
@@ -8,7 +9,7 @@ announcements_bp = Blueprint("announcements", __name__, url_prefix="/skelbimai")
 
 
 @announcements_bp.route("/")
-@login_required
+@personalas_required
 def saraso():
     skelbimai = Skelbimas.query.order_by(
         Skelbimas.svarbus.desc(), Skelbimas.sukurtas.desc()
@@ -17,7 +18,7 @@ def saraso():
 
 
 @announcements_bp.route("/naujas", methods=["GET", "POST"])
-@login_required
+@personalas_required
 def naujas():
     if request.method == "POST":
         pavadinimas = request.form.get("pavadinimas", "").strip()
@@ -31,6 +32,7 @@ def naujas():
                 pavadinimas=pavadinimas,
                 turinys=turinys,
                 svarbus=svarbus,
+                matomas_tevams=request.form.get("matomas_tevams") == "on",
                 vartotojo_id=current_user.id,
             )
             db.session.add(skelbimas)
@@ -42,14 +44,14 @@ def naujas():
 
 
 @announcements_bp.route("/<int:skelbimo_id>")
-@login_required
+@personalas_required
 def perziureti(skelbimo_id):
     skelbimas = Skelbimas.query.get_or_404(skelbimo_id)
     return render_template("announcements/detail.html", skelbimas=skelbimas)
 
 
 @announcements_bp.route("/<int:skelbimo_id>/redaguoti", methods=["GET", "POST"])
-@login_required
+@personalas_required
 def redaguoti(skelbimo_id):
     skelbimas = Skelbimas.query.get_or_404(skelbimo_id)
 
@@ -60,6 +62,7 @@ def redaguoti(skelbimo_id):
         skelbimas.pavadinimas = request.form.get("pavadinimas", "").strip()
         skelbimas.turinys = request.form.get("turinys", "").strip()
         skelbimas.svarbus = request.form.get("svarbus") == "on"
+        skelbimas.matomas_tevams = request.form.get("matomas_tevams") == "on"
         db.session.commit()
         flash("Skelbimas atnaujintas.", "success")
         return redirect(url_for("announcements.perziureti", skelbimo_id=skelbimas.id))
@@ -68,7 +71,7 @@ def redaguoti(skelbimo_id):
 
 
 @announcements_bp.route("/<int:skelbimo_id>/salinti", methods=["POST"])
-@login_required
+@personalas_required
 def salinti(skelbimo_id):
     skelbimas = Skelbimas.query.get_or_404(skelbimo_id)
 

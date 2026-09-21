@@ -14,11 +14,14 @@ from routes.users import users_bp
 from routes.announcements import announcements_bp
 from routes.profile import profile_bp
 from routes.search import search_bp
+from routes.parents import parents_bp
+from routes.security import security_bp
+from routes.api import api_bp
 
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
 
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
@@ -43,6 +46,9 @@ def create_app():
     app.register_blueprint(announcements_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(search_bp)
+    app.register_blueprint(parents_bp)
+    app.register_blueprint(security_bp)
+    app.register_blueprint(api_bp)
 
     with app.app_context():
         db.create_all()

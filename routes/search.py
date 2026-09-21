@@ -1,6 +1,7 @@
 """Globali paieška - ieško mokinių, klasių, diplomų ir skelbimų."""
 from flask import Blueprint, render_template, request
 from flask_login import login_required
+from routes.auth import personalas_required
 
 from models import Mokinys, Klase, Diplomas, Skelbimas
 
@@ -8,7 +9,7 @@ search_bp = Blueprint("search", __name__, url_prefix="/paieska")
 
 
 @search_bp.route("/")
-@login_required
+@personalas_required
 def index():
     uzklausa = request.args.get("q", "").strip()
 

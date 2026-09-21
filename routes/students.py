@@ -4,6 +4,7 @@ import io
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
 from flask_login import login_required
+from routes.auth import personalas_required
 
 from models import db, Mokinys, Klase
 
@@ -43,7 +44,7 @@ def _surinkti_duomenis(form):
 
 
 @students_bp.route("/")
-@login_required
+@personalas_required
 def saraso():
     paieska = request.args.get("paieska", "").strip()
     klases_id = request.args.get("klases_id", type=int)
@@ -70,7 +71,7 @@ def saraso():
 
 
 @students_bp.route("/eksportas")
-@login_required
+@personalas_required
 def eksportas_csv():
     """Mokinių sąrašo eksportas į CSV failą."""
     klases_id = request.args.get("klases_id", type=int)
@@ -121,7 +122,7 @@ def eksportas_csv():
 
 
 @students_bp.route("/<int:mokinio_id>")
-@login_required
+@personalas_required
 def detales(mokinio_id):
     """Detalus mokinio puslapis."""
     mokinys = Mokinys.query.get_or_404(mokinio_id)
@@ -129,7 +130,7 @@ def detales(mokinio_id):
 
 
 @students_bp.route("/naujas", methods=["GET", "POST"])
-@login_required
+@personalas_required
 def naujas():
     if request.method == "POST":
         klases_id = request.form.get("klases_id", type=int)
@@ -158,7 +159,7 @@ def naujas():
 
 
 @students_bp.route("/<int:mokinio_id>/redaguoti", methods=["GET", "POST"])
-@login_required
+@personalas_required
 def redaguoti(mokinio_id):
     mokinys = Mokinys.query.get_or_404(mokinio_id)
 
@@ -176,7 +177,7 @@ def redaguoti(mokinio_id):
 
 
 @students_bp.route("/<int:mokinio_id>/salinti", methods=["POST"])
-@login_required
+@personalas_required
 def salinti(mokinio_id):
     mokinys = Mokinys.query.get_or_404(mokinio_id)
     vardas = mokinys.pilnas_vardas

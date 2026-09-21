@@ -586,6 +586,16 @@ a.card:hover {
     color: rgb(252 165 165);
 }
 
+.tag-purple {
+    background-color: rgb(243 232 255);
+    color: rgb(107 33 168);
+}
+
+.dark .tag-purple {
+    background-color: rgb(88 28 135 / 0.4);
+    color: rgb(216 180 254);
+}
+
 /* ============================================
    FLASH PRANEŠIMAI
    ============================================ */

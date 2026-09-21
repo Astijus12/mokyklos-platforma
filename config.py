@@ -17,3 +17,12 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg"}
+
+
+class TestConfig(Config):
+    """Testinė konfigūracija - in-memory SQLite, jokių išorinių priklausomybių."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SECRET_KEY = "test-secret-key"
+    WTF_CSRF_ENABLED = False
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, "tests", "_uploads_tmp")

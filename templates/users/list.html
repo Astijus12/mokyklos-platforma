@@ -6,7 +6,7 @@
 <div class="mb-5 flex items-end justify-between flex-wrap gap-3">
     <div>
         <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Vartotojai</h1>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Mokytojai ir administratoriai</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Mokytojai, administratoriai ir tėvai</p>
     </div>
     <a href="{{ url_for('users.naujas') }}" class="btn-primary">
         <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -46,12 +46,21 @@
                     <td class="px-4 py-3">
                         {% if v.yra_administratorius %}
                         <span class="tag tag-warning">Administratorius</span>
+                        {% elif v.yra_tevas %}
+                        <span class="tag tag-purple">Tėvas</span>
                         {% else %}
                         <span class="tag tag-default">Mokytojas</span>
                         {% endif %}
                     </td>
                     <td class="px-4 py-3 text-sm">
-                        {% if v.vadovaujamos_klases %}
+                        {% if v.yra_tevas %}
+                            {% set vaiku_sk = v.vaikai.count() %}
+                            {% if vaiku_sk %}
+                                <span class="tag tag-brand">{{ vaiku_sk }} vaikas(-ai)</span>
+                            {% else %}
+                                <span class="text-slate-400 text-xs italic">Vaikai nepriskirti</span>
+                            {% endif %}
+                        {% elif v.vadovaujamos_klases %}
                             <div class="flex flex-wrap gap-1">
                             {% for k in v.vadovaujamos_klases %}
                                 <span class="tag tag-brand">{{ k.pavadinimas }}</span>
@@ -61,6 +70,11 @@
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="inline-flex gap-0.5">
+                            {% if v.yra_tevas %}
+                            <a href="{{ url_for('users.vaikai', vartotojo_id=v.id) }}" class="btn-icon-sm" title="Priskirti vaikus">
+                                <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                            </a>
+                            {% endif %}
                             <a href="{{ url_for('users.redaguoti', vartotojo_id=v.id) }}" class="btn-icon-sm" title="Redaguoti">
                                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                             </a>

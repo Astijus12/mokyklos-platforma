@@ -6,7 +6,8 @@ from flask import (
     Blueprint, render_template, request, redirect, url_for,
     flash, current_app, send_from_directory, abort,
 )
-from flask_login import login_required, current_user
+from flask_login import login_required
+from routes.auth import personalas_required, current_user
 from werkzeug.utils import secure_filename
 
 from models import db, Diplomas, User
@@ -32,7 +33,7 @@ def _parse_data(reiksme):
 
 
 @diplomas_bp.route("/")
-@login_required
+@personalas_required
 def saraso():
     rodyti_visus = request.args.get("visi") == "1"
 
@@ -49,7 +50,7 @@ def saraso():
 
 
 @diplomas_bp.route("/ikelti", methods=["GET", "POST"])
-@login_required
+@personalas_required
 def ikelti():
     if request.method == "POST":
         failas = request.files.get("failas")
@@ -87,7 +88,7 @@ def ikelti():
 
 
 @diplomas_bp.route("/<int:diplomo_id>/atsisiusti")
-@login_required
+@personalas_required
 def atsisiusti(diplomo_id):
     diplomas = Diplomas.query.get_or_404(diplomo_id)
     return send_from_directory(
@@ -99,7 +100,7 @@ def atsisiusti(diplomo_id):
 
 
 @diplomas_bp.route("/<int:diplomo_id>/perziureti")
-@login_required
+@personalas_required
 def perziureti(diplomo_id):
     diplomas = Diplomas.query.get_or_404(diplomo_id)
     return send_from_directory(
@@ -110,7 +111,7 @@ def perziureti(diplomo_id):
 
 
 @diplomas_bp.route("/<int:diplomo_id>/salinti", methods=["POST"])
-@login_required
+@personalas_required
 def salinti(diplomo_id):
     diplomas = Diplomas.query.get_or_404(diplomo_id)
 

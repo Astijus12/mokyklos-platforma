@@ -32,11 +32,20 @@
             </div>
         </div>
 
-        <div>
-            <label class="form-label">El. paštas <span class="text-red-500">*</span></label>
-            <input type="email" name="email" required maxlength="120"
-                   value="{{ current_user.email }}"
-                   class="form-input">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="form-label">El. paštas <span class="text-red-500">*</span></label>
+                <input type="email" name="email" required maxlength="120"
+                       value="{{ current_user.email }}"
+                       class="form-input">
+            </div>
+            <div>
+                <label class="form-label">Telefonas</label>
+                <input type="tel" name="telefonas" maxlength="30"
+                       value="{{ current_user.telefonas or '' }}"
+                       placeholder="+370..."
+                       class="form-input">
+            </div>
         </div>
 
         <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">

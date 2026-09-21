@@ -1,0 +1,71 @@
+services:
+  web:
+    build: .
+    image: mokyklos-platforma:latest
+    container_name: mokykla_web
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-pakeisk-mane-produkcijoje}
+      DATABASE_URL: postgresql://mokykla:${DB_PASSWORD:-slaptas123}@db:5432/mokykla_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/static/uploads
+    restart: unless-stopped
+    networks:
+      - mokykla_net
+
+  db:
+    image: postgres:16-alpine
+    container_name: mokykla_db
+    environment:
+      POSTGRES_USER: mokykla
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-slaptas123}
+      POSTGRES_DB: mokykla_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mokykla -d mokykla_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - mokykla_net
+    # Portą atskleisti tik lokaliai testavimui - produkcijoje išjungti
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  backup:
+    image: postgres:16-alpine
+    container_name: mokykla_backup
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${DB_PASSWORD:-slaptas123}
+    volumes:
+      - ./duomenys/atsargines_kopijos:/backups
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "chmod +x /usr/local/bin/backup.sh &&
+       while true; do
+         /usr/local/bin/backup.sh
+         sleep 86400
+       done"
+    restart: unless-stopped
+    networks:
+      - mokykla_net
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads:
+    driver: local
+
+networks:
+  mokykla_net:
+    driver: bridge

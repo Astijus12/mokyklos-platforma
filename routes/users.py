@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import current_user
 
-from models import db, User
+from models import db, User, Mokinys, Klase
 from routes.auth import admin_required
 
 users_bp = Blueprint("users", __name__, url_prefix="/vartotojai")
@@ -31,6 +31,7 @@ def naujas():
                 vardas=request.form.get("vardas", "").strip(),
                 pavarde=request.form.get("pavarde", "").strip(),
                 email=email,
+                telefonas=request.form.get("telefonas", "").strip() or None,
                 role=request.form.get("role", "mokytojas"),
             )
             vartotojas.nustatyti_slaptazodi(slaptazodis)
@@ -51,6 +52,7 @@ def redaguoti(vartotojo_id):
         vartotojas.vardas = request.form.get("vardas", "").strip()
         vartotojas.pavarde = request.form.get("pavarde", "").strip()
         vartotojas.email = request.form.get("email", "").strip().lower()
+        vartotojas.telefonas = request.form.get("telefonas", "").strip() or None
         vartotojas.role = request.form.get("role", "mokytojas")
 
         naujas_slaptazodis = request.form.get("slaptazodis", "")
@@ -80,3 +82,37 @@ def salinti(vartotojo_id):
     db.session.commit()
     flash(f"Vartotojas {vardas} pašalintas.", "info")
     return redirect(url_for("users.saraso"))
+
+
+@users_bp.route("/<int:vartotojo_id>/vaikai", methods=["GET", "POST"])
+@admin_required
+def vaikai(vartotojo_id):
+    """Priskirti tėvui jo vaikus (mokinius)."""
+    tevas = User.query.get_or_404(vartotojo_id)
+
+    if tevas.role != "tevas":
+        flash("Vaikų priskyrimas galimas tik tėvo rolės paskyroms.", "warning")
+        return redirect(url_for("users.redaguoti", vartotojo_id=tevas.id))
+
+    if request.method == "POST":
+        priskirtu_ids = set(request.form.getlist("vaiku_ids", type=int))
+
+        naujas_sarasas = Mokinys.query.filter(Mokinys.id.in_(priskirtu_ids)).all() if priskirtu_ids else []
+
+        tevas.vaikai = naujas_sarasas
+        db.session.commit()
+        flash(
+            f"Tėvui {tevas.pilnas_vardas} priskirti {len(naujas_sarasas)} vaikai.",
+            "success",
+        )
+        return redirect(url_for("users.saraso"))
+
+    klases = Klase.query.order_by(Klase.pavadinimas).all()
+    priskirtu_ids = {v.id for v in tevas.vaikai}
+
+    return render_template(
+        "users/vaikai.html",
+        tevas=tevas,
+        klases=klases,
+        priskirtu_ids=priskirtu_ids,
+    )
