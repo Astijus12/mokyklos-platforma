@@ -73,9 +73,8 @@ def _uzpildyti():
         klase_5a = Klase(pavadinimas="5A", mokslo_metai="2025-2026", vadovo_id=jonas.id)
         klase_8b = Klase(pavadinimas="8B", mokslo_metai="2025-2026", vadovo_id=ona.id)
         klase_10a = Klase(pavadinimas="10A", mokslo_metai="2025-2026", vadovo_id=tomas.id)
-        klase_2g = Klase(pavadinimas="IIG", mokslo_metai="2025-2026")
 
-        db.session.add_all([klase_5a, klase_8b, klase_10a, klase_2g])
+        db.session.add_all([klase_5a, klase_8b, klase_10a])
         db.session.commit()
 
         print("Kuriami mokiniai...")
