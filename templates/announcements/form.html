@@ -34,6 +34,18 @@
                       class="form-input">{{ skelbimas.turinys if skelbimas else '' }}</textarea>
         </div>
 
+        <div>
+            <label class="form-label">Kategorija</label>
+            <select name="kategorija" class="form-input">
+                <option value="bendra" {% if skelbimas and skelbimas.kategorija == 'bendra' %}selected{% endif %}>Bendra informacija</option>
+                <option value="renginiai" {% if skelbimas and skelbimas.kategorija == 'renginiai' %}selected{% endif %}>Renginiai</option>
+                <option value="administracija" {% if skelbimas and skelbimas.kategorija == 'administracija' %}selected{% endif %}>Administracija</option>
+                <option value="vgk" {% if skelbimas and skelbimas.kategorija == 'vgk' %}selected{% endif %}>Vaiko gerovės komisija</option>
+                <option value="tevams" {% if skelbimas and skelbimas.kategorija == 'tevams' %}selected{% endif %}>Skirta tėvams</option>
+                <option value="mokytojams" {% if skelbimas and skelbimas.kategorija == 'mokytojams' %}selected{% endif %}>Mokytojams</option>
+            </select>
+        </div>
+
         <div class="border-t border-slate-100 dark:border-slate-700 pt-4 space-y-3">
             <label class="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" name="svarbus"

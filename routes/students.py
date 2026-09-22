@@ -1,9 +1,12 @@
 """Mokinių valdymo puslapiai (CRUD - kurti, skaityti, atnaujinti, šalinti)."""
 import csv
 import io
+import os
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, Response
-from flask_login import login_required
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, Response, current_app, send_from_directory
+from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
 from routes.auth import personalas_required
 
 from models import db, Mokinys, Klase
@@ -127,6 +130,14 @@ def detales(mokinio_id):
     """Detalus mokinio puslapis."""
     mokinys = Mokinys.query.get_or_404(mokinio_id)
     return render_template("students/detail.html", mokinys=mokinys)
+
+
+@students_bp.route("/<int:mokinio_id>/ataskaita")
+@personalas_required
+def ataskaita(mokinio_id):
+    """Spausdinama mokinio ataskaita (PDF per naršyklės Print funkciją)."""
+    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    return render_template("students/ataskaita.html", mokinys=mokinys, dabar=datetime.now())
 
 
 @students_bp.route("/naujas", methods=["GET", "POST"])
@@ -256,3 +267,159 @@ def eksportas_pasirinktu():
         mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f"attachment; filename=pasirinkti_mokiniai_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"},
     )
+
+
+@students_bp.route("/eksportas-xlsx")
+@personalas_required
+def eksportas_xlsx():
+    """Mokinių sąrašo eksportas į Excel formato failą su formatavimu."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+    klases_id = request.args.get("klases_id", type=int)
+    query = Mokinys.query
+    if klases_id:
+        query = query.filter_by(klases_id=klases_id)
+    mokiniai = query.order_by(Mokinys.pavarde, Mokinys.vardas).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Mokiniai"
+
+    antraste_font = Font(bold=True, color="FFFFFF", size=11, name="Calibri")
+    antraste_fill = PatternFill("solid", fgColor="881337")
+    centruota = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    kraštine = Border(
+        left=Side(border_style="thin", color="D0D0D0"),
+        right=Side(border_style="thin", color="D0D0D0"),
+        top=Side(border_style="thin", color="D0D0D0"),
+        bottom=Side(border_style="thin", color="D0D0D0"),
+    )
+
+    antrastes = [
+        "Vardas", "Pavardė", "Klasė", "Gimimo data",
+        "El. paštas", "Telefonas", "Adresas",
+        "Motinos vardas", "Motinos tel.",
+        "Tėvo vardas", "Tėvo tel.",
+        "Autobusas", "VGK",
+    ]
+
+    for stulpelio_nr, tekstas in enumerate(antrastes, 1):
+        c = ws.cell(row=1, column=stulpelio_nr, value=tekstas)
+        c.font = antraste_font
+        c.fill = antraste_fill
+        c.alignment = centruota
+        c.border = kraštine
+
+    ws.row_dimensions[1].height = 26
+
+    for eil_nr, m in enumerate(mokiniai, 2):
+        eilute = [
+            m.vardas,
+            m.pavarde,
+            m.klase.pavadinimas if m.klase else "",
+            m.gimimo_data.strftime("%Y-%m-%d") if m.gimimo_data else "",
+            m.email or "",
+            m.telefonas or "",
+            m.adresas or "",
+            m.motinos_vardas or "",
+            m.motinos_telefonas or "",
+            m.tevo_vardas or "",
+            m.tevo_telefonas or "",
+            "Taip" if m.mokyklos_autobusas else "Ne",
+            "Taip" if m.geroves_komisija else "Ne",
+        ]
+        for stulpelio_nr, reiksme in enumerate(eilute, 1):
+            c = ws.cell(row=eil_nr, column=stulpelio_nr, value=reiksme)
+            c.border = kraštine
+            if stulpelio_nr in (12, 13):
+                c.alignment = Alignment(horizontal="center")
+
+    stulpeliu_pločiai = [14, 16, 8, 14, 26, 16, 30, 22, 16, 22, 16, 12, 8]
+    for i, pločis in enumerate(stulpeliu_pločiai, 1):
+        ws.column_dimensions[chr(64 + i)].width = pločis
+
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{chr(64 + len(antrastes))}{len(mokiniai) + 1}"
+
+    buferis = io.BytesIO()
+    wb.save(buferis)
+    buferis.seek(0)
+
+    failo_vardas = f"mokiniai_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    return Response(
+        buferis.read(),
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={failo_vardas}"},
+    )
+
+
+def _leidziamas_nuotraukos_failas(vardas):
+    leidziami = {"png", "jpg", "jpeg", "webp"}
+    return "." in vardas and vardas.rsplit(".", 1)[1].lower() in leidziami
+
+
+@students_bp.route("/<int:mokinio_id>/nuotrauka", methods=["POST"])
+@personalas_required
+def ikelti_nuotrauka(mokinio_id):
+    """Įkelia mokinio nuotrauką."""
+    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    failas = request.files.get("nuotrauka")
+
+    if not failas or not failas.filename:
+        flash("Pasirinkite failą.", "danger")
+        return redirect(url_for("students.detales", mokinio_id=mokinys.id))
+
+    if not _leidziamas_nuotraukos_failas(failas.filename):
+        flash("Neleistinas failo formatas. Naudokite PNG, JPG arba WebP.", "danger")
+        return redirect(url_for("students.detales", mokinio_id=mokinys.id))
+
+    saugus_vardas = secure_filename(failas.filename)
+    plėtinys = saugus_vardas.rsplit(".", 1)[1].lower()
+    naujas_vardas = f"mokinys_{mokinys.id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{plėtinys}"
+
+    nuotrauku_dir = os.path.join(current_app.config["UPLOAD_FOLDER"], "mokiniai")
+    os.makedirs(nuotrauku_dir, exist_ok=True)
+    kelias = os.path.join(nuotrauku_dir, naujas_vardas)
+    failas.save(kelias)
+
+    if mokinys.nuotraukos_failas:
+        senas_kelias = os.path.join(current_app.config["UPLOAD_FOLDER"], mokinys.nuotraukos_failas)
+        if os.path.exists(senas_kelias):
+            try:
+                os.remove(senas_kelias)
+            except OSError:
+                pass
+
+    mokinys.nuotraukos_failas = f"mokiniai/{naujas_vardas}"
+    db.session.commit()
+
+    flash(f"Mokinio {mokinys.pilnas_vardas} nuotrauka atnaujinta.", "success")
+    return redirect(url_for("students.detales", mokinio_id=mokinys.id))
+
+
+@students_bp.route("/<int:mokinio_id>/nuotrauka", methods=["DELETE", "POST"], endpoint="salinti_nuotrauka_endpointas")
+@personalas_required
+def salinti_nuotrauka(mokinio_id):
+    if request.form.get("_veiksmas") != "salinti":
+        return redirect(url_for("students.detales", mokinio_id=mokinio_id))
+
+    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    if mokinys.nuotraukos_failas:
+        kelias = os.path.join(current_app.config["UPLOAD_FOLDER"], mokinys.nuotraukos_failas)
+        if os.path.exists(kelias):
+            try:
+                os.remove(kelias)
+            except OSError:
+                pass
+        mokinys.nuotraukos_failas = None
+        db.session.commit()
+        flash("Nuotrauka pašalinta.", "info")
+    return redirect(url_for("students.detales", mokinio_id=mokinio_id))
+
+
+@students_bp.route("/nuotrauka/<path:kelias>")
+@personalas_required
+def nuotraukos_failas(kelias):
+    """Saugiai serveris nuotraukas iš uploads katalogo."""
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], kelias)

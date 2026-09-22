@@ -101,6 +101,36 @@ def main():
         else:
             print("- users.api_token_data jau yra, praleidžiama.")
 
+        # 6. skelbimai.kategorija
+        if not stulpelis_egzistuoja(inspector, "skelbimai", "kategorija"):
+            print("+ Pridedamas skelbimai.kategorija stulpelis...")
+            with db.engine.begin() as conn:
+                conn.execute(text(
+                    "ALTER TABLE skelbimai ADD COLUMN kategorija VARCHAR(30) NOT NULL DEFAULT 'bendra'"
+                ))
+            pakeitimai += 1
+        else:
+            print("- skelbimai.kategorija jau yra, praleidžiama.")
+
+        # 7. mokiniai.nuotraukos_failas
+        if not stulpelis_egzistuoja(inspector, "mokiniai", "nuotraukos_failas"):
+            print("+ Pridedamas mokiniai.nuotraukos_failas stulpelis...")
+            with db.engine.begin() as conn:
+                conn.execute(text("ALTER TABLE mokiniai ADD COLUMN nuotraukos_failas VARCHAR(300)"))
+            pakeitimai += 1
+        else:
+            print("- mokiniai.nuotraukos_failas jau yra, praleidžiama.")
+
+        # 8. Naujos lentelės (renginiai, veiklos_zurnalas, pranesimai)
+        for lenteles_vardas in ["renginiai", "veiklos_zurnalas", "pranesimai"]:
+            if not lentele_egzistuoja(inspector, lenteles_vardas):
+                print(f"+ Kuriama {lenteles_vardas} lentelė...")
+                db.create_all()
+                pakeitimai += 1
+                break  # visos sukurtos vienu iškvietimu
+        else:
+            print("- naujos lentelės jau egzistuoja, praleidžiama.")
+
         print()
         print("=" * 60)
         if pakeitimai > 0:

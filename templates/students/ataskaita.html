@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <title>Mokinio ataskaita - {{ mokinys.pilnas_vardas }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Times New Roman', Georgia, serif;
+            color: #1a1a1a;
+            font-size: 11pt;
+            line-height: 1.5;
+            padding: 2cm;
+            background: white;
+        }
+
+        .print-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 8px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        @media print {
+            .print-controls { display: none !important; }
+            body { padding: 0; }
+        }
+
+        .antraste {
+            text-align: center;
+            border-bottom: 3px double #881337;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mokyklos-vardas {
+            font-size: 14pt;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #881337;
+        }
+
+        .mokyklos-info {
+            font-size: 10pt;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .doc-tipas {
+            margin-top: 12px;
+            font-size: 16pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .doc-nr {
+            font-size: 10pt;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        h2 {
+            font-size: 12pt;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 4px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #881337;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        table th, table td {
+            padding: 6px 10px;
+            text-align: left;
+            border: 1px solid #ccc;
+            vertical-align: top;
+        }
+
+        table th {
+            background: #f5f5f5;
+            font-weight: bold;
+            width: 200px;
+        }
+
+        .zyma {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+        .zyma-taip {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .zyma-ne {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .parasas-blokas {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .parasas-vieta {
+            flex: 1;
+            text-align: center;
+        }
+
+        .parasas-linija {
+            border-top: 1px solid #333;
+            padding-top: 4px;
+            font-size: 10pt;
+        }
+
+        .poraste {
+            margin-top: 40px;
+            padding-top: 12px;
+            border-top: 1px solid #ccc;
+            font-size: 9pt;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="print-controls">
+        <button onclick="window.print()" style="padding:6px 14px;background:#881337;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold">
+            🖨️ Spausdinti / Išsaugoti PDF
+        </button>
+        <a href="{{ url_for('students.detales', mokinio_id=mokinys.id) }}"
+           style="padding:6px 14px;background:#e5e7eb;color:#374151;text-decoration:none;border-radius:4px">
+            ← Grįžti
+        </a>
+    </div>
+
+    <div class="antraste">
+        <div class="mokyklos-vardas">NORIŪNŲ JONO ČERNIAUS MOKYKLA</div>
+        <div class="mokyklos-info">Melioratorių g. 5, Noriūnai, Kupiškio r. sav.</div>
+        <div class="doc-tipas">Mokinio ataskaita</div>
+        <div class="doc-nr">Nr. {{ mokinys.id }}, {{ dabar.strftime('%Y-%m-%d') }}</div>
+    </div>
+
+    <h2>1. Asmens duomenys</h2>
+    <table>
+        <tr><th>Vardas, pavardė</th><td><strong>{{ mokinys.pilnas_vardas }}</strong></td></tr>
+        <tr><th>Gimimo data</th><td>{{ mokinys.gimimo_data.strftime('%Y-%m-%d') if mokinys.gimimo_data else "—" }}</td></tr>
+        <tr><th>Klasė</th><td>{{ mokinys.klase.pavadinimas if mokinys.klase else "—" }} ({{ mokinys.klase.mokslo_metai if mokinys.klase else "—" }} mokslo metai)</td></tr>
+        <tr><th>El. paštas</th><td>{{ mokinys.email or "—" }}</td></tr>
+        <tr><th>Telefonas</th><td>{{ mokinys.telefonas or "—" }}</td></tr>
+        <tr><th>Adresas</th><td>{{ mokinys.adresas or "—" }}</td></tr>
+    </table>
+
+    <h2>2. Tėvų / globėjų informacija</h2>
+    <table>
+        <tr><th>Motinos vardas, pavardė</th><td>{{ mokinys.motinos_vardas or "—" }}</td></tr>
+        <tr><th>Motinos telefonas</th><td>{{ mokinys.motinos_telefonas or "—" }}</td></tr>
+        <tr><th>Motinos el. paštas</th><td>{{ mokinys.motinos_email or "—" }}</td></tr>
+        <tr><th>Tėvo vardas, pavardė</th><td>{{ mokinys.tevo_vardas or "—" }}</td></tr>
+        <tr><th>Tėvo telefonas</th><td>{{ mokinys.tevo_telefonas or "—" }}</td></tr>
+        <tr><th>Tėvo el. paštas</th><td>{{ mokinys.tevo_email or "—" }}</td></tr>
+    </table>
+
+    <h2>3. Klasės vadovas</h2>
+    <table>
+        <tr>
+            <th>Vardas, pavardė</th>
+            <td>{% if mokinys.klase and mokinys.klase.vadovas %}{{ mokinys.klase.vadovas.pilnas_vardas }}{% else %}—{% endif %}</td>
+        </tr>
+        <tr>
+            <th>El. paštas</th>
+            <td>{% if mokinys.klase and mokinys.klase.vadovas %}{{ mokinys.klase.vadovas.email }}{% else %}—{% endif %}</td>
+        </tr>
+    </table>
+
+    <h2>4. Papildoma informacija</h2>
+    <table>
+        <tr>
+            <th>Naudojasi mokyklos autobusu</th>
+            <td>
+                <span class="zyma {% if mokinys.mokyklos_autobusas %}zyma-taip{% else %}zyma-ne{% endif %}">
+                    {{ "TAIP" if mokinys.mokyklos_autobusas else "NE" }}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <th>Vaiko gerovės komisijos svarstymas</th>
+            <td>
+                <span class="zyma {% if mokinys.geroves_komisija %}zyma-taip{% else %}zyma-ne{% endif %}">
+                    {{ "TAIP" if mokinys.geroves_komisija else "NE" }}
+                </span>
+                {% if mokinys.geroves_komisija_data %}
+                <br><small>Sprendimo data: {{ mokinys.geroves_komisija_data.strftime('%Y-%m-%d') }}</small>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    {% if mokinys.geroves_komisija_pastabos %}
+    <h2>5. Vaiko gerovės komisijos pastabos</h2>
+    <p style="border:1px solid #ccc; padding:12px; background:#faf8f8">
+        {{ mokinys.geroves_komisija_pastabos }}
+    </p>
+    {% endif %}
+
+    {% if mokinys.pastabos %}
+    <h2>6. Bendros pastabos</h2>
+    <p style="border:1px solid #ccc; padding:12px; background:#faf8f8">
+        {{ mokinys.pastabos }}
+    </p>
+    {% endif %}
+
+    <div class="parasas-blokas">
+        <div class="parasas-vieta">
+            <div class="parasas-linija">Klasės vadovo parašas</div>
+        </div>
+        <div class="parasas-vieta">
+            <div class="parasas-linija">Direktoriaus parašas</div>
+        </div>
+    </div>
+
+    <div class="poraste">
+        Ataskaita sugeneruota Noriūnų Jono Černiaus mokyklos informacinės sistemos<br>
+        {{ dabar.strftime('%Y-%m-%d %H:%M') }}
+    </div>
+</body>
+</html>

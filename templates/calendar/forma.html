@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{% if renginys %}Redaguoti{% else %}Naujas{% endif %} renginys{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('calendar.rodinys') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        Kalendorius
+    </a>
+</div>
+
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-5">
+    {% if renginys %}Redaguoti renginį{% else %}Naujas renginys{% endif %}
+</h1>
+
+<div class="card max-w-2xl">
+    <div class="card-header">
+        <h2>Renginio informacija</h2>
+    </div>
+    <form method="POST" class="p-5 space-y-4">
+        <div>
+            <label class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
+            <input type="text" name="pavadinimas" required maxlength="200"
+                   value="{{ renginys.pavadinimas if renginys else '' }}"
+                   placeholder="pvz., Tėvų susirinkimas"
+                   class="form-input">
+        </div>
+
+        <div>
+            <label class="form-label">Aprašymas</label>
+            <textarea name="aprasymas" rows="3"
+                      placeholder="Papildoma informacija apie renginį..."
+                      class="form-input">{{ renginys.aprasymas if renginys else '' }}</textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="form-label">Pradžios data <span class="text-red-500">*</span></label>
+                <input type="date" name="pradzios_data" required
+                       value="{{ renginys.pradzios_data.isoformat() if renginys and renginys.pradzios_data else '' }}"
+                       class="form-input">
+            </div>
+            <div>
+                <label class="form-label">Pradžios laikas</label>
+                <input type="time" name="pradzios_laikas"
+                       value="{{ renginys.pradzios_laikas.strftime('%H:%M') if renginys and renginys.pradzios_laikas else '' }}"
+                       class="form-input">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="form-label">Pabaigos data</label>
+                <input type="date" name="pabaigos_data"
+                       value="{{ renginys.pabaigos_data.isoformat() if renginys and renginys.pabaigos_data else '' }}"
+                       class="form-input">
+            </div>
+            <div>
+                <label class="form-label">Pabaigos laikas</label>
+                <input type="time" name="pabaigos_laikas"
+                       value="{{ renginys.pabaigos_laikas.strftime('%H:%M') if renginys and renginys.pabaigos_laikas else '' }}"
+                       class="form-input">
+            </div>
+        </div>
+
+        <div>
+            <label class="form-label">Vieta</label>
+            <input type="text" name="vieta" maxlength="200"
+                   value="{{ renginys.vieta if renginys else '' }}"
+                   placeholder="pvz., Mokyklos aktų salė"
+                   class="form-input">
+        </div>
+
+        <div>
+            <label class="form-label">Kategorija</label>
+            <select name="kategorija" class="form-input">
+                <option value="mokyklos" {% if renginys and renginys.kategorija == 'mokyklos' %}selected{% endif %}>Mokyklos renginys</option>
+                <option value="susirinkimas" {% if renginys and renginys.kategorija == 'susirinkimas' %}selected{% endif %}>Susirinkimas</option>
+                <option value="svente" {% if renginys and renginys.kategorija == 'svente' %}selected{% endif %}>Šventė</option>
+                <option value="vgk" {% if renginys and renginys.kategorija == 'vgk' %}selected{% endif %}>Vaiko gerovės komisija</option>
+            </select>
+        </div>
+
+        <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+            <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" name="matomas_tevams"
+                       {% if not renginys or renginys.matomas_tevams %}checked{% endif %}
+                       class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
+                <div>
+                    <span class="text-sm font-medium text-slate-900 dark:text-white">Matomas tėvams</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Kai pažymėta — renginys bus rodomas ir tėvų kalendoriuje.
+                    </p>
+                </div>
+            </label>
+        </div>
+
+        <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+            <button type="submit" class="btn-primary">Sukurti renginį</button>
+            <a href="{{ url_for('calendar.rodinys') }}" class="btn-secondary">Atšaukti</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

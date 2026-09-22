@@ -11,10 +11,14 @@ announcements_bp = Blueprint("announcements", __name__, url_prefix="/skelbimai")
 @announcements_bp.route("/")
 @personalas_required
 def saraso():
-    skelbimai = Skelbimas.query.order_by(
+    kategorija = request.args.get("kategorija", "").strip()
+    query = Skelbimas.query
+    if kategorija:
+        query = query.filter_by(kategorija=kategorija)
+    skelbimai = query.order_by(
         Skelbimas.svarbus.desc(), Skelbimas.sukurtas.desc()
     ).all()
-    return render_template("announcements/list.html", skelbimai=skelbimai)
+    return render_template("announcements/list.html", skelbimai=skelbimai, pasirinkta_kategorija=kategorija)
 
 
 @announcements_bp.route("/naujas", methods=["GET", "POST"])
@@ -33,6 +37,7 @@ def naujas():
                 turinys=turinys,
                 svarbus=svarbus,
                 matomas_tevams=request.form.get("matomas_tevams") == "on",
+                kategorija=request.form.get("kategorija", "bendra"),
                 vartotojo_id=current_user.id,
             )
             db.session.add(skelbimas)
@@ -63,6 +68,7 @@ def redaguoti(skelbimo_id):
         skelbimas.turinys = request.form.get("turinys", "").strip()
         skelbimas.svarbus = request.form.get("svarbus") == "on"
         skelbimas.matomas_tevams = request.form.get("matomas_tevams") == "on"
+        skelbimas.kategorija = request.form.get("kategorija", "bendra")
         db.session.commit()
         flash("Skelbimas atnaujintas.", "success")
         return redirect(url_for("announcements.perziureti", skelbimo_id=skelbimas.id))

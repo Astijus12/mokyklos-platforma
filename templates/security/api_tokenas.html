@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}API tokenas{% endblock %}
+{% block title %}Prieigos raktas{% endblock %}
 
 {% block content %}
 <div class="mb-4">
@@ -11,7 +11,7 @@
 </div>
 
 <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-1">
-    API prieigos tokenas
+    Programinės sąsajos prieigos raktas
 </h1>
 <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
     Naudojamas mobiliajai aplikacijai arba automatiniams įrankiams prisijungti prie sistemos.
@@ -24,7 +24,7 @@
             <i data-lucide="key" class="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"></i>
             <div class="flex-1">
                 <p class="text-sm font-semibold text-slate-900 dark:text-white mb-2">
-                    Naujas API tokenas sukurtas
+                    Naujas Prieigos raktas sukurtas
                 </p>
                 <p class="text-xs text-red-700 dark:text-red-400 mb-3">
                     ⚠️ Nukopijuokite dabar! Antrą kartą jo pamatyti negalėsite (saugumo sumetimais DB saugomas tik hash).
@@ -68,7 +68,7 @@
                         Sugeneruoti naują
                     </button>
                 </form>
-                <form method="POST" data-confirm="Anuliavus tokeną, mobilios aplikacijos prieiga bus atsijungta." data-confirm-btn="Anuliuoti" data-confirm-title="Anuliuoti API tokeną?">
+                <form method="POST" data-confirm="Anuliavus tokeną, mobilios aplikacijos prieiga bus atsijungta." data-confirm-btn="Anuliuoti" data-confirm-title="Anuliuoti Prieigos raktą?">
                     <input type="hidden" name="veiksmas" value="anuliuoti">
                     <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
                         <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
@@ -84,7 +84,7 @@
                         Nėra aktyvaus tokeno
                     </p>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Sugeneruokite tokeną, kad galėtumėte pasiekti sistemą per REST API.
+                        Sugeneruokite tokeną, kad galėtumėte pasiekti sistemą per programinę sąsają.
                     </p>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                 <input type="hidden" name="veiksmas" value="generuoti">
                 <button type="submit" class="btn-primary">
                     <i data-lucide="key" class="w-3.5 h-3.5"></i>
-                    Generuoti API tokeną
+                    Generuoti Prieigos raktą
                 </button>
             </form>
         {% endif %}

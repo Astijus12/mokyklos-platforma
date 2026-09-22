@@ -149,6 +149,9 @@ class Mokinys(db.Model):
     geroves_komisija_data = db.Column(db.Date, nullable=True)
     geroves_komisija_pastabos = db.Column(db.Text, nullable=True)
 
+    # Nuotrauka
+    nuotraukos_failas = db.Column(db.String(300), nullable=True)
+
     @property
     def pilnas_vardas(self):
         return f"{self.vardas} {self.pavarde}"
@@ -183,5 +186,59 @@ class Skelbimas(db.Model):
     turinys = db.Column(db.Text, nullable=False)
     svarbus = db.Column(db.Boolean, default=False)
     matomas_tevams = db.Column(db.Boolean, default=False, nullable=False)
+    kategorija = db.Column(db.String(30), nullable=False, default="bendra")
     vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Renginys(db.Model):
+    """Mokyklos renginys / įvykis - matomas tėvams kalendoriuje."""
+    __tablename__ = "renginiai"
+
+    id = db.Column(db.Integer, primary_key=True)
+    pavadinimas = db.Column(db.String(200), nullable=False)
+    aprasymas = db.Column(db.Text, nullable=True)
+    pradzios_data = db.Column(db.Date, nullable=False, index=True)
+    pradzios_laikas = db.Column(db.Time, nullable=True)
+    pabaigos_data = db.Column(db.Date, nullable=True)
+    pabaigos_laikas = db.Column(db.Time, nullable=True)
+    vieta = db.Column(db.String(200), nullable=True)
+    kategorija = db.Column(db.String(30), nullable=False, default="mokyklos")
+    matomas_tevams = db.Column(db.Boolean, default=True, nullable=False)
+    vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
+
+    autorius = db.relationship("User", backref="renginiai", lazy=True)
+
+
+class VeiklosZurnalas(db.Model):
+    """Vartotojo veiklos žurnalas - kas ką ir kada padarė (GDPR reikalavimas)."""
+    __tablename__ = "veiklos_zurnalas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    veiksmas = db.Column(db.String(50), nullable=False, index=True)
+    objekto_tipas = db.Column(db.String(50), nullable=True)
+    objekto_id = db.Column(db.Integer, nullable=True)
+    aprasymas = db.Column(db.String(500), nullable=True)
+    ip_adresas = db.Column(db.String(50), nullable=True)
+    laikas = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    vartotojas = db.relationship("User", backref="veiklos_irasai", lazy=True)
+
+
+class Pranesimas(db.Model):
+    """Vartotojo pranešimas - kaupiamas pranešimų centre (varpelio ikonoje)."""
+    __tablename__ = "pranesimai"
+
+    id = db.Column(db.Integer, primary_key=True)
+    vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    pavadinimas = db.Column(db.String(200), nullable=False)
+    tekstas = db.Column(db.Text, nullable=True)
+    nuoroda = db.Column(db.String(300), nullable=True)
+    ikona = db.Column(db.String(30), nullable=False, default="bell")
+    tipas = db.Column(db.String(20), nullable=False, default="info")
+    perskaitytas = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    sukurtas = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    vartotojas = db.relationship("User", backref="pranesimai_gauti", lazy=True)

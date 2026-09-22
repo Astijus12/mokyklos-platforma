@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Įjungti 2FA{% endblock %}
+{% block title %}Įjungti dviejų veiksnių autentikaciją{% endblock %}
 
 {% block content %}
 <div class="mb-4">
@@ -34,7 +34,7 @@
 
             <div class="pl-10 flex flex-col sm:flex-row items-start gap-5">
                 <div class="p-3 bg-white border border-slate-200 rounded-lg inline-block">
-                    <img src="{{ qr_data_uri }}" alt="2FA QR kodas" class="w-48 h-48">
+                    <img src="{{ qr_data_uri }}" alt="Kodo skenavimo QR" class="w-48 h-48">
                 </div>
 
                 <div class="flex-1">
@@ -73,7 +73,7 @@
                 </div>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">
                     <i data-lucide="info" class="w-3 h-3 inline"></i>
-                    Kai patvirtinsite kodą — 2FA bus įjungta ir kito prisijungimo metu jums reikės įvesti tokį kodą.
+                    Kai patvirtinsite kodą — dviejų veiksnių autentikacija bus įjungta ir kito prisijungimo metu jums reikės įvesti tokį kodą.
                 </p>
             </form>
         </div>
