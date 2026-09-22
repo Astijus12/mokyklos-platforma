@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Puslapis nerastas{% endblock %}
+
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+    <div class="max-w-md w-full text-center">
+        <div class="relative mx-auto mb-6" style="width: 180px; height: 180px;">
+            <svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <circle cx="90" cy="90" r="80" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-200 dark:text-slate-800"/>
+                <text x="90" y="105" text-anchor="middle" font-size="60" font-weight="700"
+                      class="fill-current text-brand-800 dark:text-brand-400" font-family="Inter, sans-serif">404</text>
+                <circle cx="55" cy="65" r="4" class="fill-current text-slate-400 dark:text-slate-600"/>
+                <circle cx="125" cy="65" r="4" class="fill-current text-slate-400 dark:text-slate-600"/>
+                <path d="M 60 130 Q 90 115, 120 130" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                      class="text-slate-400 dark:text-slate-600"/>
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
+            Puslapis nerastas
+        </h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
+            Atrodo, kad ieškoto puslapio nėra. Jis galėjo būti pervadintas, perkeltas arba niekada neegzistavo.
+        </p>
+
+        <div class="flex gap-2 justify-center flex-wrap">
+            {% if current_user.is_authenticated %}
+                {% if current_user.yra_tevas %}
+                <a href="{{ url_for('parents.dashboard') }}" class="btn-primary">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i>
+                    Grįžti į pradžią
+                </a>
+                {% else %}
+                <a href="{{ url_for('dashboard.index') }}" class="btn-primary">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i>
+                    Grįžti į pradžią
+                </a>
+                {% endif %}
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+                Prisijungti
+            </a>
+            {% endif %}
+            <button onclick="history.back()" class="btn-secondary">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                Grįžti atgal
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{{ self.auth_content() }}
+{% endblock %}

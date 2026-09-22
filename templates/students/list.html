@@ -55,12 +55,41 @@
     </form>
 </div>
 
+<form id="grupine-forma" method="POST" action="{{ url_for('students.grupinis_veiksmas') }}" data-noloading="true">
+    <input type="hidden" name="veiksmas" id="grupinis-veiksmas" value="">
+
+<div id="bulk-toolbar" class="hidden bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg p-3 mb-4 flex items-center gap-3">
+    <div class="flex items-center gap-2">
+        <i data-lucide="check-square" class="w-4 h-4 text-brand-800 dark:text-brand-400" aria-hidden="true"></i>
+        <span class="text-sm font-medium text-slate-900 dark:text-white">
+            Pasirinkta: <span id="pasirinktu-sk">0</span>
+        </span>
+    </div>
+    <div class="flex-1"></div>
+    <button type="button" onclick="grupinisEksportas()" class="btn-secondary text-xs">
+        <i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        Eksportuoti
+    </button>
+    <button type="button" onclick="grupinisSalinti()" class="btn-secondary text-xs text-red-700 dark:text-red-400">
+        <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        Šalinti
+    </button>
+    <button type="button" onclick="atsaukti()" class="btn-ghost text-xs">
+        Atšaukti
+    </button>
+</div>
+
 <div class="card">
     {% if mokiniai %}
-    <div class="overflow-x-auto">
+
+    <div class="hidden md:block overflow-x-auto">
         <table class="w-full data-table">
             <thead>
                 <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th class="px-4 py-2.5 w-8">
+                        <input type="checkbox" id="pasirinkti-visus" class="w-4 h-4 rounded"
+                               onclick="pasirinktiVisus(this.checked)" aria-label="Pasirinkti visus mokinius">
+                    </th>
                     <th class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mokinys</th>
                     <th class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Klasė</th>
                     <th class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Žymos</th>
@@ -71,9 +100,15 @@
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                 {% for m in mokiniai %}
-                <tr class="cursor-pointer"
-                    onclick="window.location='{{ url_for('students.detales', mokinio_id=m.id) }}'">
-                    <td class="px-4 py-3">
+                <tr>
+                    <td class="px-4 py-3" onclick="event.stopPropagation()">
+                        <input type="checkbox" name="mokiniu_ids" value="{{ m.id }}"
+                               class="w-4 h-4 rounded mokinio-checkbox"
+                               onclick="atnaujintiToolbar()"
+                               aria-label="Pasirinkti {{ m.pilnas_vardas }}">
+                    </td>
+                    <td class="px-4 py-3 cursor-pointer"
+                        onclick="window.location='{{ url_for('students.detales', mokinio_id=m.id) }}'">
                         <div class="flex items-center gap-2.5">
                             <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center text-xs font-semibold flex-shrink-0">
                                 {{ m.inicialai }}
@@ -118,7 +153,7 @@
                                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                             </a>
                             <form method="POST" action="{{ url_for('students.salinti', mokinio_id=m.id) }}"
-                                  onsubmit="return confirm('Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?');" class="inline">
+                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Salinti" class="inline">
                                 <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>
@@ -130,14 +165,112 @@
             </tbody>
         </table>
     </div>
+
+    <div class="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {% for m in mokiniai %}
+        <a href="{{ url_for('students.detales', mokinio_id=m.id) }}"
+           class="block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                    {{ m.inicialai }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between gap-2 mb-1">
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white truncate">{{ m.pilnas_vardas }}</p>
+                        <span class="tag tag-default flex-shrink-0">{{ m.klase.pavadinimas }}</span>
+                    </div>
+
+                    {% if m.mokyklos_autobusas or m.geroves_komisija %}
+                    <div class="flex flex-wrap gap-1 mb-2">
+                        {% if m.mokyklos_autobusas %}
+                        <span class="tag tag-warning">
+                            <i data-lucide="bus" class="w-3 h-3"></i>
+                            Autobusas
+                        </span>
+                        {% endif %}
+                        {% if m.geroves_komisija %}
+                        <span class="tag tag-danger">VGK</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if m.motinos_vardas or m.tevo_vardas %}
+                    <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {% if m.motinos_vardas %}{{ m.motinos_vardas }}{% endif %}
+                        {% if m.motinos_vardas and m.tevo_vardas %} · {% endif %}
+                        {% if m.tevo_vardas %}{{ m.tevo_vardas }}{% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 flex-shrink-0 mt-1" aria-hidden="true"></i>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
     {% else %}
-    <div class="text-center py-12 px-6">
-        <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Mokinių nerasta</p>
-        <a href="{{ url_for('students.naujas') }}" class="btn-primary inline-flex">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-            Pridėti pirmą mokinį
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i data-lucide="users" class="w-7 h-7" aria-hidden="true"></i>
+        </div>
+        <p class="empty-state-title">Mokinių nerasta</p>
+        <p class="empty-state-text">
+            {% if paieska or pasirinkta_klase %}Pabandykite pakeisti paieškos kriterijus.{% else %}Pridėkite pirmą mokinį, kad pradėtumėte.{% endif %}
+        </p>
+        <a href="{{ url_for('students.naujas') }}" class="btn-primary">
+            <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            Pridėti mokinį
         </a>
     </div>
     {% endif %}
 </div>
+
+</form>
+
+<script>
+    function atnaujintiToolbar() {
+        const pasirinkti = document.querySelectorAll('.mokinio-checkbox:checked');
+        const toolbar = document.getElementById('bulk-toolbar');
+        const skaicius = document.getElementById('pasirinktu-sk');
+
+        skaicius.textContent = pasirinkti.length;
+        if (pasirinkti.length > 0) {
+            toolbar.classList.remove('hidden');
+        } else {
+            toolbar.classList.add('hidden');
+        }
+    }
+
+    function pasirinktiVisus(pazymeti) {
+        document.querySelectorAll('.mokinio-checkbox').forEach(function(c) {
+            c.checked = pazymeti;
+        });
+        atnaujintiToolbar();
+    }
+
+    function grupinisEksportas() {
+        document.getElementById('grupinis-veiksmas').value = 'eksportuoti';
+        document.getElementById('grupine-forma').submit();
+    }
+
+    function grupinisSalinti() {
+        const sk = document.querySelectorAll('.mokinio-checkbox:checked').length;
+        window.MokyklosUI.confirm({
+            title: 'Šalinti pasirinktus mokinius?',
+            text: `Bus pašalinta ${sk} mokinys(-iai). Šio veiksmo atšaukti negalima.`,
+            confirmText: 'Šalinti',
+            variant: 'danger',
+            onConfirm: function() {
+                document.getElementById('grupinis-veiksmas').value = 'salinti';
+                document.getElementById('grupine-forma').submit();
+            },
+        });
+    }
+
+    function atsaukti() {
+        pasirinktiVisus(false);
+        const pv = document.getElementById('pasirinkti-visus');
+        if (pv) pv.checked = false;
+    }
+</script>
 {% endblock %}

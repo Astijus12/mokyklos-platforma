@@ -207,6 +207,13 @@
                     <span id="dabar-laikas"></span>
                 </div>
 
+                <button type="button" onclick="window.CommandPalette && window.CommandPalette.atidaryti()"
+                        class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                        aria-label="Atidaryti komandų paletę">
+                    <i data-lucide="command" class="w-3 h-3" aria-hidden="true"></i>
+                    <span>K</span>
+                </button>
+
                 <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer"
                    class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                    aria-label="Atidaryti TAMO dienyną naujame skirtuke"
@@ -337,7 +344,57 @@
 
     lucide.createIcons();
 </script>
+<script>
+    window.KomandosPaletei = [
+        {% if current_user.is_authenticated %}
+        {% if current_user.yra_tevas %}
+        { grupe: 'Naršyti', pavadinimas: 'Pradžia', aprasymas: 'Tėvų dashboardas', ikona: 'home', url: '{{ url_for("parents.dashboard") }}' },
+        { grupe: 'Naršyti', pavadinimas: 'Skelbimai', aprasymas: 'Mokyklos skelbimai', ikona: 'megaphone', url: '{{ url_for("parents.skelbimai") }}' },
+        { grupe: 'Naršyti', pavadinimas: 'Kontaktai', aprasymas: 'Klasės vadovų kontaktai', ikona: 'phone', url: '{{ url_for("parents.kontaktai") }}' },
+        {% for v in current_user.vaikai %}
+        { grupe: 'Mano vaikai', pavadinimas: '{{ v.pilnas_vardas|e }}', aprasymas: '{{ v.klase.pavadinimas if v.klase else "" }} klasė', ikona: 'user', url: '{{ url_for("parents.vaikas", vaiko_id=v.id) }}' },
+        {% endfor %}
+        {% else %}
+        { grupe: 'Naršyti', pavadinimas: 'Pradžia', aprasymas: 'Dashboard su statistika', ikona: 'layout-dashboard', url: '{{ url_for("dashboard.index") }}' },
+        { grupe: 'Naršyti', pavadinimas: 'Skelbimai', aprasymas: 'Mokyklos pranešimai', ikona: 'megaphone', url: '{{ url_for("announcements.saraso") }}' },
+        { grupe: 'Naršyti', pavadinimas: 'Klasės', aprasymas: 'Klasių sąrašas', ikona: 'school', url: '{{ url_for("classes.saraso") }}' },
+        { grupe: 'Naršyti', pavadinimas: 'Mokiniai', aprasymas: 'Mokinių valdymas', ikona: 'users', url: '{{ url_for("students.saraso") }}' },
+        { grupe: 'Naršyti', pavadinimas: 'Diplomai', aprasymas: 'Diplomų valdymas', ikona: 'award', url: '{{ url_for("diplomas.saraso") }}' },
+        { grupe: 'Kurti', pavadinimas: 'Naujas skelbimas', aprasymas: 'Sukurti pranešimą', ikona: 'megaphone', url: '{{ url_for("announcements.naujas") }}' },
+        { grupe: 'Kurti', pavadinimas: 'Naujas mokinys', aprasymas: 'Pridėti mokinį į klasę', ikona: 'user-plus', url: '{{ url_for("students.naujas") }}' },
+        { grupe: 'Kurti', pavadinimas: 'Nauja klasė', aprasymas: 'Sukurti naują klasę', ikona: 'school', url: '{{ url_for("classes.nauja") }}' },
+        { grupe: 'Kurti', pavadinimas: 'Įkelti diplomą', aprasymas: 'Įkelti sertifikatą', ikona: 'upload', url: '{{ url_for("diplomas.ikelti") }}' },
+        {% if current_user.yra_administratorius %}
+        { grupe: 'Administravimas', pavadinimas: 'Vartotojai', aprasymas: 'Visi sistemos vartotojai', ikona: 'user-cog', url: '{{ url_for("users.saraso") }}' },
+        { grupe: 'Administravimas', pavadinimas: 'Naujas vartotojas', aprasymas: 'Sukurti mokytojo ar tėvo paskyrą', ikona: 'user-plus', url: '{{ url_for("users.naujas") }}' },
+        {% endif %}
+        {% endif %}
+        { grupe: 'Paskyra', pavadinimas: 'Mano profilis', ikona: 'user', url: '{{ url_for("profile.index") }}' },
+        { grupe: 'Paskyra', pavadinimas: '2FA nustatymai', aprasymas: 'Dviejų veiksnių autentikacija', ikona: 'shield', url: '{{ url_for("security.busena") }}' },
+        { grupe: 'Paskyra', pavadinimas: 'API tokenas', aprasymas: 'Mobiliajai aplikacijai', ikona: 'key', url: '{{ url_for("security.api_tokenas") }}' },
+        { grupe: 'Paskyra', pavadinimas: 'Atsijungti', ikona: 'log-out', url: '{{ url_for("auth.logout") }}' },
+        { grupe: 'Išorė', pavadinimas: 'TAMO dienynas', aprasymas: 'Atidaryti tamo.lt', ikona: 'external-link', url: 'https://tamo.lt' },
+        {% endif %}
+    ];
+</script>
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+<script src="{{ url_for('static', filename='js/command_palette.js') }}"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<script>
+    (function() {
+        document.querySelectorAll('.flash').forEach(function(el) {
+            const kategorija = Array.from(el.classList).find(c => c.startsWith('flash-'));
+            if (!kategorija) return;
+            const tipas = kategorija.replace('flash-', '');
+            const zinute = el.textContent.trim();
+            if (window.MokyklosUI) {
+                window.MokyklosUI.toast(zinute, tipas);
+                el.remove();
+            }
+        });
+    })();
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

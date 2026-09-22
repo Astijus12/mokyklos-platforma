@@ -80,7 +80,7 @@
                             </a>
                             {% if v.id != current_user.id %}
                             <form method="POST" action="{{ url_for('users.salinti', vartotojo_id=v.id) }}"
-                                  onsubmit="return confirm('Ar tikrai norite pašalinti vartotoją {{ v.pilnas_vardas }}?');" class="inline">
+                                  data-confirm="Ar tikrai norite pašalinti vartotoją {{ v.pilnas_vardas }}?" data-confirm-btn="Salinti" class="inline">
                                 <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>

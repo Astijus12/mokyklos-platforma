@@ -185,3 +185,74 @@ def salinti(mokinio_id):
     db.session.commit()
     flash(f"Mokinys {vardas} pašalintas.", "info")
     return redirect(url_for("students.saraso"))
+
+
+@students_bp.route("/grupinis-veiksmas", methods=["POST"])
+@personalas_required
+def grupinis_veiksmas():
+    """Grupinis veiksmas su keliais mokiniais - eksportas arba šalinimas."""
+    mokiniu_ids = [int(x) for x in request.form.getlist("mokiniu_ids") if x.isdigit()]
+    veiksmas = request.form.get("veiksmas", "")
+
+    if not mokiniu_ids:
+        flash("Nepasirinktas nė vienas mokinys.", "warning")
+        return redirect(url_for("students.saraso"))
+
+    if veiksmas == "eksportuoti":
+        return redirect(
+            url_for("students.eksportas_pasirinktu", ids=",".join(str(i) for i in mokiniu_ids))
+        )
+
+    if veiksmas == "salinti":
+        mokiniai = Mokinys.query.filter(Mokinys.id.in_(mokiniu_ids)).all()
+        skaicius = len(mokiniai)
+        for m in mokiniai:
+            db.session.delete(m)
+        db.session.commit()
+        flash(f"Pašalinta {skaicius} mokinys(-iai).", "success")
+
+    return redirect(url_for("students.saraso"))
+
+
+@students_bp.route("/eksportas-pasirinktu")
+@personalas_required
+def eksportas_pasirinktu():
+    """Eksportuoti pasirinktus mokinius į CSV."""
+    ids_raw = request.args.get("ids", "")
+    ids = [int(x) for x in ids_raw.split(",") if x.isdigit()]
+
+    if not ids:
+        return redirect(url_for("students.saraso"))
+
+    mokiniai = Mokinys.query.filter(Mokinys.id.in_(ids)).order_by(
+        Mokinys.pavarde, Mokinys.vardas
+    ).all()
+
+    output = io.StringIO()
+    output.write("﻿")
+    rasytojas = csv.writer(output, delimiter=";")
+    rasytojas.writerow([
+        "Vardas", "Pavardė", "Klasė", "Gimimo data",
+        "El. paštas", "Telefonas", "Adresas",
+        "Motinos vardas", "Motinos telefonas", "Motinos el. paštas",
+        "Tėvo vardas", "Tėvo telefonas", "Tėvo el. paštas",
+        "Mokyklos autobusas", "Gerovės komisija",
+    ])
+
+    for m in mokiniai:
+        rasytojas.writerow([
+            m.vardas, m.pavarde,
+            m.klase.pavadinimas if m.klase else "",
+            m.gimimo_data.strftime("%Y-%m-%d") if m.gimimo_data else "",
+            m.email or "", m.telefonas or "", m.adresas or "",
+            m.motinos_vardas or "", m.motinos_telefonas or "", m.motinos_email or "",
+            m.tevo_vardas or "", m.tevo_telefonas or "", m.tevo_email or "",
+            "Taip" if m.mokyklos_autobusas else "Ne",
+            "Taip" if m.geroves_komisija else "Ne",
+        ])
+
+    return Response(
+        output.getvalue().encode("utf-8"),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename=pasirinkti_mokiniai_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"},
+    )

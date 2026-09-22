@@ -1,6 +1,6 @@
 """Pagrindinis Flask aplikacijos failas - čia paleidžiama programa."""
 import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_login import LoginManager
 
 from config import Config
@@ -49,6 +49,18 @@ def create_app(config_class=Config):
     app.register_blueprint(parents_bp)
     app.register_blueprint(security_bp)
     app.register_blueprint(api_bp)
+
+    @app.errorhandler(404)
+    def handle_404(e):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(403)
+    def handle_403(e):
+        return render_template("errors/403.html"), 403
+
+    @app.errorhandler(500)
+    def handle_500(e):
+        return render_template("errors/500.html"), 500
 
     with app.app_context():
         db.create_all()

@@ -39,7 +39,7 @@
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
             </a>
             <form method="POST" action="{{ url_for('classes.salinti', klases_id=klase.id) }}"
-                  onsubmit="return confirm('Ar tikrai norite pašalinti klasę {{ klase.pavadinimas }}? Visi mokiniai bus pašalinti.');">
+                  data-confirm="Ar tikrai norite pašalinti klasę {{ klase.pavadinimas }}? Visi mokiniai bus pašalinti." data-confirm-btn="Salinti">
                 <button type="submit" class="btn-icon-danger">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
@@ -100,7 +100,7 @@
                                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                             </a>
                             <form method="POST" action="{{ url_for('students.salinti', mokinio_id=m.id) }}"
-                                  onsubmit="return confirm('Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?');" class="inline">
+                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Salinti" class="inline">
                                 <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>

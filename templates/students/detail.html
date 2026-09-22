@@ -50,7 +50,7 @@
                     Redaguoti
                 </a>
                 <form method="POST" action="{{ url_for('students.salinti', mokinio_id=mokinys.id) }}"
-                      onsubmit="return confirm('Ar tikrai norite pašalinti šį mokinį?');">
+                      data-confirm="Ar tikrai norite pašalinti šį mokinį?" data-confirm-btn="Salinti">
                     <button type="submit" class="btn-icon-danger" title="Šalinti">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>

@@ -61,14 +61,14 @@
             </div>
 
             <div class="flex gap-2">
-                <form method="POST" onsubmit="return confirm('Sugeneravus naują tokeną, senasis nustos veikti visose vietose, kur naudojamas. Tęsti?');">
+                <form method="POST" data-confirm="Sugeneravus naują tokeną, senasis nustos veikti visose vietose, kur naudojamas." data-confirm-btn="Sugeneruoti" data-confirm-title="Sugeneruoti naują tokeną?" data-confirm-variant="warning">
                     <input type="hidden" name="veiksmas" value="generuoti">
                     <button type="submit" class="btn-primary">
                         <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                         Sugeneruoti naują
                     </button>
                 </form>
-                <form method="POST" onsubmit="return confirm('Anuliavus tokeną, mobilios aplikacijos prieiga bus atsijungta. Tęsti?');">
+                <form method="POST" data-confirm="Anuliavus tokeną, mobilios aplikacijos prieiga bus atsijungta." data-confirm-btn="Anuliuoti" data-confirm-title="Anuliuoti API tokeną?">
                     <input type="hidden" name="veiksmas" value="anuliuoti">
                     <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
                         <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>

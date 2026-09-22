@@ -5,41 +5,86 @@
 {% block content %}
 <div class="mb-4">
     <a href="{{ url_for('announcements.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>
         Visi skelbimai
     </a>
 </div>
 
-<article class="card max-w-3xl">
-    <div class="p-6">
-        <div class="mb-4">
-            {% if skelbimas.svarbus %}<span class="tag tag-danger mb-3 inline-flex">Svarbu</span>{% endif %}
-            <h1 class="text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">{{ skelbimas.pavadinimas }}</h1>
-            <div class="flex items-center gap-2 mt-2 text-sm text-slate-500 dark:text-slate-400">
+<article class="max-w-3xl">
+    <div class="relative overflow-hidden rounded-t-lg
+                {% if skelbimas.svarbus %}bg-gradient-to-br from-red-800 to-red-900{% else %}bg-gradient-to-br from-brand-800 to-brand-950{% endif %}
+                text-white p-6 sm:p-8">
+        <svg class="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <defs>
+                <pattern id="p-hero" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M0 40 L40 0" stroke="white" stroke-width="0.5" fill="none"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#p-hero)"/>
+        </svg>
+
+        <div class="relative">
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                {% if skelbimas.svarbus %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-white/20 backdrop-blur-sm">
+                    <i data-lucide="alert-circle" class="w-3 h-3" aria-hidden="true"></i>
+                    Svarbu
+                </span>
+                {% endif %}
+                {% if skelbimas.matomas_tevams %}
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-white/20 backdrop-blur-sm">
+                    <i data-lucide="users" class="w-3 h-3" aria-hidden="true"></i>
+                    Matomas tėvams
+                </span>
+                {% endif %}
+            </div>
+
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight leading-tight mb-3">
+                {{ skelbimas.pavadinimas }}
+            </h1>
+
+            <div class="flex items-center gap-2 text-sm text-white/80">
+                <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-semibold">
+                    {{ skelbimas.autorius.inicialai }}
+                </div>
                 <span>{{ skelbimas.autorius.pilnas_vardas }}</span>
-                <span class="text-slate-300 dark:text-slate-600">•</span>
+                <span class="text-white/40">·</span>
                 <span>{{ skelbimas.sukurtas.strftime('%Y-%m-%d %H:%M') }}</span>
             </div>
         </div>
+    </div>
 
-        <div class="prose dark:prose-invert max-w-none mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
-            <p class="text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{{ skelbimas.turinys }}</p>
-        </div>
+    <div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-lg">
+        <div class="p-6 sm:p-8">
+            <div class="prose dark:prose-invert max-w-none">
+                <p class="text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed text-base">{{ skelbimas.turinys }}</p>
+            </div>
 
-        {% if current_user.yra_administratorius or skelbimas.vartotojo_id == current_user.id %}
-        <div class="flex gap-2 mt-6 pt-5 border-t border-slate-100 dark:border-slate-700">
-            <a href="{{ url_for('announcements.redaguoti', skelbimo_id=skelbimas.id) }}" class="btn-secondary">
-                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                Redaguoti
-            </a>
-            <form method="POST" action="{{ url_for('announcements.salinti', skelbimo_id=skelbimas.id) }}"
-                  onsubmit="return confirm('Ar tikrai norite pašalinti šį skelbimą?');">
-                <button type="submit" class="btn-icon-danger">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
-            </form>
+            {% if current_user.yra_administratorius or skelbimas.vartotojo_id == current_user.id %}
+            <div class="flex gap-2 mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <a href="{{ url_for('announcements.redaguoti', skelbimo_id=skelbimas.id) }}" class="btn-secondary">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                    Redaguoti
+                </a>
+                <form method="POST" action="{{ url_for('announcements.salinti', skelbimo_id=skelbimas.id) }}"
+                      data-confirm="Ar tikrai norite pašalinti šį skelbimą? Šio veiksmo atšaukti negalima."
+                      data-confirm-title="Šalinti skelbimą?"
+                      data-confirm-btn="Šalinti">
+                    <button type="submit" class="btn-icon-danger" aria-label="Šalinti skelbimą">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
+    </div>
+
+    <div class="mt-6 flex items-center justify-center gap-3 text-sm">
+        <a href="{{ url_for('announcements.saraso') }}"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <i data-lucide="list" class="w-3.5 h-3.5" aria-hidden="true"></i>
+            Visi skelbimai
+        </a>
     </div>
 </article>
 {% endblock %}

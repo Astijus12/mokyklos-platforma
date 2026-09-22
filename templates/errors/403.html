@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}403 - Prieiga uždrausta{% endblock %}
+
+{% block auth_content %}
+<div class="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
+    <div class="max-w-md w-full text-center">
+        <div class="relative mx-auto mb-6" style="width: 180px; height: 180px;">
+            <svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                <circle cx="90" cy="90" r="80" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-200 dark:text-amber-900"/>
+                <path d="M 70 75 L 70 70 A 20 20 0 0 1 110 70 L 110 75" fill="none" stroke="currentColor" stroke-width="5"
+                      class="text-amber-600 dark:text-amber-500"/>
+                <rect x="60" y="75" width="60" height="45" rx="4" fill="currentColor" class="text-amber-600 dark:text-amber-500"/>
+                <circle cx="90" cy="95" r="4" class="fill-current text-white"/>
+            </svg>
+        </div>
+
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
+            Prieiga uždrausta
+        </h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
+            Jūs neturite teisių pasiekti šio puslapio. Susisiekite su administratoriumi, jei manote, kad tai klaida.
+        </p>
+
+        <div class="flex gap-2 justify-center flex-wrap">
+            {% if current_user.is_authenticated %}
+                {% if current_user.yra_tevas %}
+                <a href="{{ url_for('parents.dashboard') }}" class="btn-primary">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i>
+                    Grįžti į pradžią
+                </a>
+                {% else %}
+                <a href="{{ url_for('dashboard.index') }}" class="btn-primary">
+                    <i data-lucide="home" class="w-3.5 h-3.5"></i>
+                    Grįžti į pradžią
+                </a>
+                {% endif %}
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+                Prisijungti
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{{ self.auth_content() }}
+{% endblock %}
