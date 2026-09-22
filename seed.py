@@ -180,6 +180,21 @@ def _uzpildyti():
 
         db.session.commit()
 
+        print("Kuriama demo tevo paskyra...")
+        petras_tevas = User(
+            vardas="Petras",
+            pavarde="Demo",
+            email="tevas@demo.lt",
+            telefonas="+37060000000",
+            role="tevas",
+        )
+        petras_tevas.nustatyti_slaptazodi("tevas123")
+        # Priskirti pirmus 2 mokinius (Aiste ir Domas is 5A)
+        pirmieji_du = Mokinys.query.limit(2).all()
+        petras_tevas.vaikai = pirmieji_du
+        db.session.add(petras_tevas)
+        db.session.commit()
+
         print("Kuriami skelbimai...")
         skelbimai_data = [
             {
@@ -198,15 +213,17 @@ def _uzpildyti():
             },
             {
                 "pavadinimas": "Atvirų durų diena - lapkričio 25 d.",
-                "turinys": "Mokykloje organizuojama Atvirų durų diena tėvams. Renginys vyks 16:00-19:00. Kviečiame mokytojus pasiruošti savo dalykų pristatymus ir prisidėti prie šios svarbios mokyklos bendruomenės akimirkos.",
+                "turinys": "Mieli tėvai, kviečiame į atvirų durų dieną lapkričio 25 d. 16:00-19:00. Galėsite susipažinti su mokyklos veikla, pabendrauti su klasių vadovais bei mokytojais.",
                 "svarbus": False,
+                "matomas_tevams": True,
                 "vartotojo_id": admin.id,
                 "dienu_atgal": 3,
             },
             {
                 "pavadinimas": "Kalėdinis koncertas",
-                "turinys": "Gruodžio 18 d. 18:00 mokyklos salėje vyks kalėdinis koncertas. Pasirodys mūsų talentingi mokiniai - choras, šokio grupė ir teatro studija. Laukiame visų darbuotojų!",
+                "turinys": "Gruodžio 18 d. 18:00 mokyklos salėje vyks kalėdinis koncertas. Pasirodys mūsų talentingi mokiniai - choras, šokio grupė ir teatro studija. Laukiame ir tėvų!",
                 "svarbus": False,
+                "matomas_tevams": True,
                 "vartotojo_id": ona.id,
                 "dienu_atgal": 5,
             },
