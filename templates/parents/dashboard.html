@@ -3,11 +3,21 @@
 {% block title %}Tėvų portalas - Pradžia{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Sveiki, {{ current_user.vardas }}!</h1>
-    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-        Čia rasite informaciją apie savo vaikus ir naujausius mokyklos skelbimus.
-    </p>
+<div class="mb-6 flex items-start justify-between flex-wrap gap-3">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+            <span id="pasveikinimas">Sveiki</span>, {{ current_user.vardas }}
+        </h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Čia rasite informaciją apie savo vaikus ir naujausius mokyklos skelbimus.
+        </p>
+    </div>
+    {% if vaikai %}
+    <a href="{{ url_for('parents.kontaktai') }}" class="btn-secondary" aria-label="Susisiekti su klasės vadovu">
+        <i data-lucide="mail" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        Susisiekti su vadovu
+    </a>
+    {% endif %}
 </div>
 
 {% if vaikai %}
@@ -99,10 +109,28 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-8 text-center">
-        <i data-lucide="megaphone-off" class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2"></i>
-        <p class="text-sm text-slate-500 dark:text-slate-400">Kol kas skelbimų nėra.</p>
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg">
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i data-lucide="megaphone-off" class="w-7 h-7" aria-hidden="true"></i>
+            </div>
+            <p class="empty-state-title">Kol kas skelbimų nėra</p>
+            <p class="empty-state-text">Kai tik mokykla paskelbs naujienas — jas rasite čia.</p>
+        </div>
     </div>
     {% endif %}
 </div>
+
+<script>
+    (function() {
+        const v = new Date().getHours();
+        const el = document.getElementById('pasveikinimas');
+        if (!el) return;
+        let tekstas = 'Sveiki';
+        if (v >= 5 && v < 12) tekstas = 'Labas rytas';
+        else if (v >= 12 && v < 18) tekstas = 'Laba diena';
+        else if (v >= 18 && v < 22) tekstas = 'Labas vakaras';
+        el.textContent = tekstas;
+    })();
+</script>
 {% endblock %}

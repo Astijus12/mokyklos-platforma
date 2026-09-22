@@ -5,10 +5,12 @@
 {% block content %}
 <div class="mb-6 flex items-end justify-between flex-wrap gap-3">
     <div>
-        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Sveiki sugrįžę, {{ current_user.vardas }}</h1>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
+            <span id="pasveikinimas">Sveiki</span>, {{ current_user.vardas }}
+        </h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Mokyklos valdymo apžvalga</p>
     </div>
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
         <a href="{{ url_for('announcements.naujas') }}" class="btn-secondary">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             Skelbimas
@@ -17,6 +19,60 @@
             <i data-lucide="upload" class="w-3.5 h-3.5"></i>
             Įkelti diplomą
         </a>
+    </div>
+</div>
+
+<div class="mb-6">
+    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Greitieji veiksmai</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+        <a href="{{ url_for('students.naujas') }}" class="quick-action">
+            <div class="quick-action-icon">
+                <i data-lucide="user-plus" class="w-4 h-4" aria-hidden="true"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-medium">Naujas mokinys</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Pridėti į klasę</p>
+            </div>
+        </a>
+        <a href="{{ url_for('announcements.naujas') }}" class="quick-action">
+            <div class="quick-action-icon">
+                <i data-lucide="megaphone" class="w-4 h-4" aria-hidden="true"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-medium">Naujas skelbimas</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Pranešti bendruomenei</p>
+            </div>
+        </a>
+        <a href="{{ url_for('classes.nauja') }}" class="quick-action">
+            <div class="quick-action-icon">
+                <i data-lucide="school" class="w-4 h-4" aria-hidden="true"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-medium">Nauja klasė</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Priskirti vadovą</p>
+            </div>
+        </a>
+        {% if current_user.yra_administratorius %}
+        <a href="{{ url_for('users.naujas') }}" class="quick-action">
+            <div class="quick-action-icon">
+                <i data-lucide="user-cog" class="w-4 h-4" aria-hidden="true"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-medium">Naujas vartotojas</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Mokytojas ar tėvas</p>
+            </div>
+        </a>
+        {% else %}
+        <a href="{{ url_for('students.saraso') }}" class="quick-action">
+            <div class="quick-action-icon">
+                <i data-lucide="users" class="w-4 h-4" aria-hidden="true"></i>
+            </div>
+            <div class="min-w-0">
+                <p class="text-sm font-medium">Mokinių sąrašas</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Peržiūrėti visus</p>
+            </div>
+        </a>
+        {% endif %}
     </div>
 </div>
 
@@ -104,9 +160,14 @@
                 </div>
             </a>
             {% else %}
-            <div class="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
-                <p class="text-sm">Skelbimų dar nėra</p>
-                <a href="{{ url_for('announcements.naujas') }}" class="btn-secondary inline-flex mt-3">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i data-lucide="megaphone-off" class="w-7 h-7" aria-hidden="true"></i>
+                </div>
+                <p class="empty-state-title">Skelbimų dar nėra</p>
+                <p class="empty-state-text">Sukurk pirmą skelbimą, kad bendruomenė gautų svarbias naujienas.</p>
+                <a href="{{ url_for('announcements.naujas') }}" class="btn-primary">
+                    <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>
                     Sukurti skelbimą
                 </a>
             </div>
@@ -128,13 +189,35 @@
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">{{ diplomas.vartotojas.pilnas_vardas }}</p>
             </div>
             {% else %}
-            <div class="px-5 py-10 text-center text-slate-500 dark:text-slate-400">
-                <p class="text-sm">Diplomų dar nėra</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i data-lucide="award" class="w-7 h-7" aria-hidden="true"></i>
+                </div>
+                <p class="empty-state-title">Diplomų dar nėra</p>
+                <p class="empty-state-text">Įkelk pirmą kvalifikacijos dokumentą.</p>
+                <a href="{{ url_for('diplomas.ikelti') }}" class="btn-secondary">
+                    <i data-lucide="upload" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                    Įkelti diplomą
+                </a>
             </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<script>
+    (function() {
+        const v = new Date().getHours();
+        const el = document.getElementById('pasveikinimas');
+        if (!el) return;
+        let tekstas = 'Sveiki';
+        if (v >= 5 && v < 12) tekstas = 'Labas rytas';
+        else if (v >= 12 && v < 18) tekstas = 'Laba diena';
+        else if (v >= 18 && v < 22) tekstas = 'Labas vakaras';
+        else tekstas = 'Sveiki';
+        el.textContent = tekstas;
+    })();
+</script>
 {% endblock %}
 
 {% block scripts %}

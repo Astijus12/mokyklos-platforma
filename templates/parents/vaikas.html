@@ -138,4 +138,47 @@
     <p class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">{{ vaikas.pastabos }}</p>
 </div>
 {% endif %}
+
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-5 mt-5">
+    <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <i data-lucide="history" class="w-4 h-4" aria-hidden="true"></i>
+        Įvykių juosta
+    </h2>
+
+    <div class="timeline">
+        {% if vaikas.geroves_komisija and vaikas.geroves_komisija_data %}
+        <div class="timeline-item">
+            <p class="timeline-item-date">{{ vaikas.geroves_komisija_data.strftime('%Y-%m-%d') }}</p>
+            <p class="timeline-item-title">Vaiko gerovės komisijos sprendimas</p>
+            {% if vaikas.geroves_komisija_pastabos %}
+            <p class="timeline-item-text mt-1">{{ vaikas.geroves_komisija_pastabos }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if vaikas.mokyklos_autobusas %}
+        <div class="timeline-item">
+            <p class="timeline-item-date">Šiais mokslo metais</p>
+            <p class="timeline-item-title">Naudojasi mokyklos autobusu</p>
+            <p class="timeline-item-text mt-1">Transportuojamas mokyklos organizuojamu maršrutu.</p>
+        </div>
+        {% endif %}
+
+        {% if vaikas.klase %}
+        <div class="timeline-item">
+            <p class="timeline-item-date">{{ vaikas.klase.mokslo_metai }}</p>
+            <p class="timeline-item-title">Priskirtas {{ vaikas.klase.pavadinimas }} klasei</p>
+            {% if vaikas.klase.vadovas %}
+            <p class="timeline-item-text mt-1">Klasės vadovas — {{ vaikas.klase.vadovas.pilnas_vardas }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="timeline-item">
+            <p class="timeline-item-date">{{ vaikas.sukurtas.strftime('%Y-%m-%d') }}</p>
+            <p class="timeline-item-title">Įtrauktas į mokyklos sistemą</p>
+            <p class="timeline-item-text mt-1">Sukurtas mokinio profilis sistemoje.</p>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -48,7 +48,13 @@
 {% if current_user.is_authenticated %}
 <div class="flex min-h-screen">
 
-    <aside class="w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col">
+    <div id="sidebar-backdrop"
+         onclick="uzdarytiSideMenu()"
+         class="fixed inset-0 bg-black/40 z-30 md:hidden hidden"
+         aria-hidden="true"></div>
+
+    <aside id="sidebar"
+           class="fixed md:sticky top-0 left-0 h-screen w-60 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-200 ease-out">
         <div class="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
             <a href="{% if current_user.yra_tevas %}{{ url_for('parents.dashboard') }}{% else %}{{ url_for('dashboard.index') }}{% endif %}" class="flex items-center gap-2.5">
                 <div class="w-8 h-8 bg-brand-800 dark:bg-brand-700 rounded-md flex items-center justify-center">
@@ -169,18 +175,27 @@
         </div>
     </aside>
 
-    <main class="flex-1 overflow-auto">
+    <main class="flex-1 overflow-auto min-w-0">
 
-        <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10">
-            <div class="max-w-7xl mx-auto px-6 py-2.5 flex items-center gap-3">
+        <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-2 sm:gap-3">
+
+                <button onclick="atidarytiSideMenu()"
+                        class="md:hidden p-2 -ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        aria-label="Atidaryti meniu">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+
                 {% if not current_user.yra_tevas %}
                 <form action="{{ url_for('search.index') }}" method="GET" class="flex-1 max-w-md">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400 pointer-events-none">
-                            <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                            <i data-lucide="search" class="w-3.5 h-3.5" aria-hidden="true"></i>
                         </div>
-                        <input type="text" name="q" value="{{ request.args.get('q', '') }}"
+                        <label for="global-search" class="sr-only">Paieška</label>
+                        <input id="global-search" type="text" name="q" value="{{ request.args.get('q', '') }}"
                                placeholder="Ieškoti..."
+                               aria-label="Ieškoti sistemoje"
                                class="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-sm focus:outline-none focus:border-brand-800 focus:bg-white dark:focus:bg-slate-900 focus:ring-2 focus:ring-brand-100 dark:focus:ring-brand-900/40 transition-colors">
                     </div>
                 </form>
@@ -188,40 +203,45 @@
 
                 <div class="flex-1"></div>
 
-                <div class="text-xs text-slate-500 dark:text-slate-400 hidden md:block">
+                <div class="text-xs text-slate-500 dark:text-slate-400 hidden lg:block">
                     <span id="dabar-laikas"></span>
                 </div>
 
                 <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer"
-                   class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                   class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                   aria-label="Atidaryti TAMO dienyną naujame skirtuke"
                    title="Atidaryti TAMO dienyną">
                     <span>TAMO</span>
-                    <i data-lucide="external-link" class="w-3 h-3"></i>
+                    <i data-lucide="external-link" class="w-3 h-3" aria-hidden="true"></i>
                 </a>
 
                 <button onclick="toggleTheme()" id="theme-toggle"
                         class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+                        aria-label="Perjungti tamsų / šviesų režimą"
                         title="Perjungti temą">
-                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
-                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block" aria-hidden="true"></i>
+                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden" aria-hidden="true"></i>
                 </button>
 
                 <a href="{{ url_for('auth.logout') }}"
                    class="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-400"
+                   aria-label="Atsijungti nuo sistemos"
                    title="Atsijungti">
-                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
                 </a>
             </div>
+
+            {% block breadcrumbs %}{% endblock %}
         </header>
 
-        <div class="max-w-7xl mx-auto px-6 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-6">
 
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="mb-5 space-y-2">
+                    <div class="mb-5 space-y-2" role="status" aria-live="polite">
                     {% for category, message in messages %}
                         <div class="flash flash-{{ category }}">
-                            <i data-lucide="{% if category == 'success' %}check-circle{% elif category == 'danger' %}alert-circle{% elif category == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-4 h-4 flex-shrink-0"></i>
+                            <i data-lucide="{% if category == 'success' %}check-circle{% elif category == 'danger' %}alert-circle{% elif category == 'warning' %}alert-triangle{% else %}info{% endif %}" class="w-4 h-4 flex-shrink-0" aria-hidden="true"></i>
                             <span>{{ message }}</span>
                         </div>
                     {% endfor %}
@@ -262,6 +282,58 @@
         el.textContent = `${dienos[dabar.getDay()]}, ${dabar.getDate()} ${menesiai[dabar.getMonth()]} ${dabar.getFullYear()}`;
     }
     atnaujintiLaika();
+
+    function atidarytiSideMenu() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (!sidebar) return;
+        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.add('translate-x-0');
+        if (backdrop) backdrop.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function uzdarytiSideMenu() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (!sidebar) return;
+        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('translate-x-0');
+        if (backdrop) backdrop.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', function(e) {
+        const nuoroda = e.target.closest('#sidebar a');
+        if (nuoroda && window.innerWidth < 768) {
+            uzdarytiSideMenu();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') uzdarytiSideMenu();
+    });
+
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form.dataset.noloading === 'true') return;
+
+        const mygtukas = form.querySelector('button[type="submit"]');
+        if (!mygtukas || mygtukas.disabled) return;
+
+        setTimeout(() => {
+            mygtukas.disabled = true;
+            mygtukas.dataset.pradinis = mygtukas.innerHTML;
+            mygtukas.innerHTML = '<span class="spinner"></span><span>Palaukite...</span>';
+        }, 0);
+
+        setTimeout(() => {
+            if (mygtukas.dataset.pradinis) {
+                mygtukas.disabled = false;
+                mygtukas.innerHTML = mygtukas.dataset.pradinis;
+            }
+        }, 8000);
+    });
 
     lucide.createIcons();
 </script>
