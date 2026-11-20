@@ -18,6 +18,17 @@ from config import TestConfig
 from models import db, User, Klase, Mokinys
 
 
+def pytest_collection_modifyitems(config, items):
+    """Testams iš katalogo tests/postgres automatiškai uždedama žymė „postgres“.
+
+    Taip juos galima paleisti atskirai: pytest -m postgres, arba praleisti:
+    pytest -m "not postgres".
+    """
+    for item in items:
+        if "postgres" in item.path.parts:
+            item.add_marker(pytest.mark.postgres)
+
+
 @pytest.fixture(scope="session")
 def app():
     """Flask aplikacija testinėje konfigūracijoje - viena visai sesijai."""

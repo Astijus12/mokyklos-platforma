@@ -22,27 +22,64 @@ Modernios web platformos prototipas Noriūnų Jono Černiaus mokyklai. Skirtas m
 
 ## Paleidimas
 
-### 1. Aktyvuoti virtualią aplinką
+### 1. Aktyvuoti virtualią aplinką ir įdiegti paketus
 
 **Windows (PowerShell):**
 ```powershell
 cd C:\Users\astij\mokyklos-platforma
 .\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
 
-### 2. Užpildyti duomenų bazę demo duomenimis (vieną kartą)
+### 2. Paruošti PostgreSQL (vieną kartą)
+
+Kūrimui naudojamas vietinis PostgreSQL. Naudotoją `mokykla` ir duomenų bazes
+`mokykla_db` (programai) bei `mokykla_test` (PostgreSQL testams) sukuria scenarijus:
+
+```powershell
+& "C:\Program Files\PostgreSQL\19\bin\psql.exe" -U postgres -f scripts\sukurti_duomenu_baze.sql
+```
+
+Tada nukopijuokite `.env.example` į `.env` ir atkomentuokite eilutes `DATABASE_URL`
+ir `TEST_DATABASE_URL`. Be `.env` programa naudoja SQLite failą `mokykla.db`.
+
+### 3. Užpildyti duomenų bazę demo duomenimis (vieną kartą)
 
 ```powershell
 python seed.py
 ```
 
-### 3. Paleisti serverį
+Scenarijus ištrina lenteles ir schemą sukuria migracijomis (`migrations/`).
+
+### 4. Paleisti serverį ir fono procesą
 
 ```powershell
 python app.py
+python worker.py
 ```
 
+`python app.py` paleidžiant atnaujina duomenų bazę iki naujausios migracijos.
+Fono procesas (`worker.py`) vykdo planuoklės užduotis; jį paleiskite atskirame terminale.
+
 Atidarykite naršyklėje: **http://127.0.0.1:5000**
+
+### Migracijos ir testai
+
+```powershell
+flask --app app atnaujinti-db      # atnaujina schemą (tinka ir senai DB be migracijų)
+flask --app app db current         # dabartinė schemos versija
+pytest -m "not postgres"           # SQLite testai
+pytest -m postgres                 # PostgreSQL testai (reikia TEST_DATABASE_URL)
+```
+
+### Docker
+
+```powershell
+docker compose up --build
+```
+
+Paleidžiami konteineriai `web` (programa), `worker` (fono procesas), `db` (PostgreSQL 16)
+ir `backup` (atsarginės kopijos).
 
 ## Demo prisijungimai
 

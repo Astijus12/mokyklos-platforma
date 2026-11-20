@@ -1,18 +1,43 @@
+# Bendri programos (web ir worker) aplinkos kintamieji – aprašomi vieną kartą
+x-programos-aplinka: &programos-aplinka
+  SECRET_KEY: ${SECRET_KEY:-pakeisk-mane-produkcijoje}
+  DATABASE_URL: postgresql://mokykla:${DB_PASSWORD:-slaptas123}@db:5432/mokykla_db
+  TZ: Europe/Vilnius
+
 services:
+  # Žiniatinklio procesas: paleidžiant atnaujina schemą (migracijos) ir aptarnauja naršykles
   web:
     build: .
     image: mokyklos-platforma:latest
     container_name: mokykla_web
     ports:
       - "8000:8000"
-    environment:
-      SECRET_KEY: ${SECRET_KEY:-pakeisk-mane-produkcijoje}
-      DATABASE_URL: postgresql://mokykla:${DB_PASSWORD:-slaptas123}@db:5432/mokykla_db
+    environment: *programos-aplinka
     depends_on:
       db:
         condition: service_healthy
     volumes:
       - uploads:/app/static/uploads
+    restart: unless-stopped
+    networks:
+      - mokykla_net
+
+  # Fono procesas: planuoklė (APScheduler) vykdo periodines užduotis.
+  # Laukia, kol web pritaikys migracijas, todėl atskirai migracijų nevykdo.
+  worker:
+    build: .
+    image: mokyklos-platforma:latest
+    container_name: mokykla_worker
+    command: ["python", "worker.py"]
+    environment: *programos-aplinka
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/static/uploads
+    # Atvaizdo HEALTHCHECK tikrina web prievadą 8000, kurio worker neturi
+    healthcheck:
+      disable: true
     restart: unless-stopped
     networks:
       - mokykla_net

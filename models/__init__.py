@@ -1,12 +1,31 @@
-"""Duomenų bazės modeliai (lentelės)."""
+"""Duomenų bazės modeliai (lentelės).
+
+Šiame faile – praktikų metu sukurti modeliai (9 lentelės). Baigiamajame darbe
+pridėtos 14 naujų lentelių aprašytos atskiruose failuose (žr. failo pabaigą):
+models/vgk.py, models/dokumentai.py, models/automatizavimas.py, models/importas.py.
+"""
 import hashlib
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from sqlalchemy.dialects.postgresql import JSONB
 from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
+
+# JSON laukams: PostgreSQL naudoja jsonb (kaip ER diagramoje), SQLite testuose – JSON tekstą
+JSON_LAUKAS = db.JSON().with_variant(JSONB(), "postgresql")
+
+
+def utc_dabar():
+    """Dabartinis UTC laikas be laiko juostos žymės.
+
+    Duomenų bazėje laikas saugomas UTC (kaip ir esamuose modeliuose su
+    datetime.utcnow). Ši funkcija grąžina tą patį, tik nenaudoja Python 3.12
+    pasenusia pažymėtos datetime.utcnow().
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 tevu_vaiku_lentele = db.Table(
@@ -36,6 +55,20 @@ class User(UserMixin, db.Model):
 
     api_token_hash = db.Column(db.String(128), nullable=True, index=True)
     api_token_data = db.Column(db.DateTime, nullable=True)
+
+    # BD: pareigos Vaiko gerovės komisijoje. None – ne komisijos narys.
+    vgk_pareigos = db.Column(db.String(20), nullable=True)
+
+    ROLIU_PAVADINIMAI = {
+        "administratorius": "Administratorius",
+        "mokytojas": "Mokytojas",
+        "tevas": "Tėvas",
+    }
+    VGK_PAREIGOS = {
+        "narys": "Komisijos narys",
+        "pirmininkas": "Komisijos pirmininkas",
+        "sekretorius": "Komisijos sekretorius",
+    }
 
     diplomai = db.relationship("Diplomas", backref="vartotojas", lazy=True, cascade="all, delete-orphan")
     vadovaujamos_klases = db.relationship("Klase", backref="vadovas", lazy=True)
@@ -98,6 +131,21 @@ class User(UserMixin, db.Model):
             return self.vardas[:2].upper()
         return f"{self.vardas[0]}{self.pavarde[0]}".upper()
 
+    @property
+    def roles_pavadinimas(self):
+        """Rolės pavadinimas sąsajai (pvz., „Tėvas“, o ne „tevas“)."""
+        return self.ROLIU_PAVADINIMAI.get(self.role, self.role.capitalize())
+
+    @property
+    def yra_vgk_narys(self):
+        """Ar naudotojas paskirtas VGK nariu (bet kurios pareigos)."""
+        return self.vgk_pareigos in self.VGK_PAREIGOS
+
+    @property
+    def gali_planuoti_vgk_posedzius(self):
+        """Posėdžius planuoja ir protokolus tvarko pirmininkas arba sekretorius."""
+        return self.vgk_pareigos in ("pirmininkas", "sekretorius")
+
 
 class Klase(db.Model):
     """Mokyklos klasė (pvz., 5A, 10B)."""
@@ -144,13 +192,19 @@ class Mokinys(db.Model):
     # Mokyklos autobusas
     mokyklos_autobusas = db.Column(db.Boolean, default=False, nullable=False)
 
-    # Gerovės komisija
-    geroves_komisija = db.Column(db.Boolean, default=False, nullable=False)
-    geroves_komisija_data = db.Column(db.Date, nullable=True)
-    geroves_komisija_pastabos = db.Column(db.Text, nullable=True)
-
     # Nuotrauka
     nuotraukos_failas = db.Column(db.String(300), nullable=True)
+
+    # BD: buvę laukai geroves_komisija, geroves_komisija_data ir
+    # geroves_komisija_pastabos perkelti į lentelę vgk_atvejai (migracija 0003).
+    # lazy="selectin" – mokinių sąraše atvejai užkraunami viena papildoma užklausa.
+    vgk_atvejai = db.relationship(
+        "VgkAtvejis",
+        back_populates="mokinys",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        order_by="VgkAtvejis.sukurta",
+    )
 
     @property
     def pilnas_vardas(self):
@@ -159,6 +213,30 @@ class Mokinys(db.Model):
     @property
     def inicialai(self):
         return f"{self.vardas[0]}{self.pavarde[0]}".upper()
+
+    # --- Suderinamumas su esamais puslapiais ------------------------------
+    # Šablonai ir maršrutai iki BD naudojo mokinys.geroves_komisija ir kt.
+    # Dabar šios reikšmės apskaičiuojamos iš naujausio neužbaigto VGK atvejo.
+
+    @property
+    def aktyvus_vgk_atvejis(self):
+        """Naujausias neužbaigtas VGK atvejis arba None."""
+        aktyvus = [a for a in self.vgk_atvejai if a.yra_aktyvus]
+        return aktyvus[-1] if aktyvus else None
+
+    @property
+    def geroves_komisija(self):
+        return self.aktyvus_vgk_atvejis is not None
+
+    @property
+    def geroves_komisija_data(self):
+        atvejis = self.aktyvus_vgk_atvejis
+        return atvejis.sukurta.date() if atvejis else None
+
+    @property
+    def geroves_komisija_pastabos(self):
+        atvejis = self.aktyvus_vgk_atvejis
+        return atvejis.priezastis if atvejis else None
 
 
 class Diplomas(db.Model):
@@ -242,3 +320,16 @@ class Pranesimas(db.Model):
     sukurtas = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     vartotojas = db.relationship("User", backref="pranesimai_gauti", lazy=True)
+
+
+# --- Baigiamojo darbo modeliai (14 naujų lentelių) ---------------------------
+# Importuojami failo pabaigoje, nes jie naudoja aukščiau aprašytą „db“ objektą.
+from models.vgk import VgkAtvejis, VgkPosedis, VgkSvarstymas, VgkDalyvis, VgkPriemone  # noqa: E402,F401
+from models.dokumentai import Dokumentas, DokumentuSkaitiklis, PazymosPrasymas  # noqa: E402,F401
+from models.automatizavimas import (  # noqa: E402,F401
+    AutomatizavimoTaisykle,
+    EilesIrasas,
+    PranesimoSablonas,
+    PranesimuNustatymas,
+)
+from models.importas import ImportoSesija, ImportoEilute  # noqa: E402,F401

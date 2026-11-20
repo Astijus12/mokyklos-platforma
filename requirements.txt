@@ -9,5 +9,11 @@ pyotp==2.9.0
 qrcode==8.0
 pytest==8.3.4
 pytest-cov==6.0.0
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.13
 openpyxl==3.1.5
+# Baigiamasis darbas
+Flask-Migrate==4.1.0
+alembic==1.20.1
+APScheduler==3.11.3
+reportlab==5.1.0
+python-dotenv==1.2.4

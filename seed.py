@@ -5,7 +5,7 @@ Sukuria demo vartotojus, klases, mokinius ir skelbimus.
 """
 import sys
 import random
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     try:
@@ -15,23 +15,28 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
         pass
 
 from app import create_app
-from models import db, User, Klase, Mokinys, Skelbimas
+from db_atnaujinimas import sukurti_schema_is_naujo
+from models import db, User, Klase, Mokinys, Skelbimas, VgkAtvejis
 
 
-def uzpildyti_db(naudoti_esama_app=False):
-    """Užpildo duomenų bazę demo duomenimis."""
+def uzpildyti_db(naudoti_esama_app=False, isvalyti=True):
+    """Užpildo duomenų bazę demo duomenimis.
+
+    isvalyti=True – prieš tai ištrinamos visos lentelės ir schema sukuriama
+    migracijomis iš naujo; False – naudojama jau paruošta tuščia schema.
+    """
     if naudoti_esama_app:
-        _uzpildyti()
+        _uzpildyti(isvalyti)
     else:
         app = create_app()
         with app.app_context():
-            _uzpildyti()
+            _uzpildyti(isvalyti)
 
 
-def _uzpildyti():
-        print("Valoma duomenų bazė...")
-        db.drop_all()
-        db.create_all()
+def _uzpildyti(isvalyti=True):
+        if isvalyti:
+            print("Valoma duomenų bazė ir kuriama schema (migracijos)...")
+            sukurti_schema_is_naujo()
 
         print("Kuriami vartotojai...")
         admin = User(
@@ -55,6 +60,7 @@ def _uzpildyti():
             pavarde="Kazlauskienė",
             email="ona@mokykla.lt",
             role="mokytojas",
+            vgk_pareigos="pirmininkas",
         )
         ona.nustatyti_slaptazodi("mokytojas123")
 
@@ -63,6 +69,7 @@ def _uzpildyti():
             pavarde="Vaitkus",
             email="tomas@mokykla.lt",
             role="mokytojas",
+            vgk_pareigos="sekretorius",
         )
         tomas.nustatyti_slaptazodi("mokytojas123")
 
@@ -150,7 +157,7 @@ def _uzpildyti():
              False, True, date(2025, 11, 5), "Drausminio pobūdžio incidentas. Susitarta dėl elgesio sutarties su mokiniu ir tėvais."),
         ]
 
-        def _prideti_mokini(duomenys, klases_id):
+        def _prideti_mokini(duomenys, klase):
             (vardas, pavarde, gdata, email, tel, adr,
              m_vardas, m_tel, m_email,
              t_vardas, t_tel, t_email,
@@ -162,20 +169,25 @@ def _uzpildyti():
                 motinos_vardas=m_vardas, motinos_telefonas=m_tel, motinos_email=m_email,
                 tevo_vardas=t_vardas, tevo_telefonas=t_tel, tevo_email=t_email,
                 mokyklos_autobusas=autobusas,
-                geroves_komisija=gerov_kom,
-                geroves_komisija_data=gerov_data,
-                geroves_komisija_pastabos=gerov_past,
-                klases_id=klases_id,
+                klases_id=klase.id,
             )
+            # BD: VGK duomenys saugomi atvejų lentelėje; kreipimąsi pateikė klasės vadovas
+            if gerov_kom:
+                m.vgk_atvejai.append(VgkAtvejis(
+                    pateike_id=klase.vadovo_id,
+                    priezastis=gerov_past,
+                    busena=VgkAtvejis.SVARSTOMAS,
+                    sukurta=datetime.combine(gerov_data, time(9, 0)),
+                ))
             db.session.add(m)
             return m
 
         for d in mokiniai_5a:
-            _prideti_mokini(d, klase_5a.id)
+            _prideti_mokini(d, klase_5a)
         for d in mokiniai_8b:
-            _prideti_mokini(d, klase_8b.id)
+            _prideti_mokini(d, klase_8b)
         for d in mokiniai_10a:
-            _prideti_mokini(d, klase_10a.id)
+            _prideti_mokini(d, klase_10a)
 
         db.session.commit()
 

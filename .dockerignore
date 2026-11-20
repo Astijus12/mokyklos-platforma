@@ -21,6 +21,9 @@ ENV/
 .DS_Store
 Thumbs.db
 
+# Vietiniai nustatymai ir slaptažodžiai (konteineriams kintamieji perduodami docker-compose.yml)
+.env
+
 # Git
 .git/
 .gitignore

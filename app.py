@@ -4,6 +4,7 @@ from flask import Flask, render_template
 from flask_login import LoginManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_migrate import Migrate
 
 from config import Config
 from models import db, User
@@ -32,6 +33,12 @@ limiter = Limiter(
     strategy="fixed-window",
 )
 
+# Duomenų bazės schemos migracijos (Alembic per Flask-Migrate). „Batch“ režimas
+# reikalingas SQLite, nes ji nemoka ALTER TABLE ... DROP COLUMN be lentelės perkūrimo.
+# Katalogas nurodomas absoliučiu keliu, kad migracijos veiktų paleidus iš bet kur.
+MIGRACIJU_KATALOGAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "migrations")
+migrate = Migrate(directory=MIGRACIJU_KATALOGAS, render_as_batch=True)
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -40,6 +47,7 @@ def create_app(config_class=Config):
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     db.init_app(app)
+    migrate.init_app(app, db)
 
     if not app.config.get("TESTING"):
         limiter.init_app(app)
@@ -112,12 +120,21 @@ def create_app(config_class=Config):
     def handle_500(e):
         return render_template("errors/500.html"), 500
 
-    with app.app_context():
-        db.create_all()
+    # Lentelės nebekuriamos db.create_all() – schemą kuria ir keičia migracijos
+    # (katalogas migrations/). Komanda: flask --app app atnaujinti-db
+    @app.cli.command("atnaujinti-db")
+    def atnaujinti_db_komanda():
+        """Atnaujina duomenų bazę iki naujausios migracijos (tinka ir senai DB be Alembic)."""
+        from db_atnaujinimas import atnaujinti_duomenu_baze
+        atnaujinti_duomenu_baze()
 
     return app
 
 
 if __name__ == "__main__":
+    from db_atnaujinimas import atnaujinti_duomenu_baze
+
     app = create_app()
+    with app.app_context():
+        atnaujinti_duomenu_baze()
     app.run(debug=True, host="127.0.0.1", port=5000)

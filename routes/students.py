@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from routes.auth import personalas_required
 
 from models import db, Mokinys, Klase
+from services.vgk import atnaujinti_mokinio_zyme
 
 students_bp = Blueprint("students", __name__, url_prefix="/mokiniai")
 
@@ -40,9 +41,16 @@ def _surinkti_duomenis(form):
         "tevo_telefonas": form.get("tevo_telefonas", "").strip() or None,
         "tevo_email": form.get("tevo_email", "").strip() or None,
         "mokyklos_autobusas": form.get("mokyklos_autobusas") == "on",
-        "geroves_komisija": form.get("geroves_komisija") == "on",
-        "geroves_komisija_data": _parse_data(form.get("geroves_komisija_data")) if form.get("geroves_komisija") == "on" else None,
-        "geroves_komisija_pastabos": form.get("geroves_komisija_pastabos", "").strip() or None if form.get("geroves_komisija") == "on" else None,
+    }
+
+
+def _surinkti_vgk_zyme(form):
+    """VGK žymė iš mokinio formos. Nuo BD ji saugoma lentelėje vgk_atvejai."""
+    pazymeta = form.get("geroves_komisija") == "on"
+    return {
+        "pazymeta": pazymeta,
+        "data": _parse_data(form.get("geroves_komisija_data")) if pazymeta else None,
+        "pastabos": (form.get("geroves_komisija_pastabos", "").strip() or None) if pazymeta else None,
     }
 
 
@@ -86,7 +94,7 @@ def eksportas_csv():
     mokiniai = query.order_by(Mokinys.pavarde, Mokinys.vardas).all()
 
     output = io.StringIO()
-    output.write("﻿")
+    output.write("\ufeff")  # UTF-8 BOM, kad Excel teisingai rodytų lietuviškas raides
     rasytojas = csv.writer(output, delimiter=";")
     rasytojas.writerow([
         "Vardas", "Pavardė", "Klasė", "Gimimo data",
@@ -155,6 +163,7 @@ def naujas():
                 flash("Vardas ir pavardė yra privalomi.", "danger")
             else:
                 mokinys = Mokinys(**duomenys)
+                atnaujinti_mokinio_zyme(mokinys, naudotojas=current_user, **_surinkti_vgk_zyme(request.form))
                 db.session.add(mokinys)
                 db.session.commit()
                 flash(f"Mokinys {mokinys.pilnas_vardas} pridėtas.", "success")
@@ -179,6 +188,7 @@ def redaguoti(mokinio_id):
         for laukas, reiksme in duomenys.items():
             setattr(mokinys, laukas, reiksme)
         mokinys.klases_id = request.form.get("klases_id", type=int)
+        atnaujinti_mokinio_zyme(mokinys, naudotojas=current_user, **_surinkti_vgk_zyme(request.form))
         db.session.commit()
         flash(f"Mokinio {mokinys.pilnas_vardas} duomenys atnaujinti.", "success")
         return redirect(url_for("students.detales", mokinio_id=mokinys.id))
@@ -240,7 +250,7 @@ def eksportas_pasirinktu():
     ).all()
 
     output = io.StringIO()
-    output.write("﻿")
+    output.write("\ufeff")  # UTF-8 BOM, kad Excel teisingai rodytų lietuviškas raides
     rasytojas = csv.writer(output, delimiter=";")
     rasytojas.writerow([
         "Vardas", "Pavardė", "Klasė", "Gimimo data",
