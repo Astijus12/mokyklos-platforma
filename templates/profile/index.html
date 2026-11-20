@@ -35,7 +35,7 @@
                 </a>
                 <a href="{{ url_for('security.busena') }}" class="btn-secondary w-full justify-center">
                     <i data-lucide="shield" class="w-3.5 h-3.5"></i>
-                    2FA
+                    Dviejų veiksnių autentikacija
                     {% if current_user.dvfa_ijungtas %}
                     <span class="tag tag-brand ml-1">Įjungta</span>
                     {% else %}
@@ -45,6 +45,10 @@
                 <a href="{{ url_for('security.api_tokenas') }}" class="btn-secondary w-full justify-center">
                     <i data-lucide="key" class="w-3.5 h-3.5"></i>
                     Prieigos raktas
+                </a>
+                <a href="{{ url_for('automatizavimas.mano_nustatymai') }}" class="btn-secondary w-full justify-center">
+                    <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                    Pranešimų nustatymai
                 </a>
             </div>
         </div>

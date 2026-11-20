@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Automatizavimo taisyklės{% endblock %}
+
+{% block content %}
+{% set visu = eilutes|length %}
+<div class="mb-5 flex items-end justify-between flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Automatizavimo taisyklės</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            {{ visu }} {{ visu|lt_forma("taisyklė", "taisyklės", "taisyklių") }},
+            iš jų {{ aktyviu }} {{ aktyviu|lt_forma("aktyvi", "aktyvios", "aktyvių") }}
+        </p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('automatizavimas.sablonai') }}" class="btn-secondary">
+            <i data-lucide="file-text" class="w-3.5 h-3.5" aria-hidden="true"></i>Pranešimų šablonai
+        </a>
+        <a href="{{ url_for('automatizavimas.taisykles_forma') }}" class="btn-primary">
+            <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>Nauja taisyklė
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    {% if eilutes %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Taisyklė</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Įvykis</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Gavėjai</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Kanalas</th>
+                    <th scope="col" class="text-right px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Aktyvi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for e in eilutes %}
+                {% set t = e.taisykle %}
+                <tr>
+                    <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white">
+                        <a href="{{ url_for('automatizavimas.taisykles_forma', taisykles_id=t.id) }}"
+                           class="hover:text-brand-800 dark:hover:text-brand-400 hover:underline">{{ t.pavadinimas }}</a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ e.ivykis }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ e.gavejai }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                        <span class="inline-flex gap-1 flex-wrap">
+                            {% for kodas, pavadinimas in e.kanalai %}
+                            <span class="tag tag-default whitespace-nowrap">
+                                <i data-lucide="{{ 'mail' if kodas == 'el_pastas' else 'bell' }}" class="w-3 h-3" aria-hidden="true"></i>{{ pavadinimas }}
+                            </span>
+                            {% endfor %}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-right">
+                        <form method="POST" action="{{ url_for('automatizavimas.perjungti', taisykles_id=t.id) }}"
+                              class="inline" data-noloading="true">
+                            <button type="submit" role="switch"
+                                    aria-checked="{{ 'true' if t.aktyvi else 'false' }}"
+                                    aria-label="{{ 'Išjungti' if t.aktyvi else 'Įjungti' }} taisyklę „{{ t.pavadinimas }}“"
+                                    title="{{ 'Išjungti' if t.aktyvi else 'Įjungti' }}"
+                                    class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-700 focus-visible:ring-offset-2 {{ 'bg-brand-800' if t.aktyvi else 'bg-slate-300 dark:bg-slate-600' }}">
+                                <span class="inline-block h-4 w-4 rounded-full bg-white shadow transition-transform {{ 'translate-x-[18px]' if t.aktyvi else 'translate-x-0.5' }}"></span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="workflow" class="w-6 h-6" aria-hidden="true"></i></div>
+        <p class="empty-state-title">Taisyklių dar nėra</p>
+        <p class="empty-state-text">Sukurkite taisyklę, kad sistema pati praneštų apie įvykius.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header flex items-center justify-between">
+        <h2>Siuntimo žurnalas (paskutinės 24 val.)</h2>
+        <a href="{{ url_for('automatizavimas.zurnalas') }}"
+           class="inline-flex items-center gap-1 text-xs font-medium text-brand-800 dark:text-brand-400 hover:underline">
+            Peržiūrėti žurnalą<i data-lucide="arrow-right" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        </a>
+    </div>
+    <div class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-green-500" aria-hidden="true"></span>
+            <span class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statistika.issiusta }}</span>
+            <span class="text-sm text-slate-500 dark:text-slate-400">išsiųsta</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400" aria-hidden="true"></span>
+            <span class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statistika.laukia }}</span>
+            <span class="text-sm text-slate-500 dark:text-slate-400">laukia eilėje</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500" aria-hidden="true"></span>
+            <span class="text-2xl font-semibold text-slate-900 dark:text-white tabular-nums">{{ statistika.kartojama }}</span>
+            <span class="text-sm text-slate-500 dark:text-slate-400">nepavyko (bus kartojama)</span>
+        </div>
+    </div>
+    {% if statistika.nepavyko %}
+    <p class="px-4 pb-4 -mt-1 text-sm text-red-700 dark:text-red-400">
+        Galutinai neišsiųsta: {{ statistika.nepavyko }}.
+        <a href="{{ url_for('automatizavimas.zurnalas', busena='nepavyko') }}" class="underline">Peržiūrėti ir pakartoti</a>
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

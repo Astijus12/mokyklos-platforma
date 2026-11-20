@@ -4,6 +4,7 @@ from flask_login import login_required
 from routes.auth import personalas_required, current_user
 
 from models import db, Skelbimas
+from services.ivykiai import skelbti
 
 announcements_bp = Blueprint("announcements", __name__, url_prefix="/skelbimai")
 
@@ -41,6 +42,8 @@ def naujas():
                 vartotojo_id=current_user.id,
             )
             db.session.add(skelbimas)
+            # BD: pranešimai pagal automatizavimo taisykles – toje pačioje transakcijoje
+            skelbti("skelbimas_paskelbtas", skelbimas)
             db.session.commit()
             flash("Skelbimas paskelbtas!", "success")
             return redirect(url_for("announcements.saraso"))

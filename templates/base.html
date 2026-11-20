@@ -154,6 +154,16 @@
                 <span>Kalendorius</span>
             </a>
 
+            {% if current_user.yra_administratorius %}
+            {# Baigiamojo darbo moduliai (aprašo 1.9 poskyrio maketai) #}
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Procesai</p>
+            <a href="{{ url_for('automatizavimas.taisykles') }}"
+               class="nav-link {% if active.startswith('automatizavimas') and active != 'automatizavimas.mano_nustatymai' %}nav-link-active{% endif %}">
+                <i data-lucide="workflow" class="w-4 h-4"></i>
+                <span>Automatizavimas</span>
+            </a>
+            {% endif %}
+
             <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Išorinės sistemos</p>
 
             <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer" class="nav-link">
@@ -397,6 +407,14 @@
         if (!rodomas) uzkrautiPranesimus();
     }
 
+    // Pranešimų tekstuose gali būti naudotojų įvesto teksto (pvz., skelbimo pavadinimas),
+    // todėl prieš įterpiant į HTML specialūs simboliai pakeičiami saugiais.
+    function apsaugotiHtml(tekstas) {
+        return String(tekstas == null ? '' : tekstas).replace(/[&<>"']/g, function (s) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s];
+        });
+    }
+
     function uzkrautiPranesimus() {
         fetch('/pranesimai/api/naujausi', { credentials: 'same-origin' })
             .then(r => r.json())
@@ -404,19 +422,22 @@
                 const el = document.getElementById('pranesimu-sarasas');
                 if (!el) return;
                 if (!data.pranesimai || data.pranesimai.length === 0) {
-                    el.innerHTML = '<div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400"><i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i><p>Nauju praneu0161imu nu0117ra</p></div>';
+                    el.innerHTML = '<div class="p-8 text-center text-sm text-slate-500 dark:text-slate-400"><i data-lucide="bell-off" class="w-8 h-8 mx-auto mb-2 opacity-40"></i><p>Naujų pranešimų nėra</p></div>';
                 } else {
-                    el.innerHTML = data.pranesimai.map(p => `
-                        <a href="${p.nuoroda || '/pranesimai/'}" class="notification-item ${p.perskaitytas ? '' : 'notification-item-unread'}">
+                    el.innerHTML = data.pranesimai.map(p => {
+                        const nuoroda = (p.nuoroda && p.nuoroda.startsWith('/')) ? p.nuoroda : '/pranesimai/';
+                        const ikona = /^[a-z0-9-]+$/.test(p.ikona || '') ? p.ikona : 'bell';
+                        return `
+                        <a href="${apsaugotiHtml(nuoroda)}" class="notification-item ${p.perskaitytas ? '' : 'notification-item-unread'}">
                             <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center flex-shrink-0">
-                                <i data-lucide="${p.ikona || 'bell'}" class="w-4 h-4"></i>
+                                <i data-lucide="${ikona}" class="w-4 h-4"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-slate-900 dark:text-white">${p.pavadinimas}</p>
-                                ${p.tekstas ? '<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">' + p.tekstas + '</p>' : ''}
+                                <p class="text-sm font-medium text-slate-900 dark:text-white">${apsaugotiHtml(p.pavadinimas)}</p>
+                                ${p.tekstas ? '<p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">' + apsaugotiHtml(p.tekstas) + '</p>' : ''}
                             </div>
-                        </a>
-                    `).join('');
+                        </a>`;
+                    }).join('');
                 }
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             })
@@ -481,9 +502,13 @@
         { grupe: 'Administravimas', pavadinimas: 'Naujas vartotojas', aprasymas: 'Sukurti mokytojo ar tėvo paskyrą', ikona: 'user-plus', url: '{{ url_for("users.naujas") }}' },
         { grupe: 'Administravimas', pavadinimas: 'Veiklos žurnalas', aprasymas: 'Sistemos vartotojų veikla', ikona: 'history', url: '{{ url_for("audit.zurnalas") }}' },
         { grupe: 'Administravimas', pavadinimas: 'Sąsajos dokumentacija', aprasymas: 'Programinės sąsajos aprašymas', ikona: 'book-open', url: '{{ url_for("api_docs.api") }}' },
+        { grupe: 'Procesai', pavadinimas: 'Automatizavimo taisyklės', aprasymas: 'Kada, kam ir kaip pranešti', ikona: 'workflow', url: '{{ url_for("automatizavimas.taisykles") }}' },
+        { grupe: 'Procesai', pavadinimas: 'Pranešimų šablonai', aprasymas: 'El. laiškų tekstai', ikona: 'file-text', url: '{{ url_for("automatizavimas.sablonai") }}' },
+        { grupe: 'Procesai', pavadinimas: 'Siuntimo žurnalas', aprasymas: 'Išsiųsti ir nepavykę pranešimai', ikona: 'mail-check', url: '{{ url_for("automatizavimas.zurnalas") }}' },
         {% endif %}
         {% endif %}
         { grupe: 'Paskyra', pavadinimas: 'Mano profilis', ikona: 'user', url: '{{ url_for("profile.index") }}' },
+        { grupe: 'Paskyra', pavadinimas: 'Pranešimų nustatymai', aprasymas: 'Kokius el. laiškus gauti', ikona: 'bell', url: '{{ url_for("automatizavimas.mano_nustatymai") }}' },
         { grupe: 'Paskyra', pavadinimas: 'Dviejų veiksnių autentikacija', aprasymas: 'Dviejų veiksnių autentikacija', ikona: 'shield', url: '{{ url_for("security.busena") }}' },
         { grupe: 'Paskyra', pavadinimas: 'Prieigos raktas', aprasymas: 'Mobiliajai aplikacijai', ikona: 'key', url: '{{ url_for("security.api_tokenas") }}' },
         { grupe: 'Paskyra', pavadinimas: 'Atsijungti', ikona: 'log-out', url: '{{ url_for("auth.logout") }}' },

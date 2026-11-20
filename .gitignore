@@ -19,6 +19,8 @@ tests/_uploads_tmp/
 
 # Docker atsarginės kopijos
 duomenys/atsargines_kopijos/
+# Kūrimo aplinkoje „išsiųsti“ el. laiškai (.eml) – juose asmens duomenys
+duomenys/laiskai/
 
 # Docs / Word failai
 *.docx

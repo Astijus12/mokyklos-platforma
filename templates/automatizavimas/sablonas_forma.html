@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{% if sablonas %}Redaguoti šabloną{% else %}Naujas šablonas{% endif %}{% endblock %}
+
+{% macro reiksme(laukas) -%}
+    {%- if forma is not none -%}{{ forma.get(laukas, '') }}
+    {%- elif sablonas -%}{{ sablonas[laukas] }}{%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('automatizavimas.sablonai') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        Pranešimų šablonai
+    </a>
+</div>
+
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-5">
+    {% if sablonas %}Redaguoti šabloną{% else %}Naujas šablonas{% endif %}
+</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2 space-y-4">
+        <div class="card">
+            <div class="card-header"><h2>Šablono tekstas</h2></div>
+            <form method="POST" id="sablono-forma" class="p-5 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="pavadinimas" class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
+                        <input type="text" id="pavadinimas" name="pavadinimas" required maxlength="200"
+                               value="{{ reiksme('pavadinimas') }}" class="form-input">
+                    </div>
+                    <div>
+                        <label for="kodas" class="form-label">Kodas <span class="text-red-500">*</span></label>
+                        <input type="text" id="kodas" name="kodas" required maxlength="50" pattern="[a-z][a-z0-9_]{1,49}"
+                               value="{{ reiksme('kodas') }}" placeholder="pvz., renginio_priminimas" class="form-input font-mono">
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Mažosios lotyniškos raidės, skaitmenys ir pabraukimas.</p>
+                    </div>
+                </div>
+                <div>
+                    <label for="tema" class="form-label">El. laiško tema <span class="text-red-500">*</span></label>
+                    <input type="text" id="tema" name="tema" required maxlength="200"
+                           value="{{ reiksme('tema') }}" class="form-input font-mono text-sm">
+                </div>
+                <div>
+                    <label for="tekstas" class="form-label">Tekstas <span class="text-red-500">*</span></label>
+                    <textarea id="tekstas" name="tekstas" rows="12" required spellcheck="false"
+                              class="form-input font-mono text-sm">{{ reiksme('tekstas') }}</textarea>
+                </div>
+                <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+                    <button type="submit" class="btn-primary">Išsaugoti šabloną</button>
+                    <button type="button" id="perziureti" class="btn-secondary">
+                        <i data-lucide="eye" class="w-3.5 h-3.5" aria-hidden="true"></i>Peržiūrėti
+                    </button>
+                    <a href="{{ url_for('automatizavimas.sablonai') }}" class="btn-secondary">Atšaukti</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="card" id="perziuros-kortele" hidden>
+            <div class="card-header"><h2>Peržiūra su pavyzdiniais duomenimis</h2></div>
+            <div class="p-5" aria-live="polite">
+                <p id="perziuros-klaida" class="text-sm text-red-700 dark:text-red-400" hidden></p>
+                <div id="perziuros-turinys" hidden>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Tema</p>
+                    <p id="perziuros-tema" class="text-sm font-medium text-slate-900 dark:text-white mb-3"></p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Tekstas</p>
+                    <pre id="perziuros-tekstas" class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap font-sans leading-relaxed"></pre>
+                </div>
+            </div>
+        </div>
+
+        {% if sablonas and not sablonas.taisykles %}
+        <form method="POST" action="{{ url_for('automatizavimas.salinti_sablona', sablono_id=sablonas.id) }}"
+              data-confirm="Ar tikrai pašalinti šabloną „{{ sablonas.pavadinimas }}“?" data-confirm-btn="Šalinti">
+            <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>Šalinti šabloną
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <aside class="card h-fit">
+        <div class="card-header"><h2>Kintamieji</h2></div>
+        <div class="p-4 text-sm space-y-3">
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+                Kiekvienas įvykis perduoda savo objekto duomenis ir bendrus kintamuosius
+                (<code>gavejas</code>, <code>mokykla</code>, <code>nuoroda</code>).
+                Galima naudoti sąlygas, pvz., <code>{{ '{% if renginys.vieta %}…{% endif %}' }}</code>.
+            </p>
+            {% for objektas, laukai in kintamieji.items() %}
+            <div>
+                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">{{ objektas }}</p>
+                {% if laukai is mapping %}
+                <ul class="mt-1 space-y-0.5">
+                    {% for laukas in laukai %}
+                    <li><code class="text-xs text-slate-600 dark:text-slate-400">{{ '{{ ' ~ objektas ~ '.' ~ laukas ~ ' }}' }}</code></li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <code class="text-xs text-slate-600 dark:text-slate-400">{{ '{{ ' ~ objektas ~ ' }}' }}</code>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <p class="text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700 pt-3">
+                Vaiko gerovės komisijos el. laiškuose nerašykite svarstymo esmės – tik datą, laiką, vietą ir nuorodą.
+            </p>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const mygtukas = document.getElementById('perziureti');
+    const forma = document.getElementById('sablono-forma');
+    const kortele = document.getElementById('perziuros-kortele');
+    const klaida = document.getElementById('perziuros-klaida');
+    const turinys = document.getElementById('perziuros-turinys');
+
+    mygtukas.addEventListener('click', function () {
+        const duomenys = new FormData();
+        duomenys.append('tema', forma.tema.value);
+        duomenys.append('tekstas', forma.tekstas.value);
+        fetch('{{ url_for("automatizavimas.sablono_perziura") }}', {
+            method: 'POST', body: duomenys, credentials: 'same-origin'
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (ats) {
+                kortele.hidden = false;
+                klaida.hidden = ats.ok;
+                turinys.hidden = !ats.ok;
+                if (ats.ok) {
+                    // textContent – tekstas rodomas kaip tekstas, ne kaip HTML
+                    document.getElementById('perziuros-tema').textContent = ats.tema;
+                    document.getElementById('perziuros-tekstas').textContent = ats.tekstas;
+                } else {
+                    klaida.textContent = 'Šablono klaida: ' + ats.klaida;
+                }
+            })
+            .catch(function () {
+                kortele.hidden = false;
+                turinys.hidden = true;
+                klaida.hidden = false;
+                klaida.textContent = 'Peržiūros parengti nepavyko.';
+            });
+    });
+})();
+</script>
+{% endblock %}

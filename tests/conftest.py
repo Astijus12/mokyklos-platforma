@@ -6,6 +6,7 @@ Fixtures skopas:
 - `client` (function) - Flask test client
 - `admin`, `mokytojas`, `tevas`, `vaikas`, `klase` - patogios vartotojų/objektų fixtures
 """
+import importlib.util
 import os
 import sys
 
@@ -15,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from app import create_app
 from config import TestConfig
-from models import db, User, Klase, Mokinys
+from models import db, User, Klase, Mokinys, AutomatizavimoTaisykle, PranesimoSablonas
 
 
 def pytest_collection_modifyitems(config, items):
@@ -130,3 +131,34 @@ def api_tokenas_tevas(db_session, tevas):
     tokenas = tevas.sugeneruoti_api_tokena()
     db_session.commit()
     return tokenas
+
+
+def ikelti_migracija(failo_vardas):
+    """Įkelia migracijos failą kaip modulį (jo pavadinimas prasideda skaičiumi)."""
+    kelias = os.path.join(os.path.dirname(__file__), "..", "migrations", "versions", failo_vardas)
+    specifikacija = importlib.util.spec_from_file_location(f"migracija_{failo_vardas[:4]}", kelias)
+    modulis = importlib.util.module_from_spec(specifikacija)
+    specifikacija.loader.exec_module(modulis)
+    return modulis
+
+
+@pytest.fixture
+def numatytosios_taisykles(db_session):
+    """Numatytieji šablonai ir taisyklės iš migracijos 0004 – testai tikrina tuos pačius tekstus.
+
+    Grąžina žodyną {įvykio tipas: taisyklė}.
+    """
+    migracija = ikelti_migracija("0004_numatytieji_pranesimai.py")
+    sablonai = {}
+    for kodas, pavadinimas, tema, tekstas in migracija.SABLONAI:
+        sablonai[kodas] = PranesimoSablonas(kodas=kodas, pavadinimas=pavadinimas, tema=tema, tekstas=tekstas)
+        db_session.add(sablonai[kodas])
+    taisykles = {}
+    for pavadinimas, tipas, salyga, gavejai, kanalas, poslinkis, kodas, aktyvi in migracija.TAISYKLES:
+        taisykles[tipas] = AutomatizavimoTaisykle(
+            pavadinimas=pavadinimas, ivykio_tipas=tipas, salyga=salyga, gavejai=gavejai,
+            kanalas=kanalas, poslinkis_d=poslinkis, sablonas=sablonai[kodas], aktyvi=aktyvi,
+        )
+        db_session.add(taisykles[tipas])
+    db_session.commit()
+    return taisykles

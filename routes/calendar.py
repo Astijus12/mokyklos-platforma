@@ -4,8 +4,9 @@ from calendar import monthrange
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 from flask_login import current_user, login_required
 
-from models import db, Renginys
+from models import db, Renginys, utc_dabar
 from routes.auth import personalas_required, admin_required
+from services.ivykiai import atsaukti_pranesimus, skelbti
 
 calendar_bp = Blueprint("calendar", __name__, url_prefix="/kalendorius")
 
@@ -107,30 +108,35 @@ def rodinys():
     )
 
 
+def _renginio_laukai(forma):
+    """Renginio formos laukai (naudojami kuriant ir redaguojant)."""
+    return {
+        "pavadinimas": forma.get("pavadinimas", "").strip(),
+        "aprasymas": forma.get("aprasymas", "").strip() or None,
+        "pradzios_data": _parse_data(forma.get("pradzios_data")),
+        "pradzios_laikas": _parse_laikas(forma.get("pradzios_laikas")),
+        "pabaigos_data": _parse_data(forma.get("pabaigos_data")),
+        "pabaigos_laikas": _parse_laikas(forma.get("pabaigos_laikas")),
+        "vieta": forma.get("vieta", "").strip() or None,
+        "kategorija": forma.get("kategorija", "mokyklos"),
+        "matomas_tevams": forma.get("matomas_tevams") == "on",
+    }
+
+
 @calendar_bp.route("/naujas", methods=["GET", "POST"])
 @personalas_required
 def naujas():
     """Naujo renginio kūrimas."""
     if request.method == "POST":
-        pavadinimas = request.form.get("pavadinimas", "").strip()
-        pradzios_data = _parse_data(request.form.get("pradzios_data"))
+        laukai = _renginio_laukai(request.form)
 
-        if not pavadinimas or not pradzios_data:
+        if not laukai["pavadinimas"] or not laukai["pradzios_data"]:
             flash("Pavadinimas ir pradžios data yra privalomi.", "danger")
         else:
-            r = Renginys(
-                pavadinimas=pavadinimas,
-                aprasymas=request.form.get("aprasymas", "").strip() or None,
-                pradzios_data=pradzios_data,
-                pradzios_laikas=_parse_laikas(request.form.get("pradzios_laikas")),
-                pabaigos_data=_parse_data(request.form.get("pabaigos_data")),
-                pabaigos_laikas=_parse_laikas(request.form.get("pabaigos_laikas")),
-                vieta=request.form.get("vieta", "").strip() or None,
-                kategorija=request.form.get("kategorija", "mokyklos"),
-                matomas_tevams=request.form.get("matomas_tevams") == "on",
-                vartotojo_id=current_user.id,
-            )
+            r = Renginys(vartotojo_id=current_user.id, **laukai)
             db.session.add(r)
+            # BD: pranešimai pagal automatizavimo taisykles – toje pačioje transakcijoje
+            skelbti("renginys_sukurtas", r)
             db.session.commit()
 
             try:
@@ -154,6 +160,37 @@ def perziureti(renginio_id):
     return render_template("calendar/detales.html", renginys=r)
 
 
+@calendar_bp.route("/<int:renginio_id>/redaguoti", methods=["GET", "POST"])
+@personalas_required
+def redaguoti(renginio_id):
+    """Renginio redagavimas (BD: reikalingas įvykiui „renginys pakeistas“, FR-A02)."""
+    r = Renginys.query.get_or_404(renginio_id)
+    if not current_user.yra_administratorius and r.vartotojo_id != current_user.id:
+        abort(403)
+
+    if request.method == "POST":
+        laukai = _renginio_laukai(request.form)
+        if not laukai["pavadinimas"] or not laukai["pradzios_data"]:
+            flash("Pavadinimas ir pradžios data yra privalomi.", "danger")
+        else:
+            for laukas, reiksme in laukai.items():
+                setattr(r, laukas, reiksme)
+            # Pakeitimo laikas rakte: apie kiekvieną pakeitimą pranešama atskirai
+            skelbti("renginys_pakeistas", r, papildomas_raktas=utc_dabar().strftime("%Y%m%d%H%M%S"))
+            db.session.commit()
+
+            try:
+                from routes.audit import registruoti
+                registruoti("pakeista", "renginys", r.id, f"Pakeistas renginys: {r.pavadinimas}")
+            except Exception:
+                pass
+
+            flash(f"Renginys '{r.pavadinimas}' atnaujintas.", "success")
+            return redirect(url_for("calendar.perziureti", renginio_id=r.id))
+
+    return render_template("calendar/forma.html", renginys=r)
+
+
 @calendar_bp.route("/<int:renginio_id>/salinti", methods=["POST"])
 @personalas_required
 def salinti(renginio_id):
@@ -162,6 +199,10 @@ def salinti(renginio_id):
         abort(403)
 
     vardas = r.pavadinimas
+    # BD (FR-A08): dar neišsiųsti pranešimai apie renginį atšaukiami,
+    # o apie atšaukimą pranešama pagal taisykles
+    atsaukti_pranesimus("renginys", r.id)
+    skelbti("renginys_atsauktas", r)
     db.session.delete(r)
     db.session.commit()
     flash(f"Renginys '{vardas}' pašalintas.", "info")

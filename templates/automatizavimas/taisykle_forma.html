@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}{% if taisykle %}Redaguoti taisyklę{% else %}Nauja taisyklė{% endif %}{% endblock %}
+
+{% macro reiksme(laukas, numatytoji='') -%}
+    {%- if forma is not none -%}{{ forma.get(laukas, '') }}
+    {%- elif taisykle -%}{{ taisykle[laukas] if taisykle[laukas] is not none else '' }}
+    {%- else -%}{{ numatytoji }}{%- endif -%}
+{%- endmacro %}
+
+{% block content %}
+{% set pasirinktas_tipas = forma.get('ivykio_tipas') if forma is not none else (taisykle.ivykio_tipas if taisykle else '') %}
+{% set pasirinkti_gavejai = forma.get('gavejai') if forma is not none else (taisykle.gavejai if taisykle else '') %}
+{% set pasirinkti_kanalai = forma.getlist('kanalai') if forma is not none else (taisykle.kanalu_sarasas if taisykle else ['el_pastas']) %}
+{% set pasirinktas_sablonas = (forma.get('sablono_id')|int(0)) if forma is not none else (taisykle.sablono_id if taisykle else 0) %}
+{% set aktyvi = (forma.get('aktyvi') == 'on') if forma is not none else (taisykle.aktyvi if taisykle else true) %}
+
+<div class="mb-4">
+    <a href="{{ url_for('automatizavimas.taisykles') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>
+        Automatizavimo taisyklės
+    </a>
+</div>
+
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-5">
+    {% if taisykle %}Redaguoti taisyklę{% else %}Nauja taisyklė{% endif %}
+</h1>
+
+<div class="card max-w-2xl">
+    <div class="card-header">
+        <h2>Kada, kam ir kaip pranešti</h2>
+    </div>
+    <form method="POST" class="p-5 space-y-4">
+        <div>
+            <label for="pavadinimas" class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
+            <input type="text" id="pavadinimas" name="pavadinimas" required maxlength="200"
+                   value="{{ reiksme('pavadinimas') }}" placeholder="pvz., Priminimas apie renginį" class="form-input">
+        </div>
+
+        <div>
+            <label for="ivykio_tipas" class="form-label">Įvykis <span class="text-red-500">*</span></label>
+            <select id="ivykio_tipas" name="ivykio_tipas" required class="form-input">
+                <option value="">– pasirinkite –</option>
+                {% for kodas, tipas in ivykiu_tipai.items() %}
+                <option value="{{ kodas }}" data-priminimas="{{ 'taip' if tipas.priminimas else 'ne' }}"
+                        data-darbo-dienomis="{{ 'taip' if tipas.darbo_dienomis else 'ne' }}"
+                        {% if kodas == pasirinktas_tipas %}selected{% endif %}>{{ tipas.pavadinimas }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="poslinkio-laukas">
+            <label for="poslinkis_d" class="form-label">Kiek <span id="dienu-rusis">dienų</span> iki datos priminti</label>
+            <input type="number" id="poslinkis_d" name="poslinkis_d" min="0" max="{{ didziausias_poslinkis }}"
+                   value="{{ reiksme('poslinkis_d', 1) }}" class="form-input max-w-[8rem]">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">0 – priminimas siunčiamas tą pačią dieną.</p>
+        </div>
+
+        <div>
+            <label for="gavejai" class="form-label">Gavėjai <span class="text-red-500">*</span></label>
+            <select id="gavejai" name="gavejai" required class="form-input">
+                <option value="">– pasirinkite –</option>
+                {% for kodas, grupe in gaveju_grupes.items() %}
+                {% set tinka = [] %}
+                {% for t_kodas, tipas in ivykiu_tipai.items() %}{% if kodas in tipas.gavejai %}{% set _ = tinka.append(t_kodas) %}{% endif %}{% endfor %}
+                <option value="{{ kodas }}" data-ivykiai="{{ tinka|join(' ') }}"
+                        {% if kodas == pasirinkti_gavejai %}selected{% endif %}>{{ grupe.pavadinimas }}</option>
+                {% endfor %}
+            </select>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Rodomos tik pasirinktam įvykiui tinkančios grupės.</p>
+        </div>
+
+        <fieldset>
+            <legend class="form-label">Kanalai <span class="text-red-500">*</span></legend>
+            <div class="flex flex-wrap gap-4">
+                {% for kodas, pavadinimas in kanalai.items() %}
+                <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200 cursor-pointer">
+                    <input type="checkbox" name="kanalai" value="{{ kodas }}"
+                           {% if kodas in pasirinkti_kanalai %}checked{% endif %}
+                           class="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
+                    {{ pavadinimas }}{% if kodas == 'sistema' %} (pranešimų centras){% endif %}
+                </label>
+                {% endfor %}
+            </div>
+        </fieldset>
+
+        <div>
+            <label for="sablono_id" class="form-label">Pranešimo šablonas <span class="text-red-500">*</span></label>
+            <select id="sablono_id" name="sablono_id" required class="form-input">
+                <option value="">– pasirinkite –</option>
+                {% for s in sablonai %}
+                <option value="{{ s.id }}" {% if s.id == pasirinktas_sablonas %}selected{% endif %}>{{ s.pavadinimas }}</option>
+                {% endfor %}
+            </select>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Šablonus galima kurti ir redaguoti puslapyje
+                <a href="{{ url_for('automatizavimas.sablonai') }}" class="underline">Pranešimų šablonai</a>.
+            </p>
+        </div>
+
+        <div>
+            <label for="salyga" class="form-label">Papildoma sąlyga (neprivaloma)</label>
+            <textarea id="salyga" name="salyga" rows="2" spellcheck="false"
+                      placeholder='{"matomas_tevams": true}'
+                      class="form-input font-mono text-xs">{{ salygos_tekstas }}</textarea>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                JSON formatu: pranešimas kuriamas tik tada, kai įvykio objekto laukai turi nurodytas reikšmes,
+                pvz., skelbimas matomas tėvams.
+            </p>
+        </div>
+
+        <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+            <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" name="aktyvi" {% if aktyvi %}checked{% endif %}
+                       class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
+                <span class="text-sm font-medium text-slate-900 dark:text-white">Taisyklė aktyvi</span>
+            </label>
+        </div>
+
+        <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+            <button type="submit" class="btn-primary">Išsaugoti taisyklę</button>
+            <a href="{{ url_for('automatizavimas.taisykles') }}" class="btn-secondary">Atšaukti</a>
+        </div>
+    </form>
+</div>
+
+{% if taisykle %}
+<form method="POST" action="{{ url_for('automatizavimas.salinti_taisykle', taisykles_id=taisykle.id) }}"
+      class="mt-4 max-w-2xl"
+      data-confirm="Ar tikrai pašalinti taisyklę „{{ taisykle.pavadinimas }}“? Jau išsiųsti pranešimai liks žurnale."
+      data-confirm-btn="Šalinti">
+    <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
+        <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>Šalinti taisyklę
+    </button>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const ivykis = document.getElementById('ivykio_tipas');
+    const gavejai = document.getElementById('gavejai');
+    const poslinkis = document.getElementById('poslinkio-laukas');
+    const dienuRusis = document.getElementById('dienu-rusis');
+
+    function atnaujinti() {
+        const tipas = ivykis.value;
+        const parinktis = ivykis.selectedOptions[0];
+        const priminimas = parinktis && parinktis.dataset.priminimas === 'taip';
+        poslinkis.hidden = !priminimas;
+        dienuRusis.textContent = parinktis && parinktis.dataset.darboDienomis === 'taip' ? 'darbo dienų' : 'dienų';
+
+        for (const opt of gavejai.options) {
+            if (!opt.value) continue;
+            const tinka = !tipas || opt.dataset.ivykiai.split(' ').includes(tipas);
+            opt.hidden = !tinka;
+            opt.disabled = !tinka;
+            if (!tinka && opt.selected) gavejai.value = '';
+        }
+    }
+    ivykis.addEventListener('change', atnaujinti);
+    atnaujinti();
+})();
+</script>
+{% endblock %}

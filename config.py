@@ -25,6 +25,24 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     ALLOWED_EXTENSIONS = {"pdf", "png", "jpg", "jpeg"}
 
+    # --- Automatizavimas: pranešimai ir el. paštas (BD) ---
+    MOKYKLOS_PAVADINIMAS = "Noriūnų Jono Černiaus mokykla"
+    # Adresas nuorodoms el. laiškuose (fono procesas neturi HTTP užklausos, todėl nurodomas čia)
+    # (Docker Compose nenurodytą kintamąjį perduoda kaip tuščią eilutę, todėl naudojamas „or“)
+    SISTEMOS_ADRESAS = os.environ.get("SISTEMOS_ADRESAS") or "http://127.0.0.1:5000"
+    MAIL_SERVER = os.environ.get("MAIL_SERVER") or None
+    MAIL_PORT = int(os.environ.get("MAIL_PORT") or 587)
+    MAIL_USE_TLS = (os.environ.get("MAIL_USE_TLS") or "true").lower() == "true"
+    MAIL_USE_SSL = (os.environ.get("MAIL_USE_SSL") or "false").lower() == "true"
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME") or None
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD") or None
+    MAIL_SENDER = os.environ.get("MAIL_SENDER") or "Noriūnų J. Černiaus mokykla <noreply@mokykla.lt>"
+    MAIL_TIMEOUT = int(os.environ.get("MAIL_TIMEOUT") or 15)
+    # „smtp“ – siųsti per serverį; „failai“ – be serverio laiškai įrašomi kaip .eml failai
+    MAIL_BACKEND = os.environ.get("MAIL_BACKEND") or ("smtp" if MAIL_SERVER else "failai")
+    MAIL_FAILU_KATALOGAS = os.environ.get("MAIL_FAILU_KATALOGAS") or os.path.join(
+        BASE_DIR, "duomenys", "laiskai")
+
 
 class TestConfig(Config):
     """Testinė konfigūracija - in-memory SQLite, jokių išorinių priklausomybių."""
@@ -33,6 +51,10 @@ class TestConfig(Config):
     SECRET_KEY = "test-secret-key"
     WTF_CSRF_ENABLED = False
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "tests", "_uploads_tmp")
+    SISTEMOS_ADRESAS = "http://mokykla.test"
+    MAIL_SERVER = None
+    MAIL_BACKEND = "failai"
+    MAIL_FAILU_KATALOGAS = os.path.join(BASE_DIR, "tests", "_uploads_tmp", "laiskai")
 
 
 class PostgresTestConfig(TestConfig):

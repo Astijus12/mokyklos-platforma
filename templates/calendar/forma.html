@@ -97,8 +97,8 @@
         </div>
 
         <div class="flex gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
-            <button type="submit" class="btn-primary">Sukurti renginį</button>
-            <a href="{{ url_for('calendar.rodinys') }}" class="btn-secondary">Atšaukti</a>
+            <button type="submit" class="btn-primary">{% if renginys %}Išsaugoti pakeitimus{% else %}Sukurti renginį{% endif %}</button>
+            <a href="{{ url_for('calendar.perziureti', renginio_id=renginys.id) if renginys else url_for('calendar.rodinys') }}" class="btn-secondary">Atšaukti</a>
         </div>
     </form>
 </div>

@@ -10,12 +10,17 @@ modelius ir paslaugas. Užduoties klaida užrašoma į žurnalą ir nesustabdo
 planuoklės – kitos užduotys vykdomos toliau.
 """
 import logging
+from datetime import datetime
 from functools import wraps
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from models import db, EilesIrasas
+from services.priminimai import PriminimuKurejas
+from services.siuntejas import PranesimuSiuntejas
 
 LAIKO_JUOSTA = "Europe/Vilnius"
 
@@ -27,6 +32,18 @@ def busenos_patikra():
     laukia = EilesIrasas.query.filter_by(busena=EilesIrasas.LAUKIA).count()
     zurnalas.info("Fono procesas veikia. Eilėje laukia pranešimų: %s", laukia)
     return laukia
+
+
+def siusti_pranesimus():
+    """Kas minutę: išsiunčiama iki 20 laukiančių pranešimų (FR-A05)."""
+    return PranesimuSiuntejas().siusti_partija()
+
+
+def kurti_priminimus():
+    """Kasdien: priminimai apie artėjančius renginius, posėdžius ir terminus (FR-A06)."""
+    kiekis = PriminimuKurejas().sukurti_priminimus()
+    zurnalas.info("Sukurta priminimų: %s", kiekis)
+    return kiekis
 
 
 class Planuokle:
@@ -52,7 +69,7 @@ class Planuokle:
                     db.session.remove()
         return vykdyti
 
-    def _prideti(self, funkcija, trigeris, uzduoties_id, pavadinimas):
+    def _prideti(self, funkcija, trigeris, uzduoties_id, pavadinimas, **papildomi):
         self.planuokle.add_job(
             self._programos_kontekste(funkcija),
             trigeris,
@@ -62,10 +79,18 @@ class Planuokle:
             coalesce=True,          # praleisti paleidimai sujungiami į vieną
             misfire_grace_time=60,  # pavėlavusi iki minutės užduotis vis tiek įvykdoma
             replace_existing=True,
+            **papildomi,
         )
 
     def registruoti_uzduotis(self):
         """Užregistruoja visas fono proceso užduotis ir grąžina jų sąrašą."""
+        dabar = datetime.now(ZoneInfo(LAIKO_JUOSTA))
+        self._prideti(siusti_pranesimus, IntervalTrigger(minutes=1),
+                      "pranesimu_siuntimas", "Pranešimų siuntimas")
+        # Priminimai kasdien 7.00 ir iškart paleidus procesą: jei procesas tą rytą
+        # neveikė, priminimai neprarandami (dublikatų neleidžia unikalus raktas)
+        self._prideti(kurti_priminimus, CronTrigger(hour=7, minute=0, timezone=LAIKO_JUOSTA),
+                      "priminimai", "Priminimų kūrimas", next_run_time=dabar)
         self._prideti(busenos_patikra, IntervalTrigger(minutes=15),
                       "busenos_patikra", "Fono proceso būsenos patikra")
         return self.planuokle.get_jobs()
