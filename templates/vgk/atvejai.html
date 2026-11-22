@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Vaiko gerovės komisija{% endblock %}
+
+{% block content %}
+<div class="mb-5 flex items-end justify-between flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Vaiko gerovės komisija</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Atvejai, jų būsenos ir svarstymai posėdžiuose. Duomenys konfidencialūs.</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('vgk.kreipimasis') }}" class="btn-secondary">
+            <i data-lucide="file-plus" class="w-3.5 h-3.5" aria-hidden="true"></i>Naujas kreipimasis
+        </a>
+        <a href="{{ url_for('vgk.posedziai') }}" class="btn-secondary">
+            <i data-lucide="calendar-days" class="w-3.5 h-3.5" aria-hidden="true"></i>Posėdžiai
+        </a>
+        {% if galima_valdyti %}
+        <a href="{{ url_for('vgk.posedzio_forma') }}" class="btn-primary">
+            <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>Naujas posėdis
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<nav class="mb-4 flex flex-wrap gap-2" aria-label="Filtras pagal būseną">
+    <a href="{{ url_for('vgk.atvejai') }}" class="tag {{ 'tag-brand' if not busena else 'tag-default' }}">Visi</a>
+    {% for kodas, pavadinimas in busenos.items() %}
+    <a href="{{ url_for('vgk.atvejai', busena=kodas) }}" class="tag {{ 'tag-brand' if busena == kodas else 'tag-default' }}"
+       {% if busena == kodas %}aria-current="page"{% endif %}>{{ pavadinimas }}</a>
+    {% endfor %}
+</nav>
+
+<div class="card">
+    {% if atvejai %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Nr.</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mokinys</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pateikė</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Užregistruota</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Būsena</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for a in atvejai %}
+                <tr>
+                    <td class="px-4 py-3 text-sm tabular-nums">
+                        <a href="{{ url_for('vgk.atvejis', atvejo_id=a.id) }}" class="font-medium text-brand-800 dark:text-brand-400 hover:underline">{{ a.numeris }}</a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                        {{ a.mokinys.pilnas_vardas }}
+                        <span class="text-xs text-slate-500 dark:text-slate-400">{{ a.mokinys.klase.pavadinimas if a.mokinys.klase else '' }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ a.pateike.pilnas_vardas if a.pateike else 'Perkelta iš ankstesnės versijos' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ a.sukurta|vietinis_laikas }}</td>
+                    <td class="px-4 py-3 text-sm"><span class="tag {{ atveju_spalvos.get(a.busena, 'tag-default') }} whitespace-nowrap">{{ a.busenos_pavadinimas }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="heart-handshake" class="w-6 h-6" aria-hidden="true"></i></div>
+        <p class="empty-state-title">Atvejų nėra</p>
+        <p class="empty-state-text">Atvejis atsiranda, kai darbuotojas pateikia kreipimąsi.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -156,7 +156,7 @@ class TestVgkPosedisIrSvarstymai:
         priemone = svarstymas.priemones[0]
         assert priemone.busena == VgkPriemone.PASKIRTA
         assert priemone.atsakingas == mokytojas
-        assert priemone.busenos_pavadinimas == "Paskirta"
+        assert priemone.busenos_pavadinimas == "Vykdoma"
 
     def test_tas_pats_atvejis_tame_paciame_posedyje_tik_karta(self, db_session, vaikas):
         atvejis = VgkAtvejis(mokinio_id=vaikas.id, priezastis="x")

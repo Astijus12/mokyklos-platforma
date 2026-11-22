@@ -142,6 +142,11 @@ class User(UserMixin, db.Model):
         return self.vgk_pareigos in self.VGK_PAREIGOS
 
     @property
+    def gali_matyti_vgk(self):
+        """VGK duomenis mato tik komisijos nariai ir administratorius (FR-V02, NFR-06)."""
+        return self.yra_administratorius or self.yra_vgk_narys
+
+    @property
     def gali_planuoti_vgk_posedzius(self):
         """Posėdžius planuoja ir protokolus tvarko pirmininkas arba sekretorius."""
         return self.vgk_pareigos in ("pirmininkas", "sekretorius")

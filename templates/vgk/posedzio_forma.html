@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}{% if posedis %}Posėdžio juodraštis{% else %}Naujas komisijos posėdis{% endif %}{% endblock %}
+
+{% block content %}
+{% set data = forma.get('data') if forma else (posedis.data.isoformat() if posedis else '') %}
+{% set laikas = forma.get('laikas') if forma else (posedis.laikas.strftime('%H:%M') if posedis else '14:00') %}
+{% set vieta = forma.get('vieta') if forma else (posedis.vieta if posedis else 'Mokytojų kambarys') %}
+{% set skuba = forma.get('skubos_priezastis') if forma else (posedis.skubos_priezastis or '' if posedis else '') %}
+<div class="mb-4">
+    <a href="{{ url_for('vgk.posedziai') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>Komisijos posėdžiai
+    </a>
+</div>
+<h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-5">
+    {% if posedis %}Posėdžio juodraštis{% else %}Naujas komisijos posėdis{% endif %}
+</h1>
+
+<form method="POST" id="posedzio-forma">
+    <div class="card mb-4">
+        <div class="card-header"><h2>Posėdžio informacija</h2></div>
+        <div class="p-4 grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div>
+                <label for="data" class="form-label">Data <span class="text-red-500">*</span></label>
+                <input type="date" id="data" name="data" required value="{{ data }}" class="form-input">
+            </div>
+            <div>
+                <label for="laikas" class="form-label">Laikas <span class="text-red-500">*</span></label>
+                <input type="time" id="laikas" name="laikas" required value="{{ laikas }}" class="form-input">
+            </div>
+            <div class="sm:col-span-2">
+                <label for="vieta" class="form-label">Vieta <span class="text-red-500">*</span></label>
+                <input type="text" id="vieta" name="vieta" required maxlength="200" value="{{ vieta }}" class="form-input">
+            </div>
+        </div>
+        <div id="termino-ispejimas" class="mx-4 mb-4 p-3 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 text-sm text-amber-900 dark:text-amber-200" role="status" aria-live="polite" hidden>
+            <p class="font-medium" id="termino-tekstas"></p>
+            <p class="mt-0.5">Kvietimai turi būti išsiųsti ne vėliau kaip prieš {{ reikia_dienu }} darbo dienas. Pasirinkite vėlesnę datą arba nurodykite skubos priežastį.</p>
+            <label for="skubos_priezastis" class="form-label mt-2">Skubos priežastis</label>
+            <textarea id="skubos_priezastis" name="skubos_priezastis" rows="2" maxlength="1000" class="form-input">{{ skuba }}</textarea>
+        </div>
+        <p id="termino-gerai" class="mx-4 mb-4 text-sm text-green-700 dark:text-green-400" role="status" aria-live="polite" hidden></p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <fieldset class="card">
+            <legend class="sr-only">Darbotvarkė</legend>
+            <div class="card-header"><h2>Darbotvarkė</h2></div>
+            {% if kandidatai %}
+            <ul class="p-4 space-y-2">
+                {% for a in kandidatai %}
+                <li>
+                    <label class="flex items-start gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="atvejai" value="{{ a.id }}" class="atvejo-zyme w-4 h-4 mt-0.5 rounded border-slate-300 text-brand-700 focus:ring-brand-700"
+                               {% if a.id in pazymeti %}checked{% endif %}>
+                        <span><span class="font-medium text-slate-900 dark:text-white">Atvejis {{ a.numeris }}</span>
+                            <span class="text-slate-500 dark:text-slate-400">· {{ a.mokinys.pilnas_vardas }}{% if a.mokinys.klase %}, {{ a.mokinys.klase.pavadinimas }}{% endif %}</span>
+                            <span class="tag {{ atveju_spalvos.get(a.busena, 'tag-default') }} ml-1">{{ a.busenos_pavadinimas }}</span></span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="p-4 text-sm text-slate-500 dark:text-slate-400">Nėra atvejų, kuriuos būtų galima svarstyti.</p>
+            {% endif %}
+        </fieldset>
+
+        <fieldset class="card">
+            <legend class="sr-only">Kviečiami dalyviai</legend>
+            <div class="card-header"><h2>Kviečiami dalyviai</h2></div>
+            <ul class="p-4 space-y-2">
+                {% for kodas, pavadinimas, nariai in grupes %}
+                <li {% if kodas.startswith('tevai_') %}data-atvejis="{{ kodas[6:] }}"{% endif %} class="dalyviu-grupe">
+                    <label class="flex items-start gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="grupes" value="{{ kodas }}" class="w-4 h-4 mt-0.5 rounded border-slate-300 text-brand-700 focus:ring-brand-700"
+                               {% if kodas in pazymetos_grupes %}checked{% endif %}>
+                        <span class="text-slate-800 dark:text-slate-200">{{ 'Mokinių klasių vadovai' if kodas == 'vadovai' else pavadinimas }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+            <div class="px-4 pb-4">
+                <label for="kviestiniai" class="form-label">Kiti kviečiami asmenys be paskyros (po vieną eilutėje)</label>
+                <textarea id="kviestiniai" name="kviestiniai" rows="2" maxlength="1000" class="form-input" placeholder="pvz., Rasa Petrauskienė, psichologė">{{ forma.get('kviestiniai') if forma else kviestiniai }}</textarea>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Sąrašas sudarytas pagal darbotvarkę, jį galima pakeisti.</p>
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="flex items-center justify-between flex-wrap gap-3">
+        <p class="text-sm text-slate-500 dark:text-slate-400">Kvietimai bus išsiųsti el. paštu ir parodyti pranešimų centre.</p>
+        <div class="flex flex-wrap gap-2">
+            <button type="submit" name="veiksmas" value="juodrastis" class="btn-secondary" formnovalidate>Išsaugoti juodraštį</button>
+            <button type="submit" name="veiksmas" value="patvirtinti" class="btn-primary">Išsiųsti kvietimus</button>
+        </div>
+    </div>
+</form>
+
+{% if posedis %}
+<form method="POST" action="{{ url_for('vgk.atsaukti', posedzio_id=posedis.id) }}" class="mt-4"
+      data-confirm="Atšaukti posėdžio juodraštį?" data-confirm-btn="Atšaukti posėdį">
+    <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">Atšaukti juodraštį</button>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+    const data = document.getElementById('data');
+    const ispejimas = document.getElementById('termino-ispejimas');
+    const tekstas = document.getElementById('termino-tekstas');
+    const gerai = document.getElementById('termino-gerai');
+
+    function dienuZodis(n) {
+        if (n % 10 === 1 && n % 100 !== 11) return 'darbo diena';
+        if (n % 10 >= 2 && n % 10 <= 9 && !(n % 100 >= 12 && n % 100 <= 19)) return 'darbo dienos';
+        return 'darbo dienų';
+    }
+
+    // Darbo dienų skaičių apskaičiuoja serveris (įskaitant šventes), naršyklė tik parodo
+    function tikrintiTermina() {
+        if (!data.value) { ispejimas.hidden = true; gerai.hidden = true; return; }
+        fetch('{{ url_for("vgk.darbo_dienos") }}?data=' + encodeURIComponent(data.value), { credentials: 'same-origin' })
+            .then(r => r.json())
+            .then(ats => {
+                if (ats.liko === undefined) return;
+                const zinute = 'Iki posėdžio liko ' + ats.liko + ' ' + dienuZodis(ats.liko) + '.';
+                ispejimas.hidden = ats.pakanka;
+                gerai.hidden = !ats.pakanka;
+                tekstas.textContent = zinute;
+                gerai.textContent = zinute + ' Terminas pakankamas.';
+            })
+            .catch(() => {});
+    }
+
+    // Tėvų grupės rodomos tik pažymėtiems darbotvarkės atvejams
+    function rodytiTevuGrupes() {
+        const pazymeti = new Set(Array.from(document.querySelectorAll('.atvejo-zyme:checked')).map(z => z.value));
+        document.querySelectorAll('.dalyviu-grupe[data-atvejis]').forEach(function (eilute) {
+            eilute.hidden = !pazymeti.has(eilute.dataset.atvejis);
+        });
+    }
+
+    data.addEventListener('change', tikrintiTermina);
+    document.querySelectorAll('.atvejo-zyme').forEach(z => z.addEventListener('change', rodytiTevuGrupes));
+    tikrintiTermina();
+    rodytiTevuGrupes();
+})();
+</script>
+{% endblock %}

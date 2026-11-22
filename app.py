@@ -26,6 +26,7 @@ from routes.notifications import notifications_bp
 from routes.api_docs import api_docs_bp
 from routes.automatizavimas import automatizavimas_bp
 from routes.dokumentai import dokumentai_bp
+from routes.vgk import vgk_bp
 
 
 limiter = Limiter(
@@ -108,6 +109,7 @@ def create_app(config_class=Config):
     # Baigiamojo darbo moduliai
     app.register_blueprint(automatizavimas_bp)
     app.register_blueprint(dokumentai_bp)
+    app.register_blueprint(vgk_bp)
 
     @app.errorhandler(404)
     def handle_404(e):

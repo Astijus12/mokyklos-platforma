@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Mano kreipimaisi{% endblock %}
+
+{% block content %}
+<div class="mb-5 flex items-end justify-between flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Mano kreipimaisi</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Jūsų pateiktų kreipimųsi į Vaiko gerovės komisiją būsenos</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('vgk.mano_priemones') }}" class="btn-secondary">
+            <i data-lucide="list-checks" class="w-3.5 h-3.5" aria-hidden="true"></i>Mano priemonės
+        </a>
+        <a href="{{ url_for('vgk.kreipimasis') }}" class="btn-primary">
+            <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>Naujas kreipimasis
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    {% if atvejai %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Nr.</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mokinys</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Pateikta</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Būsena</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for a in atvejai %}
+                <tr>
+                    <td class="px-4 py-3 text-sm tabular-nums text-slate-600 dark:text-slate-400">{{ a.numeris }}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white">{{ a.mokinys.pilnas_vardas }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ a.sukurta|vietinis_laikas }}</td>
+                    <td class="px-4 py-3 text-sm"><span class="tag {{ atveju_spalvos.get(a.busena, 'tag-default') }} whitespace-nowrap">{{ a.busenos_pavadinimas }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="heart-handshake" class="w-6 h-6" aria-hidden="true"></i></div>
+        <p class="empty-state-title">Kreipimųsi nepateikėte</p>
+        <p class="empty-state-text">Pastebėję mokinio sunkumų, pateikite kreipimąsi komisijai.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Posėdis {{ posedis.data.strftime('%Y-%m-%d') }}{% endblock %}
+
+{% block content %}
+{% set redaguojamas = galima_valdyti and posedis.busena in ('suplanuotas', 'ivykes') %}
+<div class="mb-4">
+    <a href="{{ url_for('vgk.posedziai') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>Komisijos posėdžiai
+    </a>
+</div>
+
+<div class="mb-5 flex items-start justify-between flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">
+            Posėdis {{ posedis.data.strftime('%Y-%m-%d') }} {{ posedis.laikas.strftime('%H:%M') }}
+        </h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{{ posedis.vieta }}</p>
+        <span class="tag {{ posedziu_spalvos.get(posedis.busena, 'tag-default') }} mt-1 inline-flex">{{ posedis.busenos_pavadinimas }}</span>
+        {% if posedis.skubos_priezastis %}
+        <p class="text-sm text-amber-800 dark:text-amber-300 mt-2">Skubos priežastis: {{ posedis.skubos_priezastis }}</p>
+        {% endif %}
+    </div>
+    <div class="flex flex-wrap gap-2">
+        {% if posedis.protokolas %}
+        <a href="{{ url_for('dokumentai.atsisiusti', dokumento_id=posedis.protokolas.id) }}" class="btn-secondary">
+            <i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i>Protokolas {{ posedis.protokolas.numeris }}
+        </a>
+        {% endif %}
+        {% if galima_valdyti and posedis.busena == 'juodrastis' %}
+        <a href="{{ url_for('vgk.posedzio_forma', posedzio_id=posedis.id) }}" class="btn-primary">Redaguoti juodraštį</a>
+        {% endif %}
+        {% if galima_valdyti and posedis.busena == 'suplanuotas' %}
+        <form method="POST" action="{{ url_for('vgk.uzbaigti_posedi_marsrutas', posedzio_id=posedis.id) }}"
+              data-confirm="Pažymėti posėdį įvykusiu ir parengti protokolo projektą?" data-confirm-btn="Užbaigti" data-confirm-variant="primary">
+            <button type="submit" class="btn-primary"><i data-lucide="file-check" class="w-3.5 h-3.5" aria-hidden="true"></i>Užbaigti ir parengti protokolą</button>
+        </form>
+        <form method="POST" action="{{ url_for('vgk.atsaukti', posedzio_id=posedis.id) }}"
+              data-confirm="Atšaukti posėdį? Dalyviams bus pranešta, o neišsiųsti priminimai atšaukti." data-confirm-btn="Atšaukti posėdį">
+            <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">Atšaukti posėdį</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{# Dalyviai ir nutarimai priklauso vienai formai; laukai susieti per atributą form #}
+<form method="POST" id="duomenu-forma" action="{{ url_for('vgk.posedzio_duomenys', posedzio_id=posedis.id) }}"></form>
+
+<div class="card mb-4">
+    <div class="card-header"><h2>Dalyviai</h2></div>
+    {% if posedis.dalyviai %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Dalyvis</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Vaidmuo</th>
+                    <th scope="col" class="text-center px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Dalyvavo</th>
+                    <th scope="col" class="text-center px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Konfidencialumo pasižadėjimas</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for d in posedis.dalyviai %}
+                <tr>
+                    <td class="px-4 py-3 text-sm text-slate-900 dark:text-white">{{ d.vardas_pavarde }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ d.vaidmens_pavadinimas }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <input type="checkbox" form="duomenu-forma" name="dalyvavo" value="{{ d.id }}" aria-label="{{ d.vardas_pavarde }} dalyvavo"
+                               {% if d.dalyvavo %}checked{% endif %} {% if not redaguojamas %}disabled{% endif %}
+                               class="w-4 h-4 rounded border-slate-300 text-brand-700 focus:ring-brand-700">
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <input type="checkbox" form="duomenu-forma" name="pasizadejimas" value="{{ d.id }}" aria-label="{{ d.vardas_pavarde }} pasirašė pasižadėjimą"
+                               {% if d.pasizadejimas %}checked{% endif %} {% if not redaguojamas %}disabled{% endif %}
+                               class="w-4 h-4 rounded border-slate-300 text-brand-700 focus:ring-brand-700">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500 dark:text-slate-400">Dalyvių nėra.</p>
+    {% endif %}
+</div>
+
+<h2 class="text-base font-semibold text-slate-900 dark:text-white mb-3">Darbotvarkė ir nutarimai</h2>
+{% for s in posedis.svarstymai %}
+{% set a = s.atvejis %}
+<div class="card mb-4" id="svarstymas-{{ s.id }}">
+    <div class="card-header flex items-center justify-between flex-wrap gap-2">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-white">
+            {{ s.eiles_nr }}. <a href="{{ url_for('vgk.atvejis', atvejo_id=a.id) }}" class="hover:underline">{{ a.mokinys.pilnas_vardas }}</a>
+            <span class="text-slate-500 dark:text-slate-400 font-normal">· atvejis {{ a.numeris }}</span>
+        </h3>
+        <span class="tag {{ atveju_spalvos.get(a.busena, 'tag-default') }}">{{ a.busenos_pavadinimas }}</span>
+    </div>
+    <div class="p-4 space-y-3 text-sm">
+        <p class="text-slate-700 dark:text-slate-200"><span class="text-slate-500 dark:text-slate-400">Kreipimosi priežastis:</span> {{ a.priezastis }}</p>
+        <div>
+            <label for="nutarimas_{{ s.id }}" class="form-label">Nutarimas</label>
+            <textarea id="nutarimas_{{ s.id }}" form="duomenu-forma" name="nutarimas_{{ s.id }}" rows="2" maxlength="3000"
+                      class="form-input" {% if not redaguojamas %}disabled{% endif %}>{{ s.nutarimas or '' }}</textarea>
+        </div>
+        {% if s.priemones %}
+        <ul class="space-y-1">
+            {% for p in s.priemones %}
+            <li class="flex flex-wrap items-center gap-2">
+                <span class="tag {{ priemoniu_spalvos.get(p.busena, 'tag-default') }}">{{ p.busenos_pavadinimas }}</span>
+                <span class="text-slate-800 dark:text-slate-200">{{ p.aprasymas }}</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400">– {{ p.atsakingas.pilnas_vardas if p.atsakingas else '' }}, iki {{ p.terminas.strftime('%Y-%m-%d') }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if redaguojamas %}
+        <form method="POST" action="{{ url_for('vgk.posedzio_priemone', posedzio_id=posedis.id, svarstymo_id=s.id) }}"
+              class="grid grid-cols-1 md:grid-cols-6 gap-2 items-end pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div class="md:col-span-3">
+                <label for="aprasymas-{{ s.id }}" class="form-label">Nauja priemonė</label>
+                <input type="text" id="aprasymas-{{ s.id }}" name="aprasymas" required maxlength="500" class="form-input">
+            </div>
+            <div>
+                <label for="atsakingas-{{ s.id }}" class="form-label">Atsakingas</label>
+                <select id="atsakingas-{{ s.id }}" name="atsakingo_id" required class="form-input">
+                    {% for d in darbuotojai %}<option value="{{ d.id }}">{{ d.pilnas_vardas }}</option>{% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="terminas-{{ s.id }}" class="form-label">Terminas</label>
+                <input type="date" id="terminas-{{ s.id }}" name="terminas" required class="form-input">
+            </div>
+            <button type="submit" class="btn-secondary justify-center">Pridėti</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+{% if redaguojamas %}
+<button type="submit" form="duomenu-forma" class="btn-primary">Išsaugoti dalyvius ir nutarimus</button>
+{% endif %}
+{% endblock %}

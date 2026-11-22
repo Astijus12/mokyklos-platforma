@@ -45,7 +45,7 @@
                             Autobusas
                         </span>
                         {% endif %}
-                        {% if vaikas.geroves_komisija %}
+                        {% if vaikas.geroves_komisija and current_user.gali_matyti_vgk %}
                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
                             <i data-lucide="shield" class="w-3 h-3"></i>
                             VGK

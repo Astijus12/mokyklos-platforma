@@ -169,31 +169,9 @@
                 </div>
             </label>
 
-            <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
-                <label class="flex items-start gap-3 cursor-pointer">
-                    <input type="checkbox" name="geroves_komisija" id="geroves_komisija"
-                           {% if mokinys and mokinys.geroves_komisija %}checked{% endif %}
-                           class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
-                    <div class="flex-1">
-                        <span class="text-sm font-medium text-slate-900 dark:text-white">Buvo svarstomas vaiko gerovės komisijoje</span>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pažymėkite, jei buvo svarstomas mokyklos VGK posėdyje</p>
-                    </div>
-                </label>
-
-                <div id="geroves-detales" class="ml-7 mt-3 space-y-3 {% if not mokinys or not mokinys.geroves_komisija %}hidden{% endif %}">
-                    <div>
-                        <label class="form-label">Svarstymo data</label>
-                        <input type="date" name="geroves_komisija_data"
-                               value="{{ mokinys.geroves_komisija_data.strftime('%Y-%m-%d') if mokinys and mokinys.geroves_komisija_data else '' }}"
-                               class="form-input max-w-xs">
-                    </div>
-                    <div>
-                        <label class="form-label">Pastabos, sprendimai</label>
-                        <textarea name="geroves_komisija_pastabos" rows="3"
-                                  placeholder="Trumpas svarstymo aprašymas, priimti sprendimai, rekomendacijos..."
-                                  class="form-input">{{ mokinys.geroves_komisija_pastabos if mokinys else '' }}</textarea>
-                    </div>
-                </div>
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-4 text-sm text-slate-600 dark:text-slate-400">
+                Vaiko gerovės komisijos duomenys tvarkomi modulyje „Vaiko gerovės komisija“:
+                {% if mokinys %}<a href="{{ url_for('vgk.kreipimasis', mokinio_id=mokinys.id) }}" class="text-brand-800 dark:text-brand-400 hover:underline">pateikti kreipimąsi dėl šio mokinio</a>.{% else %}kreipimąsi galėsite pateikti išsaugoję mokinį.{% endif %}
             </div>
 
             <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
@@ -213,14 +191,5 @@
     </div>
 </form>
 
-<script>
-    document.getElementById('geroves_komisija').addEventListener('change', function() {
-        const detales = document.getElementById('geroves-detales');
-        if (this.checked) {
-            detales.classList.remove('hidden');
-        } else {
-            detales.classList.add('hidden');
-        }
-    });
-</script>
+
 {% endblock %}

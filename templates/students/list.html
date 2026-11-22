@@ -127,12 +127,12 @@
                                 Autobusas
                             </span>
                             {% endif %}
-                            {% if m.geroves_komisija %}
+                            {% if m.geroves_komisija and current_user.gali_matyti_vgk %}
                             <span class="tag tag-danger" title="Svarstomas gerovės komisijoje">
                                 VGK
                             </span>
                             {% endif %}
-                            {% if not m.mokyklos_autobusas and not m.geroves_komisija %}
+                            {% if not m.mokyklos_autobusas and not (m.geroves_komisija and current_user.gali_matyti_vgk) %}
                             <span class="text-slate-300 dark:text-slate-600 text-sm">—</span>
                             {% endif %}
                         </div>
@@ -180,7 +180,7 @@
                         <span class="tag tag-default flex-shrink-0">{{ m.klase.pavadinimas }}</span>
                     </div>
 
-                    {% if m.mokyklos_autobusas or m.geroves_komisija %}
+                    {% if m.mokyklos_autobusas or (m.geroves_komisija and current_user.gali_matyti_vgk) %}
                     <div class="flex flex-wrap gap-1 mb-2">
                         {% if m.mokyklos_autobusas %}
                         <span class="tag tag-warning">
@@ -188,7 +188,7 @@
                             Autobusas
                         </span>
                         {% endif %}
-                        {% if m.geroves_komisija %}
+                        {% if m.geroves_komisija and current_user.gali_matyti_vgk %}
                         <span class="tag tag-danger">VGK</span>
                         {% endif %}
                     </div>

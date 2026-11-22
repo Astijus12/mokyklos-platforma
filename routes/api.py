@@ -72,11 +72,7 @@ def _serializuoti_vaika(m, tik_pagrindiniai=False):
         "telefonas": m.telefonas,
         "adresas": m.adresas,
         "mokyklos_autobusas": m.mokyklos_autobusas,
-        "geroves_komisija": {
-            "aktyvus": m.geroves_komisija,
-            "data": m.geroves_komisija_data.isoformat() if m.geroves_komisija_data else None,
-            "pastabos": m.geroves_komisija_pastabos,
-        },
+        # BD (NFR-06): Vaiko gerovės komisijos duomenys tėvams per sąsają nebeteikiami
         "klases_vadovas": (
             {
                 "vardas": m.klase.vadovas.pilnas_vardas,

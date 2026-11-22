@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Mano priemonės{% endblock %}
+
+{% block content %}
+<div class="mb-5">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Mano priemonės</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Vaiko gerovės komisijos jums paskirtos priemonės ir jų terminai</p>
+</div>
+
+<div class="card">
+    {% if priemones %}
+    <ul class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for p in priemones %}
+        {% set veluoja = p.busena == 'veluoja' or (p.busena == 'paskirta' and p.terminas < siandien) %}
+        <li class="p-4 flex flex-col md:flex-row md:items-start gap-3">
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-900 dark:text-white">{{ p.aprasymas }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Mokinys: {{ p.svarstymas.atvejis.mokinys.pilnas_vardas }} · terminas {{ p.terminas.strftime('%Y-%m-%d') }}
+                </p>
+                {% if p.rezultatas %}<p class="text-sm text-slate-700 dark:text-slate-200 mt-1">Rezultatas: {{ p.rezultatas }}</p>{% endif %}
+            </div>
+            <span class="tag {{ 'tag-danger' if veluoja else priemoniu_spalvos.get(p.busena, 'tag-default') }} whitespace-nowrap self-start">
+                {{ 'Vėluoja' if veluoja else p.busenos_pavadinimas }}
+            </span>
+            {% if p.busena != 'ivykdyta' %}
+            <form method="POST" action="{{ url_for('vgk.priemone_ivykdyta', priemones_id=p.id) }}" class="flex flex-col sm:flex-row gap-2 md:w-96">
+                <label for="rezultatas-{{ p.id }}" class="sr-only">Rezultatas</label>
+                <input type="text" id="rezultatas-{{ p.id }}" name="rezultatas" maxlength="500"
+                       placeholder="Trumpai: kas atlikta" class="form-input text-sm">
+                <button type="submit" class="btn-primary whitespace-nowrap">Pažymėti įvykdyta</button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="list-checks" class="w-6 h-6" aria-hidden="true"></i></div>
+        <p class="empty-state-title">Priemonių nėra</p>
+        <p class="empty-state-text">Jums dar nepaskirta nė viena komisijos priemonė.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

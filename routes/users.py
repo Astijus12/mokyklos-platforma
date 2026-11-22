@@ -8,6 +8,14 @@ from routes.auth import admin_required
 users_bp = Blueprint("users", __name__, url_prefix="/vartotojai")
 
 
+def _vgk_pareigos(forma):
+    """BD: pareigos VGK (tik darbuotojams; tėvas komisijos nariu nebūna)."""
+    pareigos = forma.get("vgk_pareigos") or None
+    if forma.get("role") == "tevas" or pareigos not in User.VGK_PAREIGOS:
+        return None
+    return pareigos
+
+
 @users_bp.route("/")
 @admin_required
 def saraso():
@@ -33,6 +41,7 @@ def naujas():
                 email=email,
                 telefonas=request.form.get("telefonas", "").strip() or None,
                 role=request.form.get("role", "mokytojas"),
+                vgk_pareigos=_vgk_pareigos(request.form),
             )
             vartotojas.nustatyti_slaptazodi(slaptazodis)
             db.session.add(vartotojas)
@@ -54,6 +63,7 @@ def redaguoti(vartotojo_id):
         vartotojas.email = request.form.get("email", "").strip().lower()
         vartotojas.telefonas = request.form.get("telefonas", "").strip() or None
         vartotojas.role = request.form.get("role", "mokytojas")
+        vartotojas.vgk_pareigos = _vgk_pareigos(request.form)
 
         naujas_slaptazodis = request.form.get("slaptazodis", "")
         if naujas_slaptazodis:

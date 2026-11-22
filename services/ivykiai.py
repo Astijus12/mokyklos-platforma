@@ -145,12 +145,16 @@ def _renginys(r, gavejas):
 
 
 def _posedis(p, gavejas):
-    return {"posedis": {"data": _data(p.data), "laikas": _laikas(p.laikas), "vieta": p.vieta}}, \
-        ("vgk.posedis", {"posedzio_id": p.id})
+    # Posėdžio puslapį mato tik komisijos nariai; tėvams ir kitiems – nuoroda į jų pradžios puslapį
+    if gavejas.gali_matyti_vgk:
+        tikslas = ("vgk.posedis", {"posedzio_id": p.id})
+    else:
+        tikslas = ("parents.dashboard", {}) if gavejas.yra_tevas else ("dashboard.index", {})
+    return {"posedis": {"data": _data(p.data), "laikas": _laikas(p.laikas), "vieta": p.vieta}}, tikslas
 
 
 def _atvejis(a, gavejas):
-    return {"atvejis": {"numeris": a.id, "data": _data(a.sukurta)}}, ("vgk.atvejis", {"atvejo_id": a.id})
+    return {"atvejis": {"numeris": a.numeris, "data": _data(a.sukurta)}}, ("vgk.atvejis", {"atvejo_id": a.id})
 
 
 def _priemone(p, gavejas):

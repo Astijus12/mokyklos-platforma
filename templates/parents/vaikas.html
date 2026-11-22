@@ -103,7 +103,7 @@
             <i data-lucide="shield" class="w-4 h-4"></i>
             Vaiko gerovės komisija
         </h2>
-        {% if vaikas.geroves_komisija %}
+        {% if vaikas.geroves_komisija and current_user.gali_matyti_vgk %}
         <div class="space-y-2 text-sm">
             <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
@@ -146,7 +146,7 @@
     </h2>
 
     <div class="timeline">
-        {% if vaikas.geroves_komisija and vaikas.geroves_komisija_data %}
+        {% if vaikas.geroves_komisija and vaikas.geroves_komisija_data and current_user.gali_matyti_vgk %}
         <div class="timeline-item">
             <p class="timeline-item-date">{{ vaikas.geroves_komisija_data.strftime('%Y-%m-%d') }}</p>
             <p class="timeline-item-title">Vaiko gerovės komisijos sprendimas</p>

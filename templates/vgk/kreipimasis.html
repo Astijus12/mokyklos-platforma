@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Kreipimasis į Vaiko gerovės komisiją{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('vgk.mano_kreipimaisi') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>Mano kreipimaisi
+    </a>
+</div>
+<div class="mb-5">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Kreipimasis į Vaiko gerovės komisiją</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+        Kreipimosi turinį matys tik komisijos nariai ir administratorius. Jūs matysite kreipimosi būseną.
+    </p>
+</div>
+
+<div class="card max-w-2xl">
+    <div class="card-header"><h2>Kreipimosi duomenys</h2></div>
+    <form method="POST" class="p-5 space-y-4">
+        <div>
+            <label for="mokinio_id" class="form-label">Mokinys <span class="text-red-500">*</span></label>
+            <select id="mokinio_id" name="mokinio_id" required class="form-input">
+                <option value="">– pasirinkite –</option>
+                {% for k in klases %}
+                <optgroup label="{{ k.pavadinimas }} klasė">
+                    {% for m in k.mokiniai|sort(attribute='pavarde') %}
+                    <option value="{{ m.id }}" {% if pasirinktas == m.id %}selected{% endif %}>{{ m.pilnas_vardas }}</option>
+                    {% endfor %}
+                </optgroup>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="priezastis" class="form-label">Kreipimosi priežastis <span class="text-red-500">*</span></label>
+            <textarea id="priezastis" name="priezastis" rows="5" required minlength="10" maxlength="3000"
+                      placeholder="Kokius mokinio sunkumus pastebėjote ir kokios pagalbos reikia?"
+                      class="form-input">{{ request.form.get('priezastis', '') }}</textarea>
+        </div>
+        <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+            <button type="submit" class="btn-primary">Pateikti kreipimąsi</button>
+            <a href="{{ url_for('vgk.mano_kreipimaisi') }}" class="btn-secondary">Atšaukti</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

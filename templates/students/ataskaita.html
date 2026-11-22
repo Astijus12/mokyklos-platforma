@@ -201,6 +201,7 @@
                 </span>
             </td>
         </tr>
+        {% if current_user.gali_matyti_vgk %}
         <tr>
             <th>Vaiko gerovės komisijos svarstymas</th>
             <td>
@@ -212,9 +213,10 @@
                 {% endif %}
             </td>
         </tr>
+        {% endif %}
     </table>
 
-    {% if mokinys.geroves_komisija_pastabos %}
+    {% if mokinys.geroves_komisija_pastabos and current_user.gali_matyti_vgk %}
     <h2>5. Vaiko gerovės komisijos pastabos</h2>
     <p style="border:1px solid #ccc; padding:12px; background:#faf8f8">
         {{ mokinys.geroves_komisija_pastabos }}

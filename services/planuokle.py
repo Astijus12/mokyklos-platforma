@@ -46,6 +46,15 @@ def kurti_priminimus():
     return kiekis
 
 
+def zymeti_veluojancias_priemones():
+    """Kasdien: praėjusio termino VGK priemonės pažymimos vėluojančiomis (FR-V09)."""
+    from services.vgk import pazymeti_veluojancias
+    kiekis = pazymeti_veluojancias()
+    if kiekis:
+        zurnalas.info("Pažymėta vėluojančių priemonių: %s", kiekis)
+    return kiekis
+
+
 def kurti_menesio_suvestine():
     """Kiekvieno mėnesio 1 d.: praėjusio mėnesio suvestinė (FR-D06)."""
     from services.pazymos import sukurti_menesio_suvestine
@@ -100,6 +109,8 @@ class Planuokle:
         # neveikė, priminimai neprarandami (dublikatų neleidžia unikalus raktas)
         self._prideti(kurti_priminimus, CronTrigger(hour=7, minute=0, timezone=LAIKO_JUOSTA),
                       "priminimai", "Priminimų kūrimas", next_run_time=dabar)
+        self._prideti(zymeti_veluojancias_priemones, CronTrigger(hour=7, minute=5, timezone=LAIKO_JUOSTA),
+                      "veluojancios_priemones", "Vėluojančių priemonių žymėjimas", next_run_time=dabar)
         self._prideti(kurti_menesio_suvestine,
                       CronTrigger(day=1, hour=6, minute=0, timezone=LAIKO_JUOSTA),
                       "menesio_suvestine", "Mėnesio suvestinė")

@@ -82,8 +82,8 @@
                     <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-1">
                             {% if m.mokyklos_autobusas %}<span class="tag tag-warning">Autobusas</span>{% endif %}
-                            {% if m.geroves_komisija %}<span class="tag tag-danger">VGK</span>{% endif %}
-                            {% if not m.mokyklos_autobusas and not m.geroves_komisija %}<span class="text-slate-300 dark:text-slate-600 text-sm">—</span>{% endif %}
+                            {% if m.geroves_komisija and current_user.gali_matyti_vgk %}<span class="tag tag-danger">VGK</span>{% endif %}
+                            {% if not m.mokyklos_autobusas and not (m.geroves_komisija and current_user.gali_matyti_vgk) %}<span class="text-slate-300 dark:text-slate-600 text-sm">—</span>{% endif %}
                         </div>
                     </td>
                     <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">

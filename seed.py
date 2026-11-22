@@ -16,7 +16,8 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 
 from app import create_app
 from db_atnaujinimas import sukurti_schema_is_naujo
-from models import db, User, Klase, Mokinys, Skelbimas, VgkAtvejis
+from models import (db, User, Klase, Mokinys, Skelbimas, VgkAtvejis, VgkPosedis, VgkSvarstymas,
+                    VgkDalyvis, VgkPriemone)
 
 
 def uzpildyti_db(naudoti_esama_app=False, isvalyti=True):
@@ -171,13 +172,12 @@ def _uzpildyti(isvalyti=True):
                 mokyklos_autobusas=autobusas,
                 klases_id=klase.id,
             )
-            # BD: VGK duomenys saugomi atvejų lentelėje; kreipimąsi pateikė klasės vadovas
+            # BD: VGK atvejis – kreipimasis, kurį pateikė klasės vadovas (būsenos – _vgk_demo)
             if gerov_kom:
                 m.vgk_atvejai.append(VgkAtvejis(
                     pateike_id=klase.vadovo_id,
                     priezastis=gerov_past,
-                    busena=VgkAtvejis.SVARSTOMAS,
-                    sukurta=datetime.combine(gerov_data, time(9, 0)),
+                    busena=VgkAtvejis.UZREGISTRUOTAS,
                 ))
             db.session.add(m)
             return m
@@ -205,6 +205,9 @@ def _uzpildyti(isvalyti=True):
         petras_tevas.vaikai = pirmieji_du
         db.session.add(petras_tevas)
         db.session.commit()
+
+        print("Kuriami Vaiko gerovės komisijos demo duomenys...")
+        _vgk_demo(ona, tomas, jonas, petras_tevas)
 
         print("Kuriami skelbimai...")
         skelbimai_data = [
@@ -270,6 +273,59 @@ def _uzpildyti(isvalyti=True):
               f"{Klase.query.count()} klasės, "
               f"{Mokinys.query.count()} mokiniai, "
               f"{Skelbimas.query.count()} skelbimai\n")
+
+
+def _vgk_demo(pirmininke, sekretorius, mokytojas, tevas):
+    """VGK demonstraciniai duomenys: įvykęs posėdis su protokolu ir priemonėmis,
+    suplanuotas posėdis ir naujas kreipimasis. Datos – nuo šiandienos, todėl demonstracija
+    visada atrodo aktuali. Kvietimų laiškai nesiunčiami (įvykiai neskelbiami)."""
+    from services.dokumentai import ProtokoloGeneratorius
+    from services.kalendorius import prideti_darbo_dienas
+
+    siandien = date.today()
+    atvejai = {a.mokinys.vardas: a for a in VgkAtvejis.query.all()}
+
+    # 1. Domas Butkus: įvykęs posėdis prieš dvi savaites, trys priemonės
+    domas = atvejai["Domas"]
+    domas.sukurta = datetime.combine(siandien - timedelta(days=30), time(9, 0))
+    domas.busena = VgkAtvejis.TAIKOMOS_PRIEMONES
+    ivykes = VgkPosedis(data=siandien - timedelta(days=14), laikas=time(14, 0), vieta="Mokytojų kambarys",
+                        busena=VgkPosedis.IVYKES)
+    svarstymas = VgkSvarstymas(atvejis=domas, eiles_nr=1,
+                               nutarimas="Skirti individualias matematikos konsultacijas, aptarti situaciją su "
+                                         "tėvais ir stebėti lankomumą du mėnesius.")
+    ivykes.svarstymai.append(svarstymas)
+    for naudotojas, vaidmuo in ((pirmininke, "pirmininkas"), (sekretorius, "sekretorius"), (tevas, "tevas")):
+        ivykes.dalyviai.append(VgkDalyvis(vartotojo_id=naudotojas.id, vardas_pavarde=naudotojas.pilnas_vardas,
+                                          vaidmuo=vaidmuo, dalyvavo=True, pasizadejimas=True))
+    db.session.add(ivykes)
+    svarstymas.priemones.extend([
+        VgkPriemone(aprasymas="Individualios matematikos konsultacijos kartą per savaitę",
+                    atsakingo_id=mokytojas.id, terminas=siandien + timedelta(days=10)),
+        VgkPriemone(aprasymas="Pokalbis su tėvais dėl pagalbos namuose", atsakingo_id=pirmininke.id,
+                    terminas=siandien - timedelta(days=3), busena=VgkPriemone.VELUOJA),
+        VgkPriemone(aprasymas="Lankomumo stebėsena", atsakingo_id=sekretorius.id,
+                    terminas=siandien - timedelta(days=7), busena=VgkPriemone.IVYKDYTA,
+                    rezultatas="Lankomumas pagerėjo, praleistų pamokų nebuvo."),
+    ])
+    db.session.flush()
+    ivykes.protokolas = ProtokoloGeneratorius().parengti({"posedis": ivykes}, sukure=sekretorius)
+
+    # 2. Justas Gricius: suplanuotas posėdis po 7 darbo dienų
+    justas = atvejai["Justas"]
+    justas.sukurta = datetime.combine(siandien - timedelta(days=10), time(10, 30))
+    justas.busena = VgkAtvejis.SVARSTOMAS
+    planuojamas = VgkPosedis(data=prideti_darbo_dienas(siandien, 7), laikas=time(15, 0),
+                             vieta="Mokytojų kambarys", busena=VgkPosedis.SUPLANUOTAS)
+    planuojamas.svarstymai.append(VgkSvarstymas(atvejis=justas, eiles_nr=1))
+    for naudotojas, vaidmuo in ((pirmininke, "pirmininkas"), (sekretorius, "sekretorius")):
+        planuojamas.dalyviai.append(VgkDalyvis(vartotojo_id=naudotojas.id,
+                                               vardas_pavarde=naudotojas.pilnas_vardas, vaidmuo=vaidmuo))
+    db.session.add(planuojamas)
+
+    # 3. Paulius Petraitis: naujas kreipimasis, laukia svarstymo
+    atvejai["Paulius"].sukurta = datetime.combine(siandien - timedelta(days=2), time(8, 15))
+    db.session.commit()
 
 
 if __name__ == "__main__":

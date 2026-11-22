@@ -10,7 +10,6 @@ from werkzeug.utils import secure_filename
 from routes.auth import personalas_required
 
 from models import db, Mokinys, Klase
-from services.vgk import atnaujinti_mokinio_zyme
 
 students_bp = Blueprint("students", __name__, url_prefix="/mokiniai")
 
@@ -44,14 +43,9 @@ def _surinkti_duomenis(form):
     }
 
 
-def _surinkti_vgk_zyme(form):
-    """VGK žymė iš mokinio formos. Nuo BD ji saugoma lentelėje vgk_atvejai."""
-    pazymeta = form.get("geroves_komisija") == "on"
-    return {
-        "pazymeta": pazymeta,
-        "data": _parse_data(form.get("geroves_komisija_data")) if pazymeta else None,
-        "pastabos": (form.get("geroves_komisija_pastabos", "").strip() or None) if pazymeta else None,
-    }
+def _vgk_stulpeliai():
+    """BD (NFR-06): VGK duomenys eksportuojami tik komisijos nariams ir administratoriui."""
+    return current_user.gali_matyti_vgk
 
 
 @students_bp.route("/")
@@ -101,8 +95,8 @@ def eksportas_csv():
         "El. paštas", "Telefonas", "Adresas",
         "Motinos vardas", "Motinos telefonas", "Motinos el. paštas",
         "Tėvo vardas", "Tėvo telefonas", "Tėvo el. paštas",
-        "Mokyklos autobusas", "Gerovės komisija", "Gerovės kom. data",
-    ])
+        "Mokyklos autobusas",
+    ] + (["Gerovės komisija", "Gerovės kom. data"] if _vgk_stulpeliai() else []))
 
     for m in mokiniai:
         rasytojas.writerow([
@@ -120,9 +114,10 @@ def eksportas_csv():
             m.tevo_telefonas or "",
             m.tevo_email or "",
             "Taip" if m.mokyklos_autobusas else "Ne",
+        ] + ([
             "Taip" if m.geroves_komisija else "Ne",
             m.geroves_komisija_data.strftime("%Y-%m-%d") if m.geroves_komisija_data else "",
-        ])
+        ] if _vgk_stulpeliai() else []))
 
     failo_vardas = f"mokiniai_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
     return Response(
@@ -163,7 +158,6 @@ def naujas():
                 flash("Vardas ir pavardė yra privalomi.", "danger")
             else:
                 mokinys = Mokinys(**duomenys)
-                atnaujinti_mokinio_zyme(mokinys, naudotojas=current_user, **_surinkti_vgk_zyme(request.form))
                 db.session.add(mokinys)
                 db.session.commit()
                 flash(f"Mokinys {mokinys.pilnas_vardas} pridėtas.", "success")
@@ -188,7 +182,6 @@ def redaguoti(mokinio_id):
         for laukas, reiksme in duomenys.items():
             setattr(mokinys, laukas, reiksme)
         mokinys.klases_id = request.form.get("klases_id", type=int)
-        atnaujinti_mokinio_zyme(mokinys, naudotojas=current_user, **_surinkti_vgk_zyme(request.form))
         db.session.commit()
         flash(f"Mokinio {mokinys.pilnas_vardas} duomenys atnaujinti.", "success")
         return redirect(url_for("students.detales", mokinio_id=mokinys.id))
@@ -257,8 +250,8 @@ def eksportas_pasirinktu():
         "El. paštas", "Telefonas", "Adresas",
         "Motinos vardas", "Motinos telefonas", "Motinos el. paštas",
         "Tėvo vardas", "Tėvo telefonas", "Tėvo el. paštas",
-        "Mokyklos autobusas", "Gerovės komisija",
-    ])
+        "Mokyklos autobusas",
+    ] + (["Gerovės komisija"] if _vgk_stulpeliai() else []))
 
     for m in mokiniai:
         rasytojas.writerow([
@@ -269,8 +262,7 @@ def eksportas_pasirinktu():
             m.motinos_vardas or "", m.motinos_telefonas or "", m.motinos_email or "",
             m.tevo_vardas or "", m.tevo_telefonas or "", m.tevo_email or "",
             "Taip" if m.mokyklos_autobusas else "Ne",
-            "Taip" if m.geroves_komisija else "Ne",
-        ])
+        ] + (["Taip" if m.geroves_komisija else "Ne"] if _vgk_stulpeliai() else []))
 
     return Response(
         output.getvalue().encode("utf-8"),
@@ -311,8 +303,8 @@ def eksportas_xlsx():
         "El. paštas", "Telefonas", "Adresas",
         "Motinos vardas", "Motinos tel.",
         "Tėvo vardas", "Tėvo tel.",
-        "Autobusas", "VGK",
-    ]
+        "Autobusas",
+    ] + (["VGK"] if _vgk_stulpeliai() else [])
 
     for stulpelio_nr, tekstas in enumerate(antrastes, 1):
         c = ws.cell(row=1, column=stulpelio_nr, value=tekstas)
@@ -337,8 +329,7 @@ def eksportas_xlsx():
             m.tevo_vardas or "",
             m.tevo_telefonas or "",
             "Taip" if m.mokyklos_autobusas else "Ne",
-            "Taip" if m.geroves_komisija else "Ne",
-        ]
+        ] + (["Taip" if m.geroves_komisija else "Ne"] if _vgk_stulpeliai() else [])
         for stulpelio_nr, reiksme in enumerate(eilute, 1):
             c = ws.cell(row=eil_nr, column=stulpelio_nr, value=reiksme)
             c.border = kraštine
@@ -346,7 +337,7 @@ def eksportas_xlsx():
                 c.alignment = Alignment(horizontal="center")
 
     stulpeliu_pločiai = [14, 16, 8, 14, 26, 16, 30, 22, 16, 22, 16, 12, 8]
-    for i, pločis in enumerate(stulpeliu_pločiai, 1):
+    for i, pločis in enumerate(stulpeliu_pločiai[:len(antrastes)], 1):
         ws.column_dimensions[chr(64 + i)].width = pločis
 
     ws.freeze_panes = "A2"

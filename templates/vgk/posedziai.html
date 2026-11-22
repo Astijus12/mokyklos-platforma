@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Komisijos posėdžiai{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('vgk.atvejai') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>Visi atvejai
+    </a>
+</div>
+<div class="mb-5 flex items-end justify-between flex-wrap gap-3">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Komisijos posėdžiai</h1>
+    {% if galima_valdyti %}
+    <a href="{{ url_for('vgk.posedzio_forma') }}" class="btn-primary">
+        <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>Naujas posėdis
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    {% if posedziai %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Data</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Vieta</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Atvejų</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Būsena</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Protokolas</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for p in posedziai %}
+                <tr>
+                    <td class="px-4 py-3 text-sm whitespace-nowrap tabular-nums">
+                        <a href="{{ url_for('vgk.posedis', posedzio_id=p.id) }}" class="font-medium text-brand-800 dark:text-brand-400 hover:underline">
+                            {{ p.data.strftime('%Y-%m-%d') }} {{ p.laikas.strftime('%H:%M') }}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ p.vieta }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 tabular-nums">{{ p.svarstymai|length }}</td>
+                    <td class="px-4 py-3 text-sm"><span class="tag {{ posedziu_spalvos.get(p.busena, 'tag-default') }} whitespace-nowrap">{{ p.busenos_pavadinimas }}</span></td>
+                    <td class="px-4 py-3 text-sm">
+                        {% if p.protokolas %}
+                        <a href="{{ url_for('dokumentai.atsisiusti', dokumento_id=p.protokolas.id) }}" class="text-brand-800 dark:text-brand-400 hover:underline whitespace-nowrap">{{ p.protokolas.numeris }} (PDF)</a>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="calendar-days" class="w-6 h-6" aria-hidden="true"></i></div>
+        <p class="empty-state-title">Posėdžių dar nėra</p>
+        <p class="empty-state-text">Suplanuokite posėdį ir įtraukite atvejus į darbotvarkę.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

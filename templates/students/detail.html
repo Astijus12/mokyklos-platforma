@@ -35,7 +35,7 @@
                             Mokyklos autobusas
                         </span>
                         {% endif %}
-                        {% if mokinys.geroves_komisija %}
+                        {% if mokinys.geroves_komisija and current_user.gali_matyti_vgk %}
                         <span class="tag tag-danger">
                             Vaiko gerovės komisija
                         </span>
@@ -189,35 +189,26 @@
             <h2>Vaiko gerovės komisija</h2>
         </div>
         <div class="p-4 text-sm">
-            {% if mokinys.geroves_komisija %}
-                <div class="flex items-start gap-3 mb-3">
-                    <div class="w-9 h-9 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 flex items-center justify-center flex-shrink-0">
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium text-slate-900 dark:text-white">Mokinys buvo svarstomas</p>
-                        {% if mokinys.geroves_komisija_data %}
-                        <p class="text-xs text-slate-500 dark:text-slate-400">Svarstymo data: {{ mokinys.geroves_komisija_data.strftime('%Y-%m-%d') }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                {% if mokinys.geroves_komisija_pastabos %}
-                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Pastabos</p>
-                    <p class="text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">{{ mokinys.geroves_komisija_pastabos }}</p>
-                </div>
+            {# BD: VGK duomenis mato tik komisijos nariai ir administratorius (NFR-06) #}
+            {% if current_user.gali_matyti_vgk %}
+                {% if mokinys.vgk_atvejai %}
+                <ul class="space-y-2">
+                    {% for a in mokinys.vgk_atvejai|reverse %}
+                    <li class="flex items-center justify-between gap-2">
+                        <a href="{{ url_for('vgk.atvejis', atvejo_id=a.id) }}" class="font-medium text-brand-800 dark:text-brand-400 hover:underline">Atvejis {{ a.numeris }}</a>
+                        <span class="tag {% if a.yra_aktyvus %}tag-warning{% else %}tag-green{% endif %}">{{ a.busenos_pavadinimas }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-slate-500 dark:text-slate-400">Komisijoje nesvarstytas.</p>
                 {% endif %}
             {% else %}
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center flex-shrink-0">
-                    <i data-lucide="minus" class="w-4 h-4"></i>
-                </div>
-                <div>
-                    <p class="font-medium text-slate-700 dark:text-slate-300">Nebuvo svarstomas</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Komisijos svarstymų nėra</p>
-                </div>
-            </div>
+            <p class="text-slate-500 dark:text-slate-400">Komisijos duomenys matomi tik komisijos nariams ir administratoriui.</p>
             {% endif %}
+            <a href="{{ url_for('vgk.kreipimasis', mokinio_id=mokinys.id) }}" class="btn-secondary mt-3">
+                <i data-lucide="file-plus" class="w-3.5 h-3.5"></i>Pateikti kreipimąsi
+            </a>
         </div>
     </div>
 </div>

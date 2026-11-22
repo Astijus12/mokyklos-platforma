@@ -60,6 +60,11 @@ class VgkAtvejis(db.Model):
         return self.BUSENOS.get(self.busena, self.busena)
 
     @property
+    def numeris(self):
+        """Atvejo numeris sąsajoje, pvz., „2026-07“ (metai ir eilės numeris)."""
+        return f"{self.sukurta.year}-{self.id:02d}"
+
+    @property
     def yra_aktyvus(self):
         """Atvejis aktyvus, kol jis neužbaigtas."""
         return self.busena != self.UZBAIGTAS
@@ -152,6 +157,7 @@ class VgkDalyvis(db.Model):
         "sekretorius": "Komisijos sekretorius",
         "narys": "Komisijos narys",
         "tevas": "Tėvas (globėjas)",
+        "klases_vadovas": "Klasės vadovas",
         "kviestinis": "Kviestinis asmuo",
     }
 
@@ -185,7 +191,7 @@ class VgkPriemone(db.Model):
     IVYKDYTA = "ivykdyta"
     VELUOJA = "veluoja"
     BUSENOS = {
-        PASKIRTA: "Paskirta",
+        PASKIRTA: "Vykdoma",
         IVYKDYTA: "Įvykdyta",
         VELUOJA: "Vėluoja",
     }

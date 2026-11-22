@@ -159,9 +159,14 @@
                 <span>Kalendorius</span>
             </a>
 
-            {% if current_user.yra_administratorius %}
             {# Baigiamojo darbo moduliai (aprašo 1.9 poskyrio maketai) #}
             <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Procesai</p>
+            <a href="{{ url_for('vgk.atvejai') if current_user.gali_matyti_vgk else url_for('vgk.mano_kreipimaisi') }}"
+               class="nav-link {% if active.startswith('vgk') %}nav-link-active{% endif %}">
+                <i data-lucide="heart-handshake" class="w-4 h-4"></i>
+                <span>Vaiko gerovės komisija</span>
+            </a>
+            {% if current_user.yra_administratorius %}
             <a href="{{ url_for('dokumentai.registras') }}"
                class="nav-link {% if active.startswith('dokumentai') %}nav-link-active{% endif %}">
                 <i data-lucide="file-text" class="w-4 h-4"></i>

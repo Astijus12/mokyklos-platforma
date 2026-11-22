@@ -36,7 +36,7 @@ PAVYZDINIAI_DUOMENYS = {
         "kategorija": "mokyklos",
     },
     "posedis": {"data": "2026-12-08", "laikas": "14:00", "vieta": "Mokytojų kambarys"},
-    "atvejis": {"numeris": 12, "data": "2026-11-18"},
+    "atvejis": {"numeris": "2026-07", "data": "2026-11-18"},
     "priemone": {"terminas": "2026-12-20"},
     "prasymas": {
         "paskirtis": "Sporto būreliui",

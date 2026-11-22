@@ -65,6 +65,19 @@
         </div>
 
         <div>
+            <label for="vgk_pareigos" class="form-label">Pareigos Vaiko gerovės komisijoje</label>
+            <select id="vgk_pareigos" name="vgk_pareigos" class="form-input">
+                <option value="">Ne komisijos narys</option>
+                {% for kodas, pavadinimas in [('narys', 'Komisijos narys'), ('pirmininkas', 'Komisijos pirmininkas'), ('sekretorius', 'Komisijos sekretorius')] %}
+                <option value="{{ kodas }}" {% if vartotojas and vartotojas.vgk_pareigos == kodas %}selected{% endif %}>{{ pavadinimas }}</option>
+                {% endfor %}
+            </select>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Komisijos duomenis mato tik jos nariai ir administratorius. Posėdžius planuoja pirmininkas arba sekretorius.
+            </p>
+        </div>
+
+        <div>
             <label class="form-label">
                 Slaptažodis {% if not vartotojas %}<span class="text-red-500">*</span>{% endif %}
             </label>
