@@ -3,6 +3,7 @@
 Render'yje šie duomenys kuriami kiekvieną kartą paleidžiant svetainę, todėl scenarijus turi veikti be klaidų.
 """
 import os
+import re
 from datetime import date
 
 import pytest
@@ -11,7 +12,7 @@ import seed
 from app import create_app
 from config import TestConfig
 from models import (Diplomas, Dokumentas, EilesIrasas, ImportoSesija, PazymosPrasymas, Pranesimas, Renginys,
-                    Skelbimas, VgkAtvejis, VgkPosedis, db)
+                    Skelbimas, User, VgkAtvejis, VgkPosedis, db)
 from services.dokumentai import kelias_diske
 
 pytestmark = pytest.mark.migracijos
@@ -87,6 +88,15 @@ class TestDemonstraciniaiDuomenys:
         sesija = ImportoSesija.query.one()
         assert sesija.busena == ImportoSesija.IMPORTUOTA
         assert (sesija.tinkamu_sk, sesija.klaidu_sk) == (3, 1)
+
+    def test_prisijungimo_puslapio_naudotojai_yra_demonstraciniuose_duomenyse(self, demo_kontekstas):
+        html = demo_kontekstas.test_client().get("/login").get_data(as_text=True)
+        poros = re.findall(r"uzpildyti\('([^']+)', '([^']+)'\)", html)
+        assert [el_pastas for el_pastas, _ in poros] == [
+            "admin@mokykla.lt", "jonas@mokykla.lt", "ona@mokykla.lt", "tevas@demo.lt", "lina.griciene@demo.lt"]
+        for el_pastas, slaptazodis in poros:
+            assert User.query.filter_by(email=el_pastas).one().patikrinti_slaptazodi(slaptazodis)
+        assert "Komisijos pirmininkė" in html and "Administratorius" in html
 
     def test_pranesimai_issiusti_i_failus(self, demo_kontekstas):
         assert EilesIrasas.query.filter_by(busena=EilesIrasas.LAUKIA).count() == 0
