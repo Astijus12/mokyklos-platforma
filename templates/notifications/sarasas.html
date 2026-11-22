@@ -9,7 +9,7 @@
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Visi jums skirti pranešimai</p>
     </div>
     {% if pranesimai %}
-    <form method="POST" action="{{ url_for('notifications.pazymeti_visus') }}">
+    <form method="POST" action="{{ url_for('notifications.pazymeti_visus') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn-secondary">
             <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
             Pažymėti visus perskaitytais

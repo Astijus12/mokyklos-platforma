@@ -77,7 +77,7 @@
                             <a href="{{ url_for('dokumentai.atsisiusti', dokumento_id=d.id) }}" class="btn-secondary text-xs" aria-label="Atsisiųsti {{ d.numeris }}">
                                 <i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i>PDF
                             </a>
-                            <form method="POST" action="{{ url_for('dokumentai.tikrinti', dokumento_id=d.id) }}">
+                            <form method="POST" action="{{ url_for('dokumentai.tikrinti', dokumento_id=d.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn-secondary text-xs" title="SHA-256: {{ d.sha256 }}" aria-label="Tikrinti {{ d.numeris }} vientisumą">
                                     <i data-lucide="shield-check" class="w-3.5 h-3.5" aria-hidden="true"></i>Tikrinti
                                 </button>

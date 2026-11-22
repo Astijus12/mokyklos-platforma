@@ -57,7 +57,7 @@
             <form method="POST" action="{{ url_for('calendar.salinti', renginio_id=renginys.id) }}"
                   data-confirm="Ar tikrai norite pašalinti šį renginį?"
                   data-confirm-title="Šalinti renginį?"
-                  data-confirm-btn="Šalinti">
+                  data-confirm-btn="Šalinti"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     Šalinti renginį

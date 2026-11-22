@@ -19,7 +19,7 @@
     <div class="card-header">
         <h2>Dokumento informacija</h2>
     </div>
-    <form method="POST" enctype="multipart/form-data" class="p-5 space-y-4">
+    <form method="POST" enctype="multipart/form-data" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div>
             <label class="form-label">Failas <span class="text-red-500">*</span></label>

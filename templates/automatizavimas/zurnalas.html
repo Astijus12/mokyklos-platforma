@@ -88,7 +88,7 @@
                     <td class="px-4 py-3 text-sm text-right tabular-nums text-slate-600 dark:text-slate-400">{{ i.bandymai }}</td>
                     <td class="px-4 py-3 text-sm text-right">
                         {% if i.busena == 'nepavyko' %}
-                        <form method="POST" action="{{ url_for('automatizavimas.pakartoti', iraso_id=i.id) }}">
+                        <form method="POST" action="{{ url_for('automatizavimas.pakartoti', iraso_id=i.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-secondary text-xs whitespace-nowrap">
                                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5" aria-hidden="true"></i>Pakartoti
                             </button>

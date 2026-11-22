@@ -30,7 +30,7 @@
     <div class="card-header">
         <h2>Kada, kam ir kaip pranešti</h2>
     </div>
-    <form method="POST" class="p-5 space-y-4">
+    <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
             <label for="pavadinimas" class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
             <input type="text" id="pavadinimas" name="pavadinimas" required maxlength="200"
@@ -128,7 +128,7 @@
 <form method="POST" action="{{ url_for('automatizavimas.salinti_taisykle', taisykles_id=taisykle.id) }}"
       class="mt-4 max-w-2xl"
       data-confirm="Ar tikrai pašalinti taisyklę „{{ taisykle.pavadinimas }}“? Jau išsiųsti pranešimai liks žurnale."
-      data-confirm-btn="Šalinti">
+      data-confirm-btn="Šalinti"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
         <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>Šalinti taisyklę
     </button>

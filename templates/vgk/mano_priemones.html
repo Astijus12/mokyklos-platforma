@@ -25,7 +25,7 @@
                 {{ 'Vėluoja' if veluoja else p.busenos_pavadinimas }}
             </span>
             {% if p.busena != 'ivykdyta' %}
-            <form method="POST" action="{{ url_for('vgk.priemone_ivykdyta', priemones_id=p.id) }}" class="flex flex-col sm:flex-row gap-2 md:w-96">
+            <form method="POST" action="{{ url_for('vgk.priemone_ivykdyta', priemones_id=p.id) }}" class="flex flex-col sm:flex-row gap-2 md:w-96"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <label for="rezultatas-{{ p.id }}" class="sr-only">Rezultatas</label>
                 <input type="text" id="rezultatas-{{ p.id }}" name="rezultatas" maxlength="500"
                        placeholder="Trumpai: kas atlikta" class="form-input text-sm">

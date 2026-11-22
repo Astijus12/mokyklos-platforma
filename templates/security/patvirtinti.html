@@ -23,7 +23,7 @@
                 Įveskite 6 skaitmenų kodą iš autentikatoriaus programėlės:
             </p>
 
-            <form method="POST" class="space-y-4">
+            <form method="POST" class="space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="text" name="kodas" required
                        inputmode="numeric" pattern="[0-9\s]{6,}" maxlength="7"
                        autocomplete="one-time-code" autofocus

@@ -56,7 +56,7 @@
                     </td>
                     <td class="px-4 py-3 text-sm text-right">
                         <form method="POST" action="{{ url_for('automatizavimas.perjungti', taisykles_id=t.id) }}"
-                              class="inline" data-noloading="true">
+                              class="inline" data-noloading="true"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" role="switch"
                                     aria-checked="{{ 'true' if t.aktyvi else 'false' }}"
                                     aria-label="{{ 'Išjungti' if t.aktyvi else 'Įjungti' }} taisyklę „{{ t.pavadinimas }}“"

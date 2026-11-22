@@ -6,7 +6,7 @@
 <main class="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
     <div class="card w-full max-w-md">
         <div class="card-header"><h1 class="text-base font-semibold text-slate-900 dark:text-white">Sukurkite slaptažodį</h1></div>
-        <form method="POST" class="p-5 space-y-4">
+        <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <p class="text-sm text-slate-600 dark:text-slate-400">
                 Sveiki, {{ naudotojas.vardas }}. Jūsų paskyra tėvų portale: <strong>{{ naudotojas.email }}</strong>.
                 Sukurkite slaptažodį (bent 8 simboliai).

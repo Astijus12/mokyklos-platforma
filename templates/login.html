@@ -98,7 +98,7 @@
             </div>
 
             <div class="bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-                <form method="POST" class="space-y-4">
+                <form method="POST" class="space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div>
                         <label for="email" class="form-label">El. paštas</label>
                         <div class="relative">

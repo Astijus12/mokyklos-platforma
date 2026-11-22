@@ -86,10 +86,10 @@
         įrašomi viena transakcija.
     </p>
     <div class="flex flex-wrap gap-2">
-        <form method="POST" action="{{ url_for('importas.atsaukti', sesijos_id=sesija.id) }}">
+        <form method="POST" action="{{ url_for('importas.atsaukti', sesijos_id=sesija.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-secondary">Atšaukti</button>
         </form>
-        <form method="POST" action="{{ url_for('importas.patvirtinti', sesijos_id=sesija.id) }}">
+        <form method="POST" action="{{ url_for('importas.patvirtinti', sesijos_id=sesija.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-primary" {% if not sesija.tinkamu_sk %}disabled{% endif %}>
                 Įrašyti {{ sesija.tinkamu_sk }} {{ sesija.tinkamu_sk|lt_forma('mokinį', 'mokinius', 'mokinių') }}
             </button>

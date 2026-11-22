@@ -19,7 +19,7 @@
     {% endif %}
 </div>
 
-<form method="POST" class="space-y-4 max-w-3xl">
+<form method="POST" class="space-y-4 max-w-3xl"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <div class="card">
         <div class="card-header">

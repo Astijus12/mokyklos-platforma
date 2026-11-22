@@ -18,7 +18,7 @@
         <h2>Naujas prašymas</h2>
     </div>
     {% if vaikai %}
-    <form method="POST" class="p-5 space-y-4">
+    <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label for="mokinio_id" class="form-label">Vaikas <span class="text-red-500">*</span></label>

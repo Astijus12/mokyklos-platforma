@@ -23,7 +23,7 @@
     <div class="lg:col-span-2 space-y-4">
         <div class="card">
             <div class="card-header"><h2>Šablono tekstas</h2></div>
-            <form method="POST" id="sablono-forma" class="p-5 space-y-4">
+            <form method="POST" id="sablono-forma" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="pavadinimas" class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
@@ -72,7 +72,7 @@
 
         {% if sablonas and not sablonas.taisykles %}
         <form method="POST" action="{{ url_for('automatizavimas.salinti_sablona', sablono_id=sablonas.id) }}"
-              data-confirm="Ar tikrai pašalinti šabloną „{{ sablonas.pavadinimas }}“?" data-confirm-btn="Šalinti">
+              data-confirm="Ar tikrai pašalinti šabloną „{{ sablonas.pavadinimas }}“?" data-confirm-btn="Šalinti"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>Šalinti šabloną
             </button>
@@ -124,7 +124,8 @@
         duomenys.append('tema', forma.tema.value);
         duomenys.append('tekstas', forma.tekstas.value);
         fetch('{{ url_for("automatizavimas.sablono_perziura") }}', {
-            method: 'POST', body: duomenys, credentials: 'same-origin'
+            method: 'POST', body: duomenys, credentials: 'same-origin',
+            headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content }
         })
             .then(function (r) { return r.json(); })
             .then(function (ats) {

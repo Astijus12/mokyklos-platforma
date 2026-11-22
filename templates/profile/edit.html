@@ -16,7 +16,7 @@
     <div class="card-header">
         <h2>Asmens duomenys</h2>
     </div>
-    <form method="POST" class="p-5 space-y-4">
+    <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label class="form-label">Vardas <span class="text-red-500">*</span></label>

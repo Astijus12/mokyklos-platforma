@@ -18,7 +18,7 @@
     <div class="card-header">
         <h2>Renginio informacija</h2>
     </div>
-    <form method="POST" class="p-5 space-y-4">
+    <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
             <label class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
             <input type="text" name="pavadinimas" required maxlength="200"

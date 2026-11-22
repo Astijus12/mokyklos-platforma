@@ -55,7 +55,7 @@
     </form>
 </div>
 
-<form id="grupine-forma" method="POST" action="{{ url_for('students.grupinis_veiksmas') }}" data-noloading="true">
+<form id="grupine-forma" method="POST" action="{{ url_for('students.grupinis_veiksmas') }}" data-noloading="true"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="veiksmas" id="grupinis-veiksmas" value="">
 
 <div id="bulk-toolbar" class="hidden bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-lg p-3 mb-4 flex items-center gap-3">
@@ -153,7 +153,7 @@
                                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                             </a>
                             <form method="POST" action="{{ url_for('students.salinti', mokinio_id=m.id) }}"
-                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Salinti" class="inline">
+                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Salinti" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti">
                                     <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                                 </button>

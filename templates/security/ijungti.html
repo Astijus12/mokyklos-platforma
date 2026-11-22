@@ -59,7 +59,7 @@
                 Programėlė parodys 6 skaitmenų kodą, kuris keičiasi kas 30 sekundžių. Įveskite jį čia:
             </p>
 
-            <form method="POST" class="pl-10">
+            <form method="POST" class="pl-10"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="flex gap-2 items-start">
                     <input type="text" name="kodas" required
                            inputmode="numeric" pattern="[0-9\s]{6,}" maxlength="7"

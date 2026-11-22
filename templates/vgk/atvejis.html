@@ -35,11 +35,11 @@
         {% endif %}
         {% if gali_uzbaigti %}
         <form method="POST" action="{{ url_for('vgk.uzbaigti', atvejo_id=atvejis.id) }}"
-              data-confirm="Užbaigti atvejį Nr. {{ atvejis.numeris }}?" data-confirm-btn="Užbaigti" data-confirm-variant="primary">
+              data-confirm="Užbaigti atvejį Nr. {{ atvejis.numeris }}?" data-confirm-btn="Užbaigti" data-confirm-variant="primary"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-secondary"><i data-lucide="check-circle" class="w-3.5 h-3.5" aria-hidden="true"></i>Užbaigti atvejį</button>
         </form>
         {% elif atvejis.busena == 'uzbaigtas' %}
-        <form method="POST" action="{{ url_for('vgk.atnaujinti', atvejo_id=atvejis.id) }}">
+        <form method="POST" action="{{ url_for('vgk.atnaujinti', atvejo_id=atvejis.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-secondary"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5" aria-hidden="true"></i>Atnaujinti atvejį</button>
         </form>
         {% endif %}
@@ -143,7 +143,7 @@
 
     {% if galima_valdyti and paskutinis_svarstymas %}
     <form method="POST" id="nauja-priemone" action="{{ url_for('vgk.atvejo_priemone', atvejo_id=atvejis.id) }}"
-          class="p-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-6 gap-3 items-end">
+          class="p-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-6 gap-3 items-end"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="svarstymo_id" value="{{ paskutinis_svarstymas.id }}">
         <div class="md:col-span-3">
             <label for="aprasymas" class="form-label">Nauja priemonė (posėdis {{ paskutinis_svarstymas.posedis.data.strftime('%Y-%m-%d') }})</label>

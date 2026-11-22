@@ -12,7 +12,7 @@
 
 <div class="card max-w-xl">
     <div class="card-header"><h2>Laikotarpis</h2></div>
-    <form method="POST" class="p-5 space-y-4">
+    <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <p class="text-sm text-slate-600 dark:text-slate-400">
             Ataskaitoje: mokiniai pagal klases, Vaiko gerovės komisijos atvejai ir posėdžiai, priemonių vykdymas,
             išsiųsti pranešimai ir parengtos pažymos. Kiekvieno mėnesio 1 d. tokia suvestinė parengiama automatiškai.

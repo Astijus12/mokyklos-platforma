@@ -1,10 +1,11 @@
 """Pagrindinis Flask aplikacijos failas - čia paleidžiama programa."""
 import os
-from flask import Flask, render_template
+from flask import Flask, flash, redirect, render_template, request, url_for
 from flask_login import LoginManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFError, CSRFProtect
 
 from config import Config
 from models import db, User
@@ -43,6 +44,9 @@ limiter = Limiter(
 MIGRACIJU_KATALOGAS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "migrations")
 migrate = Migrate(directory=MIGRACIJU_KATALOGAS, render_as_batch=True)
 
+# Apsauga nuo užklausų klastojimo (CSRF): kiekviena POST forma turi slaptą žetoną
+csrf = CSRFProtect()
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -52,6 +56,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     migrate.init_app(app, db)
+    csrf.init_app(app)
 
     if not app.config.get("TESTING"):
         limiter.init_app(app)
@@ -103,6 +108,7 @@ def create_app(config_class=Config):
     app.register_blueprint(parents_bp)
     app.register_blueprint(security_bp)
     app.register_blueprint(api_bp)
+    csrf.exempt(api_bp)  # programinė sąsaja naudoja „Bearer“ žetoną, ne slapukų sesiją
     app.register_blueprint(calendar_bp)
     app.register_blueprint(audit_bp)
     app.register_blueprint(notifications_bp)
@@ -124,6 +130,11 @@ def create_app(config_class=Config):
     @app.errorhandler(429)
     def handle_429(e):
         return render_template("errors/429.html"), 429
+
+    @app.errorhandler(CSRFError)
+    def handle_csrf(e):
+        flash("Puslapio galiojimas baigėsi. Bandykite dar kartą.", "warning")
+        return redirect(request.referrer or url_for("dashboard.root"))
 
     @app.errorhandler(500)
     def handle_500(e):

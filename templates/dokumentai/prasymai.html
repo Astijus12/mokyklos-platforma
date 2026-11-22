@@ -42,12 +42,12 @@
             </div>
             {% if p.busena == 'pateiktas' %}
             <div class="flex flex-col gap-2 sm:w-72">
-                <form method="POST" action="{{ url_for('dokumentai.patvirtinti', prasymo_id=p.id) }}">
+                <form method="POST" action="{{ url_for('dokumentai.patvirtinti', prasymo_id=p.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn-primary w-full justify-center">
                         <i data-lucide="check" class="w-3.5 h-3.5" aria-hidden="true"></i>Patvirtinti ir parengti pažymą
                     </button>
                 </form>
-                <form method="POST" action="{{ url_for('dokumentai.atmesti', prasymo_id=p.id) }}" class="flex gap-2">
+                <form method="POST" action="{{ url_for('dokumentai.atmesti', prasymo_id=p.id) }}" class="flex gap-2"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <label for="priezastis-{{ p.id }}" class="sr-only">Atmetimo priežastis</label>
                     <input type="text" id="priezastis-{{ p.id }}" name="priezastis" required maxlength="300"
                            placeholder="Atmetimo priežastis" class="form-input text-xs">

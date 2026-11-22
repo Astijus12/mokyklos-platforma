@@ -17,7 +17,7 @@
 
 <div class="card max-w-2xl">
     <div class="card-header"><h2>Kreipimosi duomenys</h2></div>
-    <form method="POST" class="p-5 space-y-4">
+    <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
             <label for="mokinio_id" class="form-label">Mokinys <span class="text-red-500">*</span></label>
             <select id="mokinio_id" name="mokinio_id" required class="form-input">

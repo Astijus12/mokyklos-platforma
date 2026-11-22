@@ -12,7 +12,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
     <div class="card lg:col-span-2">
         <div class="card-header"><h2>Failo įkėlimas</h2></div>
-        <form method="POST" enctype="multipart/form-data" class="p-5 space-y-4">
+        <form method="POST" enctype="multipart/form-data" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
                 <label for="failas" class="form-label">Failas (XLSX arba CSV, iki 2 MB ir {{ didziausias }} eilučių)</label>
                 <input type="file" id="failas" name="failas" required accept=".xlsx,.csv" class="form-input">

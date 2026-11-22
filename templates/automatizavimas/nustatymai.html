@@ -20,7 +20,7 @@
 
 <div class="card max-w-2xl">
     {% if eilutes %}
-    <form method="POST">
+    <form method="POST"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <fieldset>
             <legend class="sr-only">El. laiškai pagal įvykį</legend>
             <ul class="divide-y divide-slate-100 dark:divide-slate-800">
