@@ -27,6 +27,7 @@ services:
         condition: service_healthy
     volumes:
       - uploads:/app/static/uploads
+      - dokumentai:/app/duomenys/dokumentai
     restart: unless-stopped
     networks:
       - mokykla_net
@@ -45,6 +46,7 @@ services:
     volumes:
       - uploads:/app/static/uploads
       - ./duomenys/laiskai:/app/duomenys/laiskai
+      - dokumentai:/app/duomenys/dokumentai
     # Atvaizdo HEALTHCHECK tikrina web prievadą 8000, kurio worker neturi
     healthcheck:
       disable: true
@@ -99,6 +101,9 @@ volumes:
   postgres_data:
     driver: local
   uploads:
+    driver: local
+  # PDF dokumentai: juos kuria ir web (pažymos, protokolai), ir worker (mėnesio suvestinė)
+  dokumentai:
     driver: local
 
 networks:

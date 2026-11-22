@@ -21,6 +21,8 @@ tests/_uploads_tmp/
 duomenys/atsargines_kopijos/
 # Kūrimo aplinkoje „išsiųsti“ el. laiškai (.eml) – juose asmens duomenys
 duomenys/laiskai/
+# Sugeneruoti PDF dokumentai (pažymos, protokolai, ataskaitos)
+duomenys/dokumentai/
 
 # Docs / Word failai
 *.docx

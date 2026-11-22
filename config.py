@@ -27,6 +27,8 @@ class Config:
 
     # --- Automatizavimas: pranešimai ir el. paštas (BD) ---
     MOKYKLOS_PAVADINIMAS = "Noriūnų Jono Černiaus mokykla"
+    # Kilmininkas dokumentų tekstui: „mokosi ... mokyklos 5A klasėje“
+    MOKYKLOS_PAVADINIMAS_KILMININKAS = "Noriūnų Jono Černiaus mokyklos"
     # Adresas nuorodoms el. laiškuose (fono procesas neturi HTTP užklausos, todėl nurodomas čia)
     # (Docker Compose nenurodytą kintamąjį perduoda kaip tuščią eilutę, todėl naudojamas „or“)
     SISTEMOS_ADRESAS = os.environ.get("SISTEMOS_ADRESAS") or "http://127.0.0.1:5000"
@@ -43,6 +45,15 @@ class Config:
     MAIL_FAILU_KATALOGAS = os.environ.get("MAIL_FAILU_KATALOGAS") or os.path.join(
         BASE_DIR, "duomenys", "laiskai")
 
+    # --- Dokumentai (BD) ---
+    # PDF dokumentai saugomi ne static/ kataloge, kad juos būtų galima atsisiųsti tik patikrinus teises
+    DOKUMENTU_KATALOGAS = os.environ.get("DOKUMENTU_KATALOGAS") or os.path.join(
+        BASE_DIR, "duomenys", "dokumentai")
+    MOKYKLOS_REKVIZITAI = os.environ.get("MOKYKLOS_REKVIZITAI") or "Noriūnų k., Kupiškio r. sav."
+    MOKYKLOS_VIETOVE = os.environ.get("MOKYKLOS_VIETOVE") or "Noriūnai"
+    # Neprivaloma: kelias iki TTF šrifto su lietuviškomis raidėmis (kitaip ieškoma DejaVu arba Arial)
+    PDF_SRIFTAS = os.environ.get("PDF_SRIFTAS") or None
+
 
 class TestConfig(Config):
     """Testinė konfigūracija - in-memory SQLite, jokių išorinių priklausomybių."""
@@ -55,6 +66,7 @@ class TestConfig(Config):
     MAIL_SERVER = None
     MAIL_BACKEND = "failai"
     MAIL_FAILU_KATALOGAS = os.path.join(BASE_DIR, "tests", "_uploads_tmp", "laiskai")
+    DOKUMENTU_KATALOGAS = os.path.join(BASE_DIR, "tests", "_uploads_tmp", "dokumentai")
 
 
 class PostgresTestConfig(TestConfig):

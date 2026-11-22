@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Dokumentų registras{% endblock %}
+
+{% block content %}
+<div class="mb-5 flex items-end justify-between flex-wrap gap-3">
+    <div>
+        <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Dokumentų registras</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Pažymos, posėdžių protokolai ir ataskaitos su numeriais ir kontrolinėmis sumomis</p>
+    </div>
+    <div class="flex gap-2 flex-wrap">
+        <a href="{{ url_for('dokumentai.prasymai') }}" class="btn-secondary">
+            <i data-lucide="inbox" class="w-3.5 h-3.5" aria-hidden="true"></i>Pažymų prašymai
+            {% if laukia_prasymu %}<span class="tag tag-brand ml-1">{{ laukia_prasymu }}</span>{% endif %}
+        </a>
+        <a href="{{ url_for('dokumentai.ataskaita') }}" class="btn-primary">
+            <i data-lucide="file-bar-chart" class="w-3.5 h-3.5" aria-hidden="true"></i>Ataskaita už laikotarpį
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <form method="GET" class="p-3 flex flex-wrap gap-2 items-end">
+        <div>
+            <label for="numeris" class="form-label">Numeris</label>
+            <input type="search" id="numeris" name="numeris" value="{{ pasirinkti.numeris }}" placeholder="PZ-2026" class="form-input">
+        </div>
+        <div>
+            <label for="tipas" class="form-label">Tipas</label>
+            <select id="tipas" name="tipas" class="form-input">
+                <option value="">Visi</option>
+                {% for kodas, pavadinimas in tipai.items() %}
+                <option value="{{ kodas }}" {% if pasirinkti.tipas == kodas %}selected{% endif %}>{{ pavadinimas }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="mokinys" class="form-label">Mokinys</label>
+            <input type="search" id="mokinys" name="mokinys" value="{{ pasirinkti.mokinys }}" placeholder="Vardas arba pavardė" class="form-input">
+        </div>
+        <div>
+            <label for="nuo" class="form-label">Nuo</label>
+            <input type="date" id="nuo" name="nuo" value="{{ pasirinkti.nuo }}" class="form-input">
+        </div>
+        <div>
+            <label for="iki" class="form-label">Iki</label>
+            <input type="date" id="iki" name="iki" value="{{ pasirinkti.iki }}" class="form-input">
+        </div>
+        <button type="submit" class="btn-primary">Ieškoti</button>
+    </form>
+</div>
+
+<div class="card">
+    {% if dokumentai.items %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Numeris</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Tipas</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mokinys</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Sukūrė</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Data</th>
+                    <th scope="col" class="px-4 py-2.5"><span class="sr-only">Veiksmai</span></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for d in dokumentai.items %}
+                <tr>
+                    <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white whitespace-nowrap tabular-nums">{{ d.numeris }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ d.tipo_pavadinimas }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ d.mokinys.pilnas_vardas if d.mokinys else '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ d.sukure.pilnas_vardas if d.sukure else 'Sistema' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ d.sukurta|vietinis_laikas }}</td>
+                    <td class="px-4 py-3 text-sm text-right">
+                        <div class="inline-flex gap-2">
+                            <a href="{{ url_for('dokumentai.atsisiusti', dokumento_id=d.id) }}" class="btn-secondary text-xs" aria-label="Atsisiųsti {{ d.numeris }}">
+                                <i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i>PDF
+                            </a>
+                            <form method="POST" action="{{ url_for('dokumentai.tikrinti', dokumento_id=d.id) }}">
+                                <button type="submit" class="btn-secondary text-xs" title="SHA-256: {{ d.sha256 }}" aria-label="Tikrinti {{ d.numeris }} vientisumą">
+                                    <i data-lucide="shield-check" class="w-3.5 h-3.5" aria-hidden="true"></i>Tikrinti
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if dokumentai.pages > 1 %}
+    <div class="px-4 py-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ dokumentai.page }} iš {{ dokumentai.pages }} puslapių · Iš viso {{ dokumentai.total }} dokumentų</p>
+        <div class="flex gap-2">
+            {% if dokumentai.has_prev %}<a href="{{ url_for('dokumentai.registras', puslapis=dokumentai.prev_num, **pasirinkti) }}" class="btn-secondary text-xs">‹ Atgal</a>{% endif %}
+            {% if dokumentai.has_next %}<a href="{{ url_for('dokumentai.registras', puslapis=dokumentai.next_num, **pasirinkti) }}" class="btn-secondary text-xs">Toliau ›</a>{% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="file-text" class="w-6 h-6" aria-hidden="true"></i></div>
+        <p class="empty-state-title">Dokumentų nerasta</p>
+        <p class="empty-state-text">Dokumentai atsiranda patvirtinus pažymos prašymą, parengus protokolą ar ataskaitą.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

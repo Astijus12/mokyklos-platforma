@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Pažymų prašymai{% endblock %}
+
+{% block content %}
+{% set spalvos = {'pateiktas': 'tag-blue', 'ivykdytas': 'tag-green', 'atmestas': 'tag-danger'} %}
+<div class="mb-4">
+    <a href="{{ url_for('dokumentai.registras') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>Dokumentų registras
+    </a>
+</div>
+<div class="mb-5">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Pažymų prašymai</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Patvirtinus prašymą sugeneruojama PDF pažyma su numeriu, o tėvui išsiunčiamas pranešimas</p>
+</div>
+
+<div class="card">
+    {% if prasymai %}
+    <ul class="divide-y divide-slate-100 dark:divide-slate-800">
+        {% for p in prasymai %}
+        <li class="p-4 flex flex-col sm:flex-row sm:items-start gap-3">
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-slate-900 dark:text-white">
+                    {{ p.mokinys.pilnas_vardas }}{% if p.mokinys.klase %}, {{ p.mokinys.klase.pavadinimas }} klasė{% endif %}
+                </p>
+                <p class="text-sm text-slate-600 dark:text-slate-400">Paskirtis: {{ p.paskirtis }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Pateikė {{ p.tevas.pilnas_vardas }} · {{ p.pateikta|vietinis_laikas }}
+                    {% if p.nagrinejo %} · nagrinėjo {{ p.nagrinejo.pilnas_vardas }}{% endif %}
+                </p>
+                {% if p.atmetimo_priezastis %}
+                <p class="text-xs text-red-700 dark:text-red-400 mt-1">Atmetimo priežastis: {{ p.atmetimo_priezastis }}</p>
+                {% endif %}
+            </div>
+            <div class="flex flex-wrap items-start gap-2">
+                <span class="tag {{ spalvos.get(p.busena, 'tag-default') }} whitespace-nowrap">{{ p.busenos_pavadinimas }}</span>
+                {% if p.dokumentas %}
+                <a href="{{ url_for('dokumentai.atsisiusti', dokumento_id=p.dokumentas.id) }}" class="btn-secondary text-xs">
+                    <i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i>{{ p.dokumentas.numeris }}
+                </a>
+                {% endif %}
+            </div>
+            {% if p.busena == 'pateiktas' %}
+            <div class="flex flex-col gap-2 sm:w-72">
+                <form method="POST" action="{{ url_for('dokumentai.patvirtinti', prasymo_id=p.id) }}">
+                    <button type="submit" class="btn-primary w-full justify-center">
+                        <i data-lucide="check" class="w-3.5 h-3.5" aria-hidden="true"></i>Patvirtinti ir parengti pažymą
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('dokumentai.atmesti', prasymo_id=p.id) }}" class="flex gap-2">
+                    <label for="priezastis-{{ p.id }}" class="sr-only">Atmetimo priežastis</label>
+                    <input type="text" id="priezastis-{{ p.id }}" name="priezastis" required maxlength="300"
+                           placeholder="Atmetimo priežastis" class="form-input text-xs">
+                    <button type="submit" class="btn-secondary text-xs text-red-700 dark:text-red-400 whitespace-nowrap">Atmesti</button>
+                </form>
+            </div>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="inbox" class="w-6 h-6" aria-hidden="true"></i></div>
+        <p class="empty-state-title">Prašymų nėra</p>
+        <p class="empty-state-text">Tėvai pažymas užsako tėvų portale.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

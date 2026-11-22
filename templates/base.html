@@ -103,6 +103,11 @@
             </a>
             {% endfor %}
 
+            <a href="{{ url_for('dokumentai.mano_pazymos') }}"
+               class="nav-link {% if active == 'dokumentai.mano_pazymos' %}nav-link-active{% endif %}">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <span>Pažymos</span>
+            </a>
             <a href="{{ url_for('parents.kontaktai') }}"
                class="nav-link {% if active == 'parents.kontaktai' %}nav-link-active{% endif %}">
                 <i data-lucide="phone" class="w-4 h-4"></i>
@@ -157,6 +162,11 @@
             {% if current_user.yra_administratorius %}
             {# Baigiamojo darbo moduliai (aprašo 1.9 poskyrio maketai) #}
             <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Procesai</p>
+            <a href="{{ url_for('dokumentai.registras') }}"
+               class="nav-link {% if active.startswith('dokumentai') %}nav-link-active{% endif %}">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                <span>Dokumentai</span>
+            </a>
             <a href="{{ url_for('automatizavimas.taisykles') }}"
                class="nav-link {% if active.startswith('automatizavimas') and active != 'automatizavimas.mano_nustatymai' %}nav-link-active{% endif %}">
                 <i data-lucide="workflow" class="w-4 h-4"></i>

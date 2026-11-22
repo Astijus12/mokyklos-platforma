@@ -46,6 +46,15 @@ def kurti_priminimus():
     return kiekis
 
 
+def kurti_menesio_suvestine():
+    """Kiekvieno mėnesio 1 d.: praėjusio mėnesio suvestinė (FR-D06)."""
+    from services.pazymos import sukurti_menesio_suvestine
+    dokumentas = sukurti_menesio_suvestine()
+    if dokumentas is not None:
+        zurnalas.info("Parengta mėnesio suvestinė %s", dokumentas.numeris)
+    return dokumentas
+
+
 class Planuokle:
     """Registruoja ir paleidžia periodines užduotis."""
 
@@ -91,6 +100,9 @@ class Planuokle:
         # neveikė, priminimai neprarandami (dublikatų neleidžia unikalus raktas)
         self._prideti(kurti_priminimus, CronTrigger(hour=7, minute=0, timezone=LAIKO_JUOSTA),
                       "priminimai", "Priminimų kūrimas", next_run_time=dabar)
+        self._prideti(kurti_menesio_suvestine,
+                      CronTrigger(day=1, hour=6, minute=0, timezone=LAIKO_JUOSTA),
+                      "menesio_suvestine", "Mėnesio suvestinė")
         self._prideti(busenos_patikra, IntervalTrigger(minutes=15),
                       "busenos_patikra", "Fono proceso būsenos patikra")
         return self.planuokle.get_jobs()

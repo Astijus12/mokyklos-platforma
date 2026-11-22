@@ -16,9 +16,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# fonts-dejavu-core – šriftas su lietuviškomis raidėmis PDF dokumentams (ReportLab)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     curl \
+    fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd -r flask && useradd -r -g flask flask
 

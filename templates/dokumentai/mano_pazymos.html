@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Pažymos{% endblock %}
+
+{% block content %}
+{% set busenos = {
+    'pateiktas': ('Pateiktas', 'tag-blue'),
+    'ivykdytas': ('Parengta', 'tag-green'),
+    'atmestas': ('Atmesta', 'tag-danger'),
+} %}
+<div class="mb-5">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Pažymos</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Užsakykite pažymą apie vaiko mokymąsi mokykloje</p>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header flex items-center justify-between">
+        <h2>Naujas prašymas</h2>
+    </div>
+    {% if vaikai %}
+    <form method="POST" class="p-5 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="mokinio_id" class="form-label">Vaikas <span class="text-red-500">*</span></label>
+                <select id="mokinio_id" name="mokinio_id" required class="form-input">
+                    {% for v in vaikai %}
+                    <option value="{{ v.id }}">{{ v.pilnas_vardas }}{% if v.klase %}, {{ v.klase.pavadinimas }} klasė{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="paskirtis" class="form-label">Pažymos paskirtis <span class="text-red-500">*</span></label>
+                <select id="paskirtis" name="paskirtis" required class="form-input">
+                    {% for p in paskirtys %}
+                    <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div>
+            <label for="papildoma" class="form-label">Papildoma informacija (neprivaloma)</label>
+            <input type="text" id="papildoma" name="papildoma" maxlength="120" class="form-input"
+                   placeholder="pvz., reikalingi du egzemplioriai">
+        </div>
+        <button type="submit" class="btn-primary">Užsakyti pažymą</button>
+    </form>
+    {% else %}
+    <p class="p-5 text-sm text-slate-500 dark:text-slate-400">Jūsų paskyrai dar nepriskirtas nė vienas vaikas.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header flex items-center justify-between">
+        <h2>Ankstesni prašymai</h2>
+    </div>
+    {% if prasymai %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Data</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Paskirtis</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Būsena</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Dokumentas</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for p in prasymai %}
+                {% set busena = busenos.get(p.busena, (p.busenos_pavadinimas, 'tag-default')) %}
+                <tr>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ p.pateikta|vietinis_laikas }}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-white">
+                        {{ p.paskirtis }}
+                        <span class="block text-xs font-normal text-slate-500 dark:text-slate-400">{{ p.mokinys.pilnas_vardas }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-sm"><span class="tag {{ busena[1] }} whitespace-nowrap">{{ busena[0] }}</span></td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                        {% if p.dokumentas %}
+                        <a href="{{ url_for('dokumentai.atsisiusti', dokumento_id=p.dokumentas.id) }}"
+                           class="text-brand-800 dark:text-brand-400 hover:underline whitespace-nowrap">{{ p.dokumentas.numeris }} (PDF)</a>
+                        {% elif p.busena == 'atmestas' %}
+                        <details>
+                            <summary class="cursor-pointer text-brand-800 dark:text-brand-400">Žiūrėti priežastį</summary>
+                            <p class="mt-1 text-slate-700 dark:text-slate-200">{{ p.atmetimo_priezastis }}</p>
+                        </details>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="p-5 text-sm text-slate-500 dark:text-slate-400">Prašymų dar nepateikėte.</p>
+    {% endif %}
+</div>
+{% endblock %}
