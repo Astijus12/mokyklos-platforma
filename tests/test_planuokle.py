@@ -65,6 +65,29 @@ class TestPlanuokle:
         assert "Planuoklė sustabdyta" in caplog.text
 
 
+class TestPlanuokleWebProcese:
+    """Render nemokamame plane planuoklė veikia žiniatinklio procese (wsgi.py)."""
+
+    @pytest.mark.parametrize("aplinka, tiketina", [
+        ({}, False),
+        ({"RENDER": "true"}, True),
+        ({"RENDER": "true", "PLANUOKLE_WEB_PROCESE": "0"}, False),
+        ({"PLANUOKLE_WEB_PROCESE": "1"}, True),
+    ], ids=["kurimo_aplinka", "render", "render_isjungta", "nurodyta_tiesiogiai"])
+    def test_ar_paleisti_web_procese(self, aplinka, tiketina):
+        assert planuokles_modulis.ar_paleisti_web_procese(aplinka) is tiketina
+
+    def test_paleisti_fone(self, app, monkeypatch):
+        # Be užduočių: testų duomenų bazė atmintyje nepasiekiama iš planuoklės gijos
+        monkeypatch.setattr(Planuokle, "registruoti_uzduotis", lambda self: [])
+        planuokle = planuokles_modulis.paleisti_fone(app)
+        try:
+            assert isinstance(planuokle.planuokle, BackgroundScheduler)
+            assert planuokle.planuokle.running
+        finally:
+            planuokle.planuokle.shutdown(wait=True)
+
+
 class TestWorkerLaukimas:
     def test_grazina_true_kai_schema_naujausia(self, app, monkeypatch):
         monkeypatch.setattr(worker, "ar_schema_naujausia", lambda: True)

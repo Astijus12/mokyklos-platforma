@@ -29,8 +29,12 @@ from sqlalchemy.exc import IntegrityError
 
 from models import Dokumentas, DokumentuSkaitiklis, db
 
-# Šriftai su lietuviškomis raidėmis: Linux (Docker) – DejaVu, Windows – Arial
+# Šriftai su lietuviškomis raidėmis. Pirmiausia – kartu su programa pateiktas DejaVu
+# (katalogas sriftai/, licencija LICENSE_DEJAVU), todėl PDF vienodi bet kuriame serveryje
+# (pvz., Render, kur sistemos šriftų gali nebūti); toliau – sistemos šriftai.
+_SRIFTU_KATALOGAS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sriftai")
 _SRIFTU_KANDIDATAI = (
+    (os.path.join(_SRIFTU_KATALOGAS, "DejaVuSans.ttf"), os.path.join(_SRIFTU_KATALOGAS, "DejaVuSans-Bold.ttf")),
     ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"),
     ("C:/Windows/Fonts/arial.ttf", "C:/Windows/Fonts/arialbd.ttf"),
 )

@@ -85,6 +85,14 @@ Atidarykite http://127.0.0.1:5000. `python app.py` paleidžiant duomenų bazė a
 migracijos. Fono procesas kas minutę siunčia pranešimus iš eilės, kasdien 7 val. siunčia priminimus ir
 žymi vėluojančias priemones, kiekvieno mėnesio 1 d. parengia mėnesio suvestinę.
 
+## Render (demonstracinė svetainė)
+
+Nustatymai – `render.yaml` (nemokamas planas). Kadangi atskiro fono proceso nemokamame plane
+nėra, planuoklė paleidžiama žiniatinklio procese po pirmos užklausos (Render nustato `RENDER=true`,
+žr. `wsgi.py`). Duomenų bazė – SQLite, todėl po kiekvieno paleidimo iš naujo (įskaitant
+„užmigimą“ po 15 min. neveiklumo) ji sukuriama iš naujo su demonstraciniais duomenimis.
+PDF dokumentams naudojamas kartu su programa pateiktas šriftas `sriftai/DejaVuSans.ttf`.
+
 ## Demonstraciniai naudotojai
 
 | Rolė | El. paštas | Slaptažodis |

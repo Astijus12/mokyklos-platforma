@@ -291,6 +291,7 @@ def _vgk_demo(pirmininke, sekretorius, mokytojas, tevas):
     domas.busena = VgkAtvejis.TAIKOMOS_PRIEMONES
     ivykes = VgkPosedis(data=siandien - timedelta(days=14), laikas=time(14, 0), vieta="Mokytojų kambarys",
                         busena=VgkPosedis.IVYKES)
+    db.session.add(ivykes)  # pirmiau į sesiją, kad svarstymai ir dalyviai būtų įrašyti kartu
     svarstymas = VgkSvarstymas(atvejis=domas, eiles_nr=1,
                                nutarimas="Skirti individualias matematikos konsultacijas, aptarti situaciją su "
                                          "tėvais ir stebėti lankomumą du mėnesius.")
@@ -298,7 +299,6 @@ def _vgk_demo(pirmininke, sekretorius, mokytojas, tevas):
     for naudotojas, vaidmuo in ((pirmininke, "pirmininkas"), (sekretorius, "sekretorius"), (tevas, "tevas")):
         ivykes.dalyviai.append(VgkDalyvis(vartotojo_id=naudotojas.id, vardas_pavarde=naudotojas.pilnas_vardas,
                                           vaidmuo=vaidmuo, dalyvavo=True, pasizadejimas=True))
-    db.session.add(ivykes)
     svarstymas.priemones.extend([
         VgkPriemone(aprasymas="Individualios matematikos konsultacijos kartą per savaitę",
                     atsakingo_id=mokytojas.id, terminas=siandien + timedelta(days=10)),
@@ -317,11 +317,11 @@ def _vgk_demo(pirmininke, sekretorius, mokytojas, tevas):
     justas.busena = VgkAtvejis.SVARSTOMAS
     planuojamas = VgkPosedis(data=prideti_darbo_dienas(siandien, 7), laikas=time(15, 0),
                              vieta="Mokytojų kambarys", busena=VgkPosedis.SUPLANUOTAS)
+    db.session.add(planuojamas)
     planuojamas.svarstymai.append(VgkSvarstymas(atvejis=justas, eiles_nr=1))
     for naudotojas, vaidmuo in ((pirmininke, "pirmininkas"), (sekretorius, "sekretorius")):
         planuojamas.dalyviai.append(VgkDalyvis(vartotojo_id=naudotojas.id,
                                                vardas_pavarde=naudotojas.pilnas_vardas, vaidmuo=vaidmuo))
-    db.session.add(planuojamas)
 
     # 3. Paulius Petraitis: naujas kreipimasis, laukia svarstymo
     atvejai["Paulius"].sukurta = datetime.combine(siandien - timedelta(days=2), time(8, 15))

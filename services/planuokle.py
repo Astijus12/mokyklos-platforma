@@ -10,10 +10,12 @@ modelius ir paslaugas. Užduoties klaida užrašoma į žurnalą ir nesustabdo
 planuoklės – kitos užduotys vykdomos toliau.
 """
 import logging
+import os
 from datetime import datetime
 from functools import wraps
 from zoneinfo import ZoneInfo
 
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -126,3 +128,27 @@ class Planuokle:
             self.planuokle.start()
         except (KeyboardInterrupt, SystemExit):
             zurnalas.info("Planuoklė sustabdyta.")
+
+
+def ar_paleisti_web_procese(aplinka=None):
+    """Ar planuoklę vykdyti žiniatinklio procese, o ne atskirame worker.py.
+
+    Render nemokamame plane atskiro fono proceso nėra. Render nustato kintamąjį
+    RENDER=true, todėl ten planuoklė paleidžiama žiniatinklio procese. Docker ir
+    kūrimo aplinkoje planuoklę vykdo worker.py. Kintamuoju PLANUOKLE_WEB_PROCESE
+    (1 arba 0) tai galima nurodyti tiesiogiai.
+    """
+    aplinka = os.environ if aplinka is None else aplinka
+    nurodyta = aplinka.get("PLANUOKLE_WEB_PROCESE")
+    if nurodyta in ("0", "1"):
+        return nurodyta == "1"
+    return aplinka.get("RENDER") == "true"
+
+
+def paleisti_fone(app):
+    """Paleidžia planuoklę foninėje gijoje (BackgroundScheduler) ir ją grąžina."""
+    planuokle = Planuokle(app, BackgroundScheduler(timezone=LAIKO_JUOSTA))
+    planuokle.registruoti_uzduotis()
+    planuokle.planuokle.start()
+    zurnalas.info("Planuoklė paleista žiniatinklio procese.")
+    return planuokle
