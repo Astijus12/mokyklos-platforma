@@ -11,12 +11,21 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 
+def normalizuoti_db_adresa(adresas):
+    """PostgreSQL adresui aiškiai nurodo tvarkyklę psycopg2 (ji įdiegta – psycopg2-binary).
+
+    Render ir Heroku pateikia „postgres://...“, o naujesnės SQLAlchemy versijos be
+    nurodytos tvarkyklės renkasi psycopg (3), kurios projekte nėra.
+    """
+    if adresas and adresas.startswith(("postgres://", "postgresql://")):
+        return "postgresql+psycopg2://" + adresas.split("://", 1)[1]
+    return adresas
+
+
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "demo-slaptas-raktas-pakeisk-pries-naudojant")
 
-    DATABASE_URL = os.environ.get("DATABASE_URL")
-    if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = normalizuoti_db_adresa(os.environ.get("DATABASE_URL"))
 
     SQLALCHEMY_DATABASE_URI = DATABASE_URL or f"sqlite:///{os.path.join(BASE_DIR, 'mokykla.db')}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -75,4 +84,4 @@ class PostgresTestConfig(TestConfig):
     Šie testai tikrina tai, ko SQLite neturi: SELECT ... FOR UPDATE SKIP LOCKED,
     jsonb tipą ir migracijų veikimą PostgreSQL. Be TEST_DATABASE_URL jie praleidžiami.
     """
-    SQLALCHEMY_DATABASE_URI = os.environ.get("TEST_DATABASE_URL")
+    SQLALCHEMY_DATABASE_URI = normalizuoti_db_adresa(os.environ.get("TEST_DATABASE_URL"))

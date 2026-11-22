@@ -55,6 +55,19 @@ def _irasyti_senus_mokinius():
         ))
 
 
+@pytest.mark.parametrize("adresas, tiketina", [
+    ("postgres://u:s@host:5432/db", "postgresql+psycopg2://u:s@host:5432/db"),        # Render, Heroku
+    ("postgresql://u:s@host:5432/db", "postgresql+psycopg2://u:s@host:5432/db"),
+    ("postgresql+psycopg2://u:s@host/db", "postgresql+psycopg2://u:s@host/db"),       # jau nurodyta
+    ("sqlite:///mokykla.db", "sqlite:///mokykla.db"),
+    (None, None),
+], ids=["postgres", "postgresql", "su_tvarkykle", "sqlite", "nenurodyta"])
+def test_db_adresui_nurodoma_tvarkykle(adresas, tiketina):
+    """Render diegimas nepavyko: be nurodytos tvarkyklės naujesnė SQLAlchemy rinkosi psycopg (3)."""
+    from config import normalizuoti_db_adresa
+    assert normalizuoti_db_adresa(adresas) == tiketina
+
+
 class TestTusciaDuomenuBaze:
     def test_sukuriamos_visos_lenteles(self, migracijos_app):
         atnaujinti_duomenu_baze()

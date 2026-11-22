@@ -87,10 +87,10 @@ migracijos. Fono procesas kas minutę siunčia pranešimus iš eilės, kasdien 7
 
 ## Render (demonstracinė svetainė)
 
-Nustatymai – `render.yaml` (nemokamas planas). Kadangi atskiro fono proceso nemokamame plane
-nėra, planuoklė paleidžiama žiniatinklio procese po pirmos užklausos (Render nustato `RENDER=true`,
-žr. `wsgi.py`). Duomenų bazė – SQLite, todėl po kiekvieno paleidimo iš naujo (įskaitant
-„užmigimą“ po 15 min. neveiklumo) ji sukuriama iš naujo su demonstraciniais duomenimis.
+Nemokamame plane atskiro fono proceso nėra, todėl planuoklė paleidžiama žiniatinklio procese
+po pirmos užklausos (Render nustato `RENDER=true`, žr. `wsgi.py`). Duomenų bazė nurodoma kintamuoju
+`DATABASE_URL` (PostgreSQL); be jo naudojama SQLite, kuri Render'yje po kiekvieno paleidimo iš
+naujo sukuriama iš naujo su demonstraciniais duomenimis. Python versija – `.python-version`.
 PDF dokumentams naudojamas kartu su programa pateiktas šriftas `sriftai/DejaVuSans.ttf`.
 
 ## Demonstraciniai naudotojai
