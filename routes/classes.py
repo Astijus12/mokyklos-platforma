@@ -19,7 +19,7 @@ def saraso():
 @classes_bp.route("/<int:klases_id>")
 @personalas_required
 def detales(klases_id):
-    klase = Klase.query.get_or_404(klases_id)
+    klase = db.get_or_404(Klase, klases_id)
     mokiniai = (
         Mokinys.query.filter_by(klases_id=klases_id)
         .order_by(Mokinys.pavarde, Mokinys.vardas)
@@ -58,7 +58,7 @@ def nauja():
 @classes_bp.route("/<int:klases_id>/redaguoti", methods=["GET", "POST"])
 @admin_required
 def redaguoti(klases_id):
-    klase = Klase.query.get_or_404(klases_id)
+    klase = db.get_or_404(Klase, klases_id)
 
     if request.method == "POST":
         klase.pavadinimas = request.form.get("pavadinimas", "").strip().upper()
@@ -76,7 +76,7 @@ def redaguoti(klases_id):
 @classes_bp.route("/<int:klases_id>/salinti", methods=["POST"])
 @admin_required
 def salinti(klases_id):
-    klase = Klase.query.get_or_404(klases_id)
+    klase = db.get_or_404(Klase, klases_id)
     pavadinimas = klase.pavadinimas
     db.session.delete(klase)
     db.session.commit()

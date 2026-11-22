@@ -131,7 +131,7 @@ def eksportas_csv():
 @personalas_required
 def detales(mokinio_id):
     """Detalus mokinio puslapis."""
-    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    mokinys = db.get_or_404(Mokinys, mokinio_id)
     return render_template("students/detail.html", mokinys=mokinys)
 
 
@@ -139,7 +139,7 @@ def detales(mokinio_id):
 @personalas_required
 def ataskaita(mokinio_id):
     """Spausdinama mokinio ataskaita (PDF per naršyklės Print funkciją)."""
-    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    mokinys = db.get_or_404(Mokinys, mokinio_id)
     return render_template("students/ataskaita.html", mokinys=mokinys, dabar=datetime.now())
 
 
@@ -175,7 +175,7 @@ def naujas():
 @students_bp.route("/<int:mokinio_id>/redaguoti", methods=["GET", "POST"])
 @personalas_required
 def redaguoti(mokinio_id):
-    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    mokinys = db.get_or_404(Mokinys, mokinio_id)
 
     if request.method == "POST":
         duomenys = _surinkti_duomenis(request.form)
@@ -193,7 +193,7 @@ def redaguoti(mokinio_id):
 @students_bp.route("/<int:mokinio_id>/salinti", methods=["POST"])
 @personalas_required
 def salinti(mokinio_id):
-    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    mokinys = db.get_or_404(Mokinys, mokinio_id)
     vardas = mokinys.pilnas_vardas
     db.session.delete(mokinys)
     db.session.commit()
@@ -364,7 +364,7 @@ def _leidziamas_nuotraukos_failas(vardas):
 @personalas_required
 def ikelti_nuotrauka(mokinio_id):
     """Įkelia mokinio nuotrauką."""
-    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    mokinys = db.get_or_404(Mokinys, mokinio_id)
     failas = request.files.get("nuotrauka")
 
     if not failas or not failas.filename:
@@ -405,7 +405,7 @@ def salinti_nuotrauka(mokinio_id):
     if request.form.get("_veiksmas") != "salinti":
         return redirect(url_for("students.detales", mokinio_id=mokinio_id))
 
-    mokinys = Mokinys.query.get_or_404(mokinio_id)
+    mokinys = db.get_or_404(Mokinys, mokinio_id)
     if mokinys.nuotraukos_failas:
         kelias = os.path.join(current_app.config["UPLOAD_FOLDER"], mokinys.nuotraukos_failas)
         if os.path.exists(kelias):

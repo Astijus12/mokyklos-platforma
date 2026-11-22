@@ -1,9 +1,9 @@
 """Veiklos žurnalo peržiūra (tik administratoriams)."""
-from datetime import datetime, timedelta
+from datetime import timedelta
 from flask import Blueprint, render_template, request
 from flask_login import current_user
 
-from models import db, VeiklosZurnalas, User
+from models import db, VeiklosZurnalas, User, utc_dabar
 from routes.auth import admin_required
 
 audit_bp = Blueprint("audit", __name__, url_prefix="/veikla")
@@ -48,7 +48,7 @@ def zurnalas():
     if veiksmas:
         q = q.filter_by(veiksmas=veiksmas)
     if dienu > 0:
-        pradzia = datetime.utcnow() - timedelta(days=dienu)
+        pradzia = utc_dabar() - timedelta(days=dienu)
         q = q.filter(VeiklosZurnalas.laikas >= pradzia)
 
     irasai = q.order_by(VeiklosZurnalas.laikas.desc()).paginate(

@@ -21,9 +21,8 @@ JSON_LAUKAS = db.JSON().with_variant(JSONB(), "postgresql")
 def utc_dabar():
     """Dabartinis UTC laikas be laiko juostos žymės.
 
-    Duomenų bazėje laikas saugomas UTC (kaip ir esamuose modeliuose su
-    datetime.utcnow). Ši funkcija grąžina tą patį, tik nenaudoja Python 3.12
-    pasenusia pažymėtos datetime.utcnow().
+    Duomenų bazėje laikas saugomas UTC. Ši funkcija grąžina tą patį, ką
+    anksčiau naudota datetime.utcnow(), kurią Python 3.12 pažymėjo pasenusia.
     """
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
@@ -33,7 +32,7 @@ tevu_vaiku_lentele = db.Table(
     db.Column("tevo_id", db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
     db.Column("vaiko_id", db.Integer, db.ForeignKey("mokiniai.id", ondelete="CASCADE"), primary_key=True),
     db.Column("rysio_tipas", db.String(20), nullable=False, default="tevas"),
-    db.Column("sukurtas", db.DateTime, default=datetime.utcnow),
+    db.Column("sukurtas", db.DateTime, default=utc_dabar),
 )
 
 
@@ -48,7 +47,7 @@ class User(UserMixin, db.Model):
     telefonas = db.Column(db.String(30), nullable=True)
     slaptazodzio_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), nullable=False, default="mokytojas")
-    sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
+    sukurtas = db.Column(db.DateTime, default=utc_dabar)
 
     dvfa_paslaptis = db.Column(db.String(64), nullable=True)
     dvfa_ijungtas = db.Column(db.Boolean, default=False, nullable=False)
@@ -93,7 +92,7 @@ class User(UserMixin, db.Model):
         """
         tekstas = secrets.token_urlsafe(32)
         self.api_token_hash = hashlib.sha256(tekstas.encode()).hexdigest()
-        self.api_token_data = datetime.utcnow()
+        self.api_token_data = utc_dabar()
         return tekstas
 
     def anuliuoti_api_tokena(self):
@@ -160,7 +159,7 @@ class Klase(db.Model):
     pavadinimas = db.Column(db.String(20), unique=True, nullable=False)
     mokslo_metai = db.Column(db.String(20), nullable=False, default="2025-2026")
     vadovo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
-    sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
+    sukurtas = db.Column(db.DateTime, default=utc_dabar)
 
     mokiniai = db.relationship("Mokinys", backref="klase", lazy=True, cascade="all, delete-orphan")
 
@@ -182,7 +181,7 @@ class Mokinys(db.Model):
     adresas = db.Column(db.String(200), nullable=True)
     pastabos = db.Column(db.Text, nullable=True)
     klases_id = db.Column(db.Integer, db.ForeignKey("klases.id"), nullable=False)
-    sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
+    sukurtas = db.Column(db.DateTime, default=utc_dabar)
 
     # Motinos duomenys
     motinos_vardas = db.Column(db.String(160), nullable=True)
@@ -257,7 +256,7 @@ class Diplomas(db.Model):
     originalus_failo_vardas = db.Column(db.String(300), nullable=False)
     failo_tipas = db.Column(db.String(20), nullable=False)
     vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    ikeltas = db.Column(db.DateTime, default=datetime.utcnow)
+    ikeltas = db.Column(db.DateTime, default=utc_dabar)
 
 
 class Skelbimas(db.Model):
@@ -271,7 +270,7 @@ class Skelbimas(db.Model):
     matomas_tevams = db.Column(db.Boolean, default=False, nullable=False)
     kategorija = db.Column(db.String(30), nullable=False, default="bendra")
     vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
+    sukurtas = db.Column(db.DateTime, default=utc_dabar)
 
 
 class Renginys(db.Model):
@@ -289,7 +288,7 @@ class Renginys(db.Model):
     kategorija = db.Column(db.String(30), nullable=False, default="mokyklos")
     matomas_tevams = db.Column(db.Boolean, default=True, nullable=False)
     vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    sukurtas = db.Column(db.DateTime, default=datetime.utcnow)
+    sukurtas = db.Column(db.DateTime, default=utc_dabar)
 
     autorius = db.relationship("User", backref="renginiai", lazy=True)
 
@@ -305,7 +304,7 @@ class VeiklosZurnalas(db.Model):
     objekto_id = db.Column(db.Integer, nullable=True)
     aprasymas = db.Column(db.String(500), nullable=True)
     ip_adresas = db.Column(db.String(50), nullable=True)
-    laikas = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    laikas = db.Column(db.DateTime, default=utc_dabar, index=True)
 
     vartotojas = db.relationship("User", backref="veiklos_irasai", lazy=True)
 
@@ -322,7 +321,7 @@ class Pranesimas(db.Model):
     ikona = db.Column(db.String(30), nullable=False, default="bell")
     tipas = db.Column(db.String(20), nullable=False, default="info")
     perskaitytas = db.Column(db.Boolean, default=False, nullable=False, index=True)
-    sukurtas = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    sukurtas = db.Column(db.DateTime, default=utc_dabar, index=True)
 
     vartotojas = db.relationship("User", backref="pranesimai_gauti", lazy=True)
 

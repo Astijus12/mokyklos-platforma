@@ -382,18 +382,13 @@ class TestPranesimuEile:
 class _NetikrasSmtp:
     """smtplib.SMTP pakaitalas: įsimena kvietimus, tikro tinklo nenaudoja."""
     kvietimai = []
-    klaida = None
+    klaida = None            # klaida jungiantis
+    siuntimo_klaida = None   # klaida siunčiant laišką
 
     def __init__(self, serveris, prievadas, timeout):
         _NetikrasSmtp.kvietimai.append(("jungtis", serveris, prievadas))
         if _NetikrasSmtp.klaida:
             raise _NetikrasSmtp.klaida
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        return False
 
     def starttls(self):
         _NetikrasSmtp.kvietimai.append(("starttls",))
@@ -402,7 +397,26 @@ class _NetikrasSmtp:
         _NetikrasSmtp.kvietimai.append(("login", vartotojas))
 
     def send_message(self, laiskas):
+        if _NetikrasSmtp.siuntimo_klaida:
+            raise _NetikrasSmtp.siuntimo_klaida
         _NetikrasSmtp.kvietimai.append(("send", laiskas["To"], laiskas["Subject"]))
+
+    def quit(self):
+        _NetikrasSmtp.kvietimai.append(("quit",))
+
+    def close(self):
+        _NetikrasSmtp.kvietimai.append(("close",))
+
+
+_SMTP_NUSTATYMAI = {"MAIL_BACKEND": "smtp", "MAIL_SERVER": "smtp.test", "MAIL_PORT": 587, "MAIL_USE_TLS": True}
+
+
+@pytest.fixture
+def netikras_smtp(monkeypatch):
+    _NetikrasSmtp.kvietimai, _NetikrasSmtp.klaida, _NetikrasSmtp.siuntimo_klaida = [], None, None
+    monkeypatch.setattr(smtplib, "SMTP", _NetikrasSmtp)
+    yield _NetikrasSmtp
+    _NetikrasSmtp.klaida = _NetikrasSmtp.siuntimo_klaida = None
 
 
 class TestKanalai:
@@ -437,6 +451,34 @@ class TestKanalai:
         with pytest.raises(SiuntimoKlaida, match="MAIL_SERVER"):
             ElPastoKanalas({"MAIL_BACKEND": "smtp", "MAIL_SERVER": None}).siusti(_irasas(tevas, "r"))
 
+    def test_viena_jungtis_keliems_laiskams(self, tevas, netikras_smtp):
+        kanalas = ElPastoKanalas(_SMTP_NUSTATYMAI)
+        kanalas.siusti(_irasas(tevas, "a"))
+        kanalas.siusti(_irasas(tevas, "b"))
+        kanalas.uzdaryti()
+        assert [k[0] for k in netikras_smtp.kvietimai] == ["jungtis", "starttls", "send", "send", "quit"]
+        kanalas.uzdaryti()  # antras uždarymas nieko nedaro
+        assert len(netikras_smtp.kvietimai) == 5
+
+    def test_po_siuntimo_klaidos_jungiamasi_is_naujo(self, tevas, netikras_smtp):
+        kanalas = ElPastoKanalas(_SMTP_NUSTATYMAI)
+        netikras_smtp.siuntimo_klaida = smtplib.SMTPServerDisconnected("ryšys nutrūko")
+        with pytest.raises(SiuntimoKlaida, match="ryšys nutrūko"):
+            kanalas.siusti(_irasas(tevas, "a"))
+        netikras_smtp.siuntimo_klaida = None
+        kanalas.siusti(_irasas(tevas, "b"))
+        assert [k[0] for k in netikras_smtp.kvietimai] == \
+            ["jungtis", "starttls", "quit", "jungtis", "starttls", "send"]
+
+    def test_prisijungimo_klaida_uzdaro_jungti(self, tevas, netikras_smtp, monkeypatch):
+        def atmesti(self, vartotojas, slaptazodis):
+            raise smtplib.SMTPAuthenticationError(535, b"neteisingas slaptazodis")
+        monkeypatch.setattr(_NetikrasSmtp, "login", atmesti)
+        kanalas = ElPastoKanalas({**_SMTP_NUSTATYMAI, "MAIL_USERNAME": "mokykla", "MAIL_PASSWORD": "x"})
+        with pytest.raises(SiuntimoKlaida):
+            kanalas.siusti(_irasas(tevas, "a"))
+        assert [k[0] for k in netikras_smtp.kvietimai] == ["jungtis", "starttls", "close"]
+
     def test_sistemos_kanalas_sukuria_pranesima_su_ikona(self, numatytosios_taisykles, tevas):
         irasas = _irasas(tevas, "r", kanalas="sistema",
                          taisykles_id=numatytosios_taisykles["skelbimas_paskelbtas"].id)
@@ -454,6 +496,20 @@ class _LuztantisKanalas(Kanalas):
 
     def siusti(self, irasas):
         raise SiuntimoKlaida("SMTP serveris nepasiekiamas")
+
+
+class _SkaiciuojantisKanalas(Kanalas):
+    """Visada pavyksta; skaičiuoja, kiek kartų kanalas uždarytas."""
+    kodas = "sistema"
+
+    def __init__(self):
+        self.uzdaryta = 0
+
+    def siusti(self, irasas):
+        return True
+
+    def uzdaryti(self):
+        self.uzdaryta += 1
 
 
 class TestPranesimuSiuntejas:
@@ -487,6 +543,46 @@ class TestPranesimuSiuntejas:
         irasas = EilesIrasas.query.one()
         assert irasas.busena == EilesIrasas.LAUKIA
         assert "Nežinomas kanalas" in irasas.klaida
+
+    def test_eile_siunciama_keliomis_partijomis(self, tevas):
+        """NFR-03: per vieną paleidimą išsiunčiama visa eilė, ne tik pirmoji partija."""
+        for i in range(45):
+            _irasas(tevas, f"r{i}", kanalas="sistema")
+        kanalas = _SkaiciuojantisKanalas()
+        assert PranesimuSiuntejas(kanalai=[kanalas]).siusti_eile(kiekis=20) == 45
+        assert {i.busena for i in EilesIrasas.query} == {EilesIrasas.ISSIUSTAS}
+        assert kanalas.uzdaryta == 1
+
+    def test_laiko_riba_sustabdo_po_partijos(self, tevas):
+        for i in range(45):
+            _irasas(tevas, f"r{i}", kanalas="sistema")
+        assert PranesimuSiuntejas(kanalai=[_SkaiciuojantisKanalas()]).siusti_eile(kiekis=20, laiko_riba=0) == 20
+        assert EilesIrasas.query.filter_by(busena=EilesIrasas.LAUKIA).count() == 25
+
+    def test_nepavyke_tame_paciame_paleidime_nekartojami(self, tevas):
+        for i in range(3):
+            _irasas(tevas, f"r{i}")
+        assert PranesimuSiuntejas(kanalai=[_LuztantisKanalas()]).siusti_eile(kiekis=2) == 0
+        assert [i.bandymai for i in EilesIrasas.query] == [1, 1, 1]
+
+    def test_kanalai_uzdaromi_ir_po_klaidos(self, tevas, monkeypatch):
+        _irasas(tevas, "a", kanalas="sistema")
+        kanalas = _SkaiciuojantisKanalas()
+        siuntejas = PranesimuSiuntejas(kanalai=[kanalas])
+
+        def sugesti(self, irasas):
+            raise RuntimeError("duomenų bazė nepasiekiama")
+        monkeypatch.setattr(PranesimuEile, "pazymeti_issiusta", sugesti)
+        with pytest.raises(RuntimeError):
+            siuntejas.siusti_eile()
+        assert kanalas.uzdaryta == 1
+
+    def test_planuokles_uzduotis_siuncia_visa_eile(self, tevas, monkeypatch):
+        from services import planuokle
+        kvietimai = []
+        monkeypatch.setattr(PranesimuSiuntejas, "siusti_eile", lambda self: kvietimai.append("eile") or 7)
+        assert planuokle.siusti_pranesimus() == 7
+        assert kvietimai == ["eile"]
 
 
 # --- Priminimai (FR-A06) ------------------------------------------------------------------

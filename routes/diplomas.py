@@ -90,7 +90,7 @@ def ikelti():
 @diplomas_bp.route("/<int:diplomo_id>/atsisiusti")
 @personalas_required
 def atsisiusti(diplomo_id):
-    diplomas = Diplomas.query.get_or_404(diplomo_id)
+    diplomas = db.get_or_404(Diplomas, diplomo_id)
     return send_from_directory(
         current_app.config["UPLOAD_FOLDER"],
         diplomas.failo_kelias,
@@ -102,7 +102,7 @@ def atsisiusti(diplomo_id):
 @diplomas_bp.route("/<int:diplomo_id>/perziureti")
 @personalas_required
 def perziureti(diplomo_id):
-    diplomas = Diplomas.query.get_or_404(diplomo_id)
+    diplomas = db.get_or_404(Diplomas, diplomo_id)
     return send_from_directory(
         current_app.config["UPLOAD_FOLDER"],
         diplomas.failo_kelias,
@@ -113,7 +113,7 @@ def perziureti(diplomo_id):
 @diplomas_bp.route("/<int:diplomo_id>/salinti", methods=["POST"])
 @personalas_required
 def salinti(diplomo_id):
-    diplomas = Diplomas.query.get_or_404(diplomo_id)
+    diplomas = db.get_or_404(Diplomas, diplomo_id)
 
     if not current_user.yra_administratorius and diplomas.vartotojo_id != current_user.id:
         abort(403)

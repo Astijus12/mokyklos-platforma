@@ -28,6 +28,9 @@ class Kanalas(ABC):
     def siusti(self, irasas):
         """Išsiunčia vieną eilės įrašą."""
 
+    def uzdaryti(self):
+        """Atlaisvina kanalo išteklius baigus siųsti (pagal nutylėjimą nieko nedaro)."""
+
 
 class ElPastoKanalas(Kanalas):
     """El. laiškai per SMTP serverį (smtplib).
@@ -35,6 +38,10 @@ class ElPastoKanalas(Kanalas):
     Kūrimo aplinkoje be SMTP serverio (MAIL_BACKEND=failai) laiškai neišsiunčiami,
     o įrašomi kaip .eml failai į katalogą MAIL_FAILU_KATALOGAS – juos galima
     atidaryti pašto programa ir patikrinti turinį.
+
+    Viena SMTP jungtis naudojama visiems vieno siuntimo paleidimo laiškams:
+    prisijungimas (TLS, slaptažodis) užtrunka ilgiau nei pats laiško išsiuntimas (NFR-03).
+    Jungtį uždaro uzdaryti(), kurį kviečia PranesimuSiuntejas.
     """
 
     kodas = "el_pastas"
@@ -42,6 +49,7 @@ class ElPastoKanalas(Kanalas):
 
     def __init__(self, nustatymai=None):
         self._nustatymai = nustatymai
+        self._smtp = None  # atvira jungtis; None – dar neprisijungta
 
     def _konf(self, raktas, numatytoji=None):
         saltinis = self._nustatymai if self._nustatymai is not None else current_app.config
@@ -66,6 +74,25 @@ class ElPastoKanalas(Kanalas):
         with open(os.path.join(katalogas, pavadinimas), "wb") as failas:
             failas.write(bytes(laiskas))
 
+    def _prisijungti(self):
+        """Atidaro SMTP jungtį: TLS ir prisijungimas, jei jie nurodyti nustatymuose."""
+        serveris = self._konf("MAIL_SERVER")
+        if not serveris:
+            raise SiuntimoKlaida("Nenurodytas el. pašto serveris (MAIL_SERVER).")
+
+        jungtis = smtplib.SMTP_SSL if self._konf("MAIL_USE_SSL") else smtplib.SMTP
+        smtp = jungtis(serveris, int(self._konf("MAIL_PORT", 587)),
+                       timeout=int(self._konf("MAIL_TIMEOUT", 15)))
+        try:
+            if self._konf("MAIL_USE_TLS") and not self._konf("MAIL_USE_SSL"):
+                smtp.starttls()
+            if self._konf("MAIL_USERNAME"):
+                smtp.login(self._konf("MAIL_USERNAME"), self._konf("MAIL_PASSWORD") or "")
+        except BaseException:
+            smtp.close()
+            raise
+        return smtp
+
     def siusti(self, irasas):
         laiskas = self.sukurti_laiska(irasas)
 
@@ -73,22 +100,25 @@ class ElPastoKanalas(Kanalas):
             self._irasyti_faila(irasas, laiskas)
             return True
 
-        serveris = self._konf("MAIL_SERVER")
-        if not serveris:
-            raise SiuntimoKlaida("Nenurodytas el. pašto serveris (MAIL_SERVER).")
-
-        jungtis = smtplib.SMTP_SSL if self._konf("MAIL_USE_SSL") else smtplib.SMTP
         try:
-            with jungtis(serveris, int(self._konf("MAIL_PORT", 587)),
-                         timeout=int(self._konf("MAIL_TIMEOUT", 15))) as smtp:
-                if self._konf("MAIL_USE_TLS") and not self._konf("MAIL_USE_SSL"):
-                    smtp.starttls()
-                if self._konf("MAIL_USERNAME"):
-                    smtp.login(self._konf("MAIL_USERNAME"), self._konf("MAIL_PASSWORD") or "")
-                smtp.send_message(laiskas)
+            if self._smtp is None:
+                self._smtp = self._prisijungti()
+            self._smtp.send_message(laiskas)
         except (smtplib.SMTPException, OSError) as klaida:
+            # Sugedusi jungtis nebenaudojama – kitas laiškas prisijungs iš naujo
+            self.uzdaryti()
             raise SiuntimoKlaida(f"El. laiško išsiųsti nepavyko: {klaida}") from klaida
         return True
+
+    def uzdaryti(self):
+        """Uždaro SMTP jungtį (jei ji atidaryta)."""
+        if self._smtp is None:
+            return
+        try:
+            self._smtp.quit()
+        except (smtplib.SMTPException, OSError):
+            self._smtp.close()
+        self._smtp = None
 
 
 # Pranešimų centro ikonos pagal įvykio tipo pradžią (Lucide ikonų pavadinimai)

@@ -54,14 +54,14 @@ def naujas():
 @announcements_bp.route("/<int:skelbimo_id>")
 @personalas_required
 def perziureti(skelbimo_id):
-    skelbimas = Skelbimas.query.get_or_404(skelbimo_id)
+    skelbimas = db.get_or_404(Skelbimas, skelbimo_id)
     return render_template("announcements/detail.html", skelbimas=skelbimas)
 
 
 @announcements_bp.route("/<int:skelbimo_id>/redaguoti", methods=["GET", "POST"])
 @personalas_required
 def redaguoti(skelbimo_id):
-    skelbimas = Skelbimas.query.get_or_404(skelbimo_id)
+    skelbimas = db.get_or_404(Skelbimas, skelbimo_id)
 
     if not current_user.yra_administratorius and skelbimas.vartotojo_id != current_user.id:
         abort(403)
@@ -82,7 +82,7 @@ def redaguoti(skelbimo_id):
 @announcements_bp.route("/<int:skelbimo_id>/salinti", methods=["POST"])
 @personalas_required
 def salinti(skelbimo_id):
-    skelbimas = Skelbimas.query.get_or_404(skelbimo_id)
+    skelbimas = db.get_or_404(Skelbimas, skelbimo_id)
 
     if not current_user.yra_administratorius and skelbimas.vartotojo_id != current_user.id:
         abort(403)

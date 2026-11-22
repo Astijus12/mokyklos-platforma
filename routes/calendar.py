@@ -154,7 +154,7 @@ def naujas():
 @calendar_bp.route("/<int:renginio_id>")
 @login_required
 def perziureti(renginio_id):
-    r = Renginys.query.get_or_404(renginio_id)
+    r = db.get_or_404(Renginys, renginio_id)
     if current_user.yra_tevas and not r.matomas_tevams:
         abort(403)
     return render_template("calendar/detales.html", renginys=r)
@@ -164,7 +164,7 @@ def perziureti(renginio_id):
 @personalas_required
 def redaguoti(renginio_id):
     """Renginio redagavimas (BD: reikalingas įvykiui „renginys pakeistas“, FR-A02)."""
-    r = Renginys.query.get_or_404(renginio_id)
+    r = db.get_or_404(Renginys, renginio_id)
     if not current_user.yra_administratorius and r.vartotojo_id != current_user.id:
         abort(403)
 
@@ -194,7 +194,7 @@ def redaguoti(renginio_id):
 @calendar_bp.route("/<int:renginio_id>/salinti", methods=["POST"])
 @personalas_required
 def salinti(renginio_id):
-    r = Renginys.query.get_or_404(renginio_id)
+    r = db.get_or_404(Renginys, renginio_id)
     if not current_user.yra_administratorius and r.vartotojo_id != current_user.id:
         abort(403)
 

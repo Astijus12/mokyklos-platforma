@@ -55,7 +55,7 @@ def naujas():
 @users_bp.route("/<int:vartotojo_id>/redaguoti", methods=["GET", "POST"])
 @admin_required
 def redaguoti(vartotojo_id):
-    vartotojas = User.query.get_or_404(vartotojo_id)
+    vartotojas = db.get_or_404(User, vartotojo_id)
 
     if request.method == "POST":
         vartotojas.vardas = request.form.get("vardas", "").strip()
@@ -86,7 +86,7 @@ def salinti(vartotojo_id):
         flash("Negalite pašalinti savęs.", "danger")
         return redirect(url_for("users.saraso"))
 
-    vartotojas = User.query.get_or_404(vartotojo_id)
+    vartotojas = db.get_or_404(User, vartotojo_id)
     vardas = vartotojas.pilnas_vardas
     db.session.delete(vartotojas)
     db.session.commit()
@@ -98,7 +98,7 @@ def salinti(vartotojo_id):
 @admin_required
 def vaikai(vartotojo_id):
     """Priskirti tėvui jo vaikus (mokinius)."""
-    tevas = User.query.get_or_404(vartotojo_id)
+    tevas = db.get_or_404(User, vartotojo_id)
 
     if tevas.role != "tevas":
         flash("Vaikų priskyrimas galimas tik tėvo rolės paskyroms.", "warning")

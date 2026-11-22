@@ -35,8 +35,8 @@ def busenos_patikra():
 
 
 def siusti_pranesimus():
-    """Kas minutę: išsiunčiama iki 20 laukiančių pranešimų (FR-A05)."""
-    return PranesimuSiuntejas().siusti_partija()
+    """Kas minutę: laukiantys pranešimai siunčiami partijomis po 20 (FR-A05, NFR-03)."""
+    return PranesimuSiuntejas().siusti_eile()
 
 
 def kurti_priminimus():
