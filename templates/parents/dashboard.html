@@ -53,7 +53,7 @@
                         {% endif %}
                     </div>
                 </div>
-                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-brand-500 transition-colors flex-shrink-0"></i>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-slate-500 group-hover:text-brand-500 transition-colors flex-shrink-0"></i>
             </div>
         </a>
         {% endfor %}
@@ -100,7 +100,7 @@
                     <p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
                         {{ skelbimas.turinys[:200] }}{% if skelbimas.turinys|length > 200 %}…{% endif %}
                     </p>
-                    <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
                         {{ skelbimas.autorius.pilnas_vardas }} · {{ skelbimas.sukurtas.strftime('%Y-%m-%d %H:%M') }}
                     </p>
                 </div>

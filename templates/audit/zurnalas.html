@@ -67,7 +67,7 @@
                         {{ i.laikas.strftime('%Y-%m-%d %H:%M:%S') }}
                     </td>
                     <td class="px-4 py-2.5 text-sm text-slate-900 dark:text-white">
-                        {% if i.vartotojas %}{{ i.vartotojas.pilnas_vardas }}{% else %}<span class="text-slate-400">Sistema</span>{% endif %}
+                        {% if i.vartotojas %}{{ i.vartotojas.pilnas_vardas }}{% else %}<span class="text-slate-500">Sistema</span>{% endif %}
                     </td>
                     <td class="px-4 py-2.5">
                         <span class="tag tag-{% if 'salinta' in i.veiksmas or 'delete' in i.veiksmas %}danger{% elif 'sukurta' in i.veiksmas %}brand{% else %}default{% endif %}">

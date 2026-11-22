@@ -15,7 +15,7 @@
 </h1>
 <p class="text-sm text-slate-500 dark:text-slate-400 mb-5">
     <span class="font-medium text-slate-700 dark:text-slate-300">{{ tevas.pilnas_vardas }}</span>
-    <span class="text-slate-400">·</span>
+    <span class="text-slate-500">·</span>
     {{ tevas.email }}
 </p>
 
@@ -32,9 +32,9 @@
         {% if klase.mokiniai %}
         <div>
             <div class="flex items-center gap-2 mb-2">
-                <i data-lucide="school" class="w-4 h-4 text-slate-400"></i>
+                <i data-lucide="school" class="w-4 h-4 text-slate-500"></i>
                 <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ klase.pavadinimas }}</h3>
-                <span class="text-xs text-slate-400">({{ klase.mokiniai|length }})</span>
+                <span class="text-xs text-slate-500">({{ klase.mokiniai|length }})</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-6">
                 {% for m in klase.mokiniai|sort(attribute='pavarde') %}

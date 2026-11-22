@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="description" content="Noriūnų Jono Černiaus mokyklos sistema darbuotojams ir tėvams: mokiniai, Vaiko gerovės komisija, pranešimai ir dokumentai">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%239f1239'/%3E%3Cpath d='M16 7 3 13.5l13 6.5 11-5.5V21h2v-7.5z' fill='white'/%3E%3Cpath d='M9 18.5V23c0 1.7 3.1 3 7 3s7-1.3 7-3v-4.5l-7 3.5z' fill='white'/%3E%3C/svg%3E">
     <title>{% block title %}Noriūnų Jono Černiaus mokykla{% endblock %}</title>
 
     <script>
@@ -76,7 +78,7 @@
 
             {% if current_user.yra_tevas %}
             {# ============ TĖVŲ MENIU ============ #}
-            <p class="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pagrindinis</p>
+            <p class="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pagrindinis</p>
 
             <a href="{{ url_for('parents.dashboard') }}"
                class="nav-link {% if active == 'parents.dashboard' %}nav-link-active{% endif %}">
@@ -94,7 +96,7 @@
                 <span>Kalendorius</span>
             </a>
 
-            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Mano šeima</p>
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mano šeima</p>
 
             {% for vaikas in current_user.vaikai %}
             <a href="{{ url_for('parents.vaikas', vaiko_id=vaikas.id) }}"
@@ -115,7 +117,7 @@
                 <span>Kontaktai</span>
             </a>
 
-            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Išorinės sistemos</p>
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Išorinės sistemos</p>
 
             <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer" class="nav-link">
                 <i data-lucide="external-link" class="w-4 h-4"></i>
@@ -124,7 +126,7 @@
 
             {% else %}
             {# ============ DARBUOTOJŲ MENIU ============ #}
-            <p class="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Pagrindinis</p>
+            <p class="px-3 pt-2 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pagrindinis</p>
 
             <a href="{{ url_for('dashboard.index') }}"
                class="nav-link {% if active.startswith('dashboard') %}nav-link-active{% endif %}">
@@ -137,7 +139,7 @@
                 <span>Skelbimai</span>
             </a>
 
-            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Mokyklos duomenys</p>
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mokyklos duomenys</p>
 
             <a href="{{ url_for('classes.saraso') }}"
                class="nav-link {% if active.startswith('classes') %}nav-link-active{% endif %}">
@@ -161,7 +163,7 @@
             </a>
 
             {# Baigiamojo darbo moduliai (aprašo 1.9 poskyrio maketai) #}
-            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Procesai</p>
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Procesai</p>
             <a href="{{ url_for('vgk.atvejai') if current_user.gali_matyti_vgk else url_for('vgk.mano_kreipimaisi') }}"
                class="nav-link {% if active.startswith('vgk') %}nav-link-active{% endif %}">
                 <i data-lucide="heart-handshake" class="w-4 h-4"></i>
@@ -185,7 +187,7 @@
             </a>
             {% endif %}
 
-            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Išorinės sistemos</p>
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Išorinės sistemos</p>
 
             <a href="https://tamo.lt" target="_blank" rel="noopener noreferrer" class="nav-link">
                 <i data-lucide="external-link" class="w-4 h-4"></i>
@@ -193,7 +195,7 @@
             </a>
 
             {% if current_user.yra_administratorius %}
-            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Administravimas</p>
+            <p class="px-3 pt-4 pb-1.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Administravimas</p>
             <a href="{{ url_for('users.saraso') }}"
                class="nav-link {% if active.startswith('users') %}nav-link-active{% endif %}">
                 <i data-lucide="user-cog" class="w-4 h-4"></i>
@@ -222,7 +224,7 @@
                     <p class="text-sm font-medium text-slate-900 dark:text-white truncate leading-tight">{{ current_user.pilnas_vardas }}</p>
                     <p class="text-xs text-slate-500 dark:text-slate-400 leading-tight">{{ current_user.roles_pavadinimas }}</p>
                 </div>
-                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-500"></i>
             </a>
         </div>
     </aside>
@@ -241,7 +243,7 @@
                 {% if not current_user.yra_tevas %}
                 <form action="{{ url_for('search.index') }}" method="GET" class="flex-1 max-w-md">
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400 pointer-events-none">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-500 pointer-events-none">
                             <i data-lucide="search" class="w-3.5 h-3.5" aria-hidden="true"></i>
                         </div>
                         <label for="global-search" class="sr-only">Paieška</label>
@@ -340,14 +342,16 @@
 {% else %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="fixed top-4 right-4 z-50 space-y-2 w-96">
+            <div class="fixed top-4 left-4 right-4 sm:left-auto sm:w-96 z-50 space-y-2" role="status">
             {% for category, message in messages %}
                 <div class="flash flash-{{ category }} shadow-sm">{{ message }}</div>
             {% endfor %}
             </div>
         {% endif %}
     {% endwith %}
+    <main>
     {% block auth_content %}{% endblock %}
+    </main>
 {% endif %}
 
 <script>

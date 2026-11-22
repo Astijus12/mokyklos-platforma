@@ -46,18 +46,18 @@
             <dl class="text-xs space-y-1.5 text-slate-600 dark:text-slate-400">
                 {% if d.seminaras %}
                 <div class="flex gap-1.5">
-                    <dt class="text-slate-500 dark:text-slate-500 shrink-0">Seminaras:</dt>
+                    <dt class="text-slate-500 dark:text-slate-400 shrink-0">Seminaras:</dt>
                     <dd class="truncate">{{ d.seminaras }}</dd>
                 </div>
                 {% endif %}
                 {% if d.isdavimo_data %}
                 <div class="flex gap-1.5">
-                    <dt class="text-slate-500 dark:text-slate-500 shrink-0">Data:</dt>
+                    <dt class="text-slate-500 dark:text-slate-400 shrink-0">Data:</dt>
                     <dd>{{ d.isdavimo_data.strftime('%Y-%m-%d') }}</dd>
                 </div>
                 {% endif %}
                 <div class="flex gap-1.5">
-                    <dt class="text-slate-500 dark:text-slate-500 shrink-0">Įkėlė:</dt>
+                    <dt class="text-slate-500 dark:text-slate-400 shrink-0">Įkėlė:</dt>
                     <dd class="truncate">{{ d.vartotojas.pilnas_vardas }}</dd>
                 </div>
             </dl>

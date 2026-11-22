@@ -58,7 +58,7 @@
                             {% if vaiku_sk %}
                                 <span class="tag tag-brand">{{ vaiku_sk }} vaikas(-ai)</span>
                             {% else %}
-                                <span class="text-slate-400 text-xs italic">Vaikai nepriskirti</span>
+                                <span class="text-slate-500 text-xs italic">Vaikai nepriskirti</span>
                             {% endif %}
                         {% elif v.vadovaujamos_klases %}
                             <div class="flex flex-wrap gap-1">
@@ -66,7 +66,7 @@
                                 <span class="tag tag-brand">{{ k.pavadinimas }}</span>
                             {% endfor %}
                             </div>
-                        {% else %}<span class="text-slate-400">—</span>{% endif %}
+                        {% else %}<span class="text-slate-500">—</span>{% endif %}
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="inline-flex gap-0.5">

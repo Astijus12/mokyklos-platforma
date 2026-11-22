@@ -3,7 +3,7 @@
 {% block title %}Slaptažodžio sukūrimas{% endblock %}
 
 {% block auth_content %}
-<main class="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
+<div class="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950">
     <div class="card w-full max-w-md">
         <div class="card-header"><h1 class="text-base font-semibold text-slate-900 dark:text-white">Sukurkite slaptažodį</h1></div>
         <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -22,5 +22,5 @@
             <button type="submit" class="btn-primary w-full justify-center">Išsaugoti slaptažodį</button>
         </form>
     </div>
-</main>
+</div>
 {% endblock %}

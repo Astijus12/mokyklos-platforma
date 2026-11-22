@@ -1,9 +1,13 @@
 """Fono proceso planuoklės ir worker.py testai (be tikro laukimo ir be tinklo)."""
+import logging
+from types import SimpleNamespace
+
 import pytest
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import worker
 from models import EilesIrasas, db
+from services import planuokle as planuokles_modulis
 from services.planuokle import Planuokle, busenos_patikra
 
 
@@ -29,6 +33,36 @@ class TestPlanuokle:
         planuokle = Planuokle(app, planuokle=BackgroundScheduler())
         assert planuokle._programos_kontekste(luzta)() is None
         assert "nepavyko" in caplog.text
+
+    def test_kasdienes_uzduotys_tuscioje_duomenu_bazeje(self, app):
+        assert planuokles_modulis.kurti_priminimus() == 0
+        assert planuokles_modulis.zymeti_veluojancias_priemones() == 0
+
+    def test_veluojancios_priemones_irasomos_i_zurnala(self, monkeypatch, caplog):
+        monkeypatch.setattr("services.vgk.pazymeti_veluojancias", lambda: 2)
+        caplog.set_level(logging.INFO, logger="planuokle")
+        assert planuokles_modulis.zymeti_veluojancias_priemones() == 2
+        assert "vėluojančių priemonių: 2" in caplog.text
+
+    def test_menesio_suvestine(self, monkeypatch, caplog):
+        caplog.set_level(logging.INFO, logger="planuokle")
+        monkeypatch.setattr("services.pazymos.sukurti_menesio_suvestine", lambda: SimpleNamespace(numeris="AT-2026-0001"))
+        assert planuokles_modulis.kurti_menesio_suvestine().numeris == "AT-2026-0001"
+        assert "AT-2026-0001" in caplog.text
+        monkeypatch.setattr("services.pazymos.sukurti_menesio_suvestine", lambda: None)  # jau parengta
+        assert planuokles_modulis.kurti_menesio_suvestine() is None
+
+    def test_paleisti_sustabdoma_be_klaidos(self, app, caplog):
+        class SustabdomaPlanuokle:
+            def get_jobs(self):
+                return []
+
+            def start(self):
+                raise KeyboardInterrupt
+
+        caplog.set_level(logging.INFO, logger="planuokle")
+        Planuokle(app, planuokle=SustabdomaPlanuokle()).paleisti()
+        assert "Planuoklė sustabdyta" in caplog.text
 
 
 class TestWorkerLaukimas:
