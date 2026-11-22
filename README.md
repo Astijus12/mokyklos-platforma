@@ -132,6 +132,8 @@ flask --app app db current            # dabartinė schemos versija
 
 ## Saugumas
 
+- Mokytojas kuria, redaguoja ir šalina tik savo klasės (kurios vadovas yra) mokinius, kitų klasių
+  mokinius tik peržiūri; klases, naudotojus ir masinį importą tvarko administratorius
 - Vaiko gerovės komisijos duomenis mato tik komisijos nariai ir administratorius, kitiems grąžinamas
   atsakymas „Nerasta“; peržiūros ir pakeitimai registruojami veiklos žurnale
 - Visose formose CSRF žetonas; slaptažodžiai saugomi maišos pavidalu; dviejų veiksnių autentikacija;

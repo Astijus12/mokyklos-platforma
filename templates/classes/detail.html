@@ -29,11 +29,15 @@
                 </div>
             </div>
         </div>
+        {# Mokinius tvarko tik šios klasės vadovas arba administratorius #}
+        {% set tvarko = klase.id in current_user.tvarkomu_klasiu_ids %}
         <div class="flex gap-1.5">
+            {% if tvarko %}
             <a href="{{ url_for('students.naujas', klases_id=klase.id) }}" class="btn-primary">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>
                 Pridėti mokinį
             </a>
+            {% endif %}
             {% if current_user.yra_administratorius %}
             <a href="{{ url_for('classes.redaguoti', klases_id=klase.id) }}" class="btn-secondary">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
@@ -82,7 +86,7 @@
                     <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-1">
                             {% if m.mokyklos_autobusas %}<span class="tag tag-warning">Autobusas</span>{% endif %}
-                            {% if m.geroves_komisija and current_user.gali_matyti_vgk %}<span class="tag tag-danger">VGK</span>{% endif %}
+                            {% if m.geroves_komisija and current_user.gali_matyti_vgk %}<span class="tag tag-danger">Gerovės komisija</span>{% endif %}
                             {% if not m.mokyklos_autobusas and not (m.geroves_komisija and current_user.gali_matyti_vgk) %}<span class="text-slate-300 dark:text-slate-600 text-sm">—</span>{% endif %}
                         </div>
                     </td>
@@ -95,17 +99,21 @@
                         {% if not m.telefonas and not m.email %}—{% endif %}
                     </td>
                     <td class="px-4 py-3 text-right" onclick="event.stopPropagation()">
+                        {% if tvarko %}
                         <div class="inline-flex gap-0.5">
-                            <a href="{{ url_for('students.redaguoti', mokinio_id=m.id) }}" class="btn-icon-sm" title="Redaguoti">
-                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            <a href="{{ url_for('students.redaguoti', mokinio_id=m.id) }}" class="btn-icon-sm" title="Redaguoti"
+                               aria-label="Redaguoti {{ m.pilnas_vardas }}">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5" aria-hidden="true"></i>
                             </a>
                             <form method="POST" action="{{ url_for('students.salinti', mokinio_id=m.id) }}"
-                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Salinti" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Šalinti" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti"
+                                        aria-label="Šalinti {{ m.pilnas_vardas }}">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>
                                 </button>
                             </form>
                         </div>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -115,10 +123,12 @@
     {% else %}
     <div class="text-center py-10 px-6">
         <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Šioje klasėje dar nėra mokinių</p>
+        {% if tvarko %}
         <a href="{{ url_for('students.naujas', klases_id=klase.id) }}" class="btn-primary inline-flex">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>
             Pridėti pirmą mokinį
         </a>
+        {% endif %}
     </div>
     {% endif %}
 </div>

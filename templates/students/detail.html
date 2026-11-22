@@ -44,18 +44,24 @@
                 </div>
             </div>
 
+            {% if current_user.gali_tvarkyti_mokini(mokinys) %}
             <div class="flex gap-1.5">
                 <a href="{{ url_for('students.redaguoti', mokinio_id=mokinys.id) }}" class="btn-secondary">
-                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="pencil" class="w-3.5 h-3.5" aria-hidden="true"></i>
                     Redaguoti
                 </a>
                 <form method="POST" action="{{ url_for('students.salinti', mokinio_id=mokinys.id) }}"
-                      data-confirm="Ar tikrai norite pašalinti šį mokinį?" data-confirm-btn="Salinti"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn-icon-danger" title="Šalinti">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                      data-confirm="Ar tikrai norite pašalinti šį mokinį?" data-confirm-btn="Šalinti"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-icon-danger" title="Šalinti" aria-label="Šalinti mokinį">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>
                     </button>
                 </form>
             </div>
+            {% else %}
+            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-[220px]">
+                Mokinio duomenis keičia klasės vadovas{% if mokinys.klase.vadovas %} ({{ mokinys.klase.vadovas.pilnas_vardas }}){% endif %} arba administratorius.
+            </p>
+            {% endif %}
         </div>
     </div>
 </div>

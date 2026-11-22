@@ -150,6 +150,20 @@ class User(UserMixin, db.Model):
         """Posėdžius planuoja ir protokolus tvarko pirmininkas arba sekretorius."""
         return self.vgk_pareigos in ("pirmininkas", "sekretorius")
 
+    @property
+    def tvarkomu_klasiu_ids(self):
+        """Klasės, kurių mokinius naudotojas gali kurti, redaguoti ir šalinti:
+        administratorius – visas, mokytojas – tik tas, kurių jis yra klasės vadovas.
+        Kitų klasių mokinių duomenis mokytojas gali tik peržiūrėti."""
+        uzklausa = db.session.query(Klase.id)
+        if not self.yra_administratorius:
+            uzklausa = uzklausa.filter(Klase.vadovo_id == self.id)
+        return {klases_id for (klases_id,) in uzklausa}
+
+    def gali_tvarkyti_mokini(self, mokinys):
+        """Ar naudotojas gali redaguoti ir šalinti mokinį bei keisti jo nuotrauką."""
+        return self.yra_administratorius or mokinys.klases_id in self.tvarkomu_klasiu_ids
+
 
 class Klase(db.Model):
     """Mokyklos klasė (pvz., 5A, 10B)."""

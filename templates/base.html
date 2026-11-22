@@ -517,8 +517,12 @@
         { grupe: 'Naršyti', pavadinimas: 'Mokiniai', aprasymas: 'Mokinių valdymas', ikona: 'users', url: '{{ url_for("students.saraso") }}' },
         { grupe: 'Naršyti', pavadinimas: 'Diplomai', aprasymas: 'Diplomų valdymas', ikona: 'award', url: '{{ url_for("diplomas.saraso") }}' },
         { grupe: 'Kurti', pavadinimas: 'Naujas skelbimas', aprasymas: 'Sukurti pranešimą', ikona: 'megaphone', url: '{{ url_for("announcements.naujas") }}' },
-        { grupe: 'Kurti', pavadinimas: 'Naujas mokinys', aprasymas: 'Pridėti mokinį į klasę', ikona: 'user-plus', url: '{{ url_for("students.naujas") }}' },
+        {% if current_user.tvarkomu_klasiu_ids %}
+        { grupe: 'Kurti', pavadinimas: 'Naujas mokinys', aprasymas: 'Pridėti mokinį į savo klasę', ikona: 'user-plus', url: '{{ url_for("students.naujas") }}' },
+        {% endif %}
+        {% if current_user.yra_administratorius %}
         { grupe: 'Kurti', pavadinimas: 'Nauja klasė', aprasymas: 'Sukurti naują klasę', ikona: 'school', url: '{{ url_for("classes.nauja") }}' },
+        {% endif %}
         { grupe: 'Kurti', pavadinimas: 'Įkelti diplomą', aprasymas: 'Įkelti sertifikatą', ikona: 'upload', url: '{{ url_for("diplomas.ikelti") }}' },
         { grupe: 'Kurti', pavadinimas: 'Naujas renginys', aprasymas: 'Pridėti į kalendorių', ikona: 'calendar-plus', url: '{{ url_for("calendar.naujas") }}' },
         { grupe: 'Naršyti', pavadinimas: 'Kalendorius', aprasymas: 'Mokyklos renginiai', ikona: 'calendar', url: '{{ url_for("calendar.rodinys") }}' },

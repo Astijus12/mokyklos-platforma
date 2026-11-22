@@ -44,8 +44,9 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label class="form-label">Klasė <span class="text-red-500">*</span></label>
-                    <select name="klases_id" required class="form-input">
+                    <label for="klases_id" class="form-label">Klasė <span class="text-red-500">*</span></label>
+                    <select id="klases_id" name="klases_id" required class="form-input"
+                            {% if not current_user.yra_administratorius %}aria-describedby="klases-pagalba"{% endif %}>
                         <option value="">— Pasirinkite klasę —</option>
                         {% for k in klases %}
                         <option value="{{ k.id }}"
@@ -55,6 +56,11 @@
                         </option>
                         {% endfor %}
                     </select>
+                    {% if not current_user.yra_administratorius %}
+                    <p id="klases-pagalba" class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Galite rinktis tik klases, kurių esate klasės vadovas.
+                    </p>
+                    {% endif %}
                 </div>
                 <div>
                     <label class="form-label">Gimimo data</label>

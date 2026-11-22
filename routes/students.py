@@ -4,7 +4,8 @@ import io
 import os
 from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, Response, current_app, send_from_directory
+from flask import (Blueprint, abort, render_template, request, redirect, url_for, flash, Response, current_app,
+                   send_from_directory)
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from routes.auth import personalas_required
@@ -12,6 +13,20 @@ from routes.auth import personalas_required
 from models import db, Mokinys, Klase
 
 students_bp = Blueprint("students", __name__, url_prefix="/mokiniai")
+
+
+# --- Teisės: mokytojas tvarko tik savo klasės mokinius, kitų – tik peržiūri ---
+
+def _tvarkomos_klases():
+    """Klasės, į kurias naudotojas gali įtraukti mokinį (formos pasirinkimui)."""
+    return (Klase.query.filter(Klase.id.in_(current_user.tvarkomu_klasiu_ids))
+            .order_by(Klase.pavadinimas).all())
+
+
+def _tikrinti_teise(mokinys):
+    """Kitos klasės mokinio mokytojas keisti negali – 403."""
+    if not current_user.gali_tvarkyti_mokini(mokinys):
+        abort(403)
 
 
 def _parse_data(reiksme):
@@ -146,10 +161,17 @@ def ataskaita(mokinio_id):
 @students_bp.route("/naujas", methods=["GET", "POST"])
 @personalas_required
 def naujas():
+    klases = _tvarkomos_klases()
+    if not klases:
+        flash("Mokinius į klasę įtraukia klasės vadovas arba administratorius.", "warning")
+        return redirect(url_for("students.saraso"))
+
     if request.method == "POST":
         klases_id = request.form.get("klases_id", type=int)
         if not klases_id:
             flash("Pasirinkite klasę.", "danger")
+        elif klases_id not in {k.id for k in klases}:
+            flash("Mokinį galite įtraukti tik į savo klasę.", "danger")
         else:
             duomenys = _surinkti_duomenis(request.form)
             duomenys["klases_id"] = klases_id
@@ -163,7 +185,6 @@ def naujas():
                 flash(f"Mokinys {mokinys.pilnas_vardas} pridėtas.", "success")
                 return redirect(url_for("students.detales", mokinio_id=mokinys.id))
 
-    klases = Klase.query.order_by(Klase.pavadinimas).all()
     return render_template(
         "students/form.html",
         mokinys=None,
@@ -176,17 +197,24 @@ def naujas():
 @personalas_required
 def redaguoti(mokinio_id):
     mokinys = db.get_or_404(Mokinys, mokinio_id)
+    _tikrinti_teise(mokinys)
+    klases = _tvarkomos_klases()
 
     if request.method == "POST":
+        klases_id = request.form.get("klases_id", type=int)
         duomenys = _surinkti_duomenis(request.form)
-        for laukas, reiksme in duomenys.items():
-            setattr(mokinys, laukas, reiksme)
-        mokinys.klases_id = request.form.get("klases_id", type=int)
-        db.session.commit()
-        flash(f"Mokinio {mokinys.pilnas_vardas} duomenys atnaujinti.", "success")
-        return redirect(url_for("students.detales", mokinio_id=mokinys.id))
+        if not duomenys["vardas"] or not duomenys["pavarde"]:
+            flash("Vardas ir pavardė yra privalomi.", "danger")
+        elif klases_id not in {k.id for k in klases}:
+            flash("Mokinį galite priskirti tik savo klasei.", "danger")
+        else:
+            for laukas, reiksme in duomenys.items():
+                setattr(mokinys, laukas, reiksme)
+            mokinys.klases_id = klases_id
+            db.session.commit()
+            flash(f"Mokinio {mokinys.pilnas_vardas} duomenys atnaujinti.", "success")
+            return redirect(url_for("students.detales", mokinio_id=mokinys.id))
 
-    klases = Klase.query.order_by(Klase.pavadinimas).all()
     return render_template("students/form.html", mokinys=mokinys, klases=klases)
 
 
@@ -194,6 +222,7 @@ def redaguoti(mokinio_id):
 @personalas_required
 def salinti(mokinio_id):
     mokinys = db.get_or_404(Mokinys, mokinio_id)
+    _tikrinti_teise(mokinys)
     vardas = mokinys.pilnas_vardas
     db.session.delete(mokinys)
     db.session.commit()
@@ -219,6 +248,9 @@ def grupinis_veiksmas():
 
     if veiksmas == "salinti":
         mokiniai = Mokinys.query.filter(Mokinys.id.in_(mokiniu_ids)).all()
+        if not all(current_user.gali_tvarkyti_mokini(m) for m in mokiniai):
+            flash("Galite šalinti tik savo klasės mokinius. Nieko nepašalinta.", "danger")
+            return redirect(url_for("students.saraso"))
         skaicius = len(mokiniai)
         for m in mokiniai:
             db.session.delete(m)
@@ -365,6 +397,7 @@ def _leidziamas_nuotraukos_failas(vardas):
 def ikelti_nuotrauka(mokinio_id):
     """Įkelia mokinio nuotrauką."""
     mokinys = db.get_or_404(Mokinys, mokinio_id)
+    _tikrinti_teise(mokinys)
     failas = request.files.get("nuotrauka")
 
     if not failas or not failas.filename:
@@ -406,6 +439,7 @@ def salinti_nuotrauka(mokinio_id):
         return redirect(url_for("students.detales", mokinio_id=mokinio_id))
 
     mokinys = db.get_or_404(Mokinys, mokinio_id)
+    _tikrinti_teise(mokinys)
     if mokinys.nuotraukos_failas:
         kelias = os.path.join(current_app.config["UPLOAD_FOLDER"], mokinys.nuotraukos_failas)
         if os.path.exists(kelias):

@@ -3,6 +3,8 @@
 {% block title %}Mokiniai - Noriūnų J. Černiaus mokykla{% endblock %}
 
 {% block content %}
+{# Mokytojas tvarko tik savo klasės mokinius; kitų klasių mokinius tik peržiūri #}
+{% set mano_klases = current_user.tvarkomu_klasiu_ids %}
 <div class="mb-5 flex items-end justify-between flex-wrap gap-3">
     <div>
         <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Mokiniai</h1>
@@ -15,10 +17,12 @@
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
             Eksportuoti
         </a>
+        {% if mano_klases %}
         <a href="{{ url_for('students.naujas') }}" class="btn-primary">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>
             Naujas mokinys
         </a>
+        {% endif %}
     </div>
 </div>
 
@@ -70,10 +74,12 @@
         <i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i>
         Eksportuoti
     </button>
+    {% if mano_klases %}
     <button type="button" onclick="grupinisSalinti()" class="btn-secondary text-xs text-red-700 dark:text-red-400">
         <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>
         Šalinti
     </button>
+    {% endif %}
     <button type="button" onclick="atsaukti()" class="btn-ghost text-xs">
         Atšaukti
     </button>
@@ -128,8 +134,8 @@
                             </span>
                             {% endif %}
                             {% if m.geroves_komisija and current_user.gali_matyti_vgk %}
-                            <span class="tag tag-danger" title="Svarstomas gerovės komisijoje">
-                                VGK
+                            <span class="tag tag-danger" title="Svarstomas Vaiko gerovės komisijoje">
+                                Gerovės komisija
                             </span>
                             {% endif %}
                             {% if not m.mokyklos_autobusas and not (m.geroves_komisija and current_user.gali_matyti_vgk) %}
@@ -148,17 +154,21 @@
                         {% if not m.email and not m.telefonas %}<span class="text-slate-300 dark:text-slate-600">—</span>{% endif %}
                     </td>
                     <td class="px-4 py-3 text-right" onclick="event.stopPropagation()">
+                        {% if m.klases_id in mano_klases %}
                         <div class="inline-flex gap-0.5">
-                            <a href="{{ url_for('students.redaguoti', mokinio_id=m.id) }}" class="btn-icon-sm" title="Redaguoti">
-                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            <a href="{{ url_for('students.redaguoti', mokinio_id=m.id) }}" class="btn-icon-sm" title="Redaguoti"
+                               aria-label="Redaguoti {{ m.pilnas_vardas }}">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5" aria-hidden="true"></i>
                             </a>
                             <form method="POST" action="{{ url_for('students.salinti', mokinio_id=m.id) }}"
-                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Salinti" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti">
-                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                  data-confirm="Ar tikrai norite pašalinti mokinį {{ m.pilnas_vardas }}?" data-confirm-btn="Šalinti" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn-icon-sm hover:text-red-600 dark:hover:text-red-400" title="Šalinti"
+                                        aria-label="Šalinti {{ m.pilnas_vardas }}">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i>
                                 </button>
                             </form>
                         </div>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -189,7 +199,7 @@
                         </span>
                         {% endif %}
                         {% if m.geroves_komisija and current_user.gali_matyti_vgk %}
-                        <span class="tag tag-danger">VGK</span>
+                        <span class="tag tag-danger">Gerovės komisija</span>
                         {% endif %}
                     </div>
                     {% endif %}
@@ -217,10 +227,12 @@
         <p class="empty-state-text">
             {% if paieska or pasirinkta_klase %}Pabandykite pakeisti paieškos kriterijus.{% else %}Pridėkite pirmą mokinį, kad pradėtumėte.{% endif %}
         </p>
+        {% if mano_klases %}
         <a href="{{ url_for('students.naujas') }}" class="btn-primary">
             <i data-lucide="plus" class="w-3.5 h-3.5" aria-hidden="true"></i>
             Pridėti mokinį
         </a>
+        {% endif %}
     </div>
     {% endif %}
 </div>

@@ -44,10 +44,10 @@ class TestMatomumas:
         assert "Pateikti kreipimąsi" in html
 
     def test_saraso_zyme_tik_nariams(self, prisijunges_mokytojas, vaikas, aktyvus_atvejis, mokytojas):
-        assert 'title="Svarstomas gerovės komisijoje"' not in _html(prisijunges_mokytojas.get("/mokiniai/"))
+        assert 'title="Svarstomas Vaiko gerovės komisijoje"' not in _html(prisijunges_mokytojas.get("/mokiniai/"))
         mokytojas.vgk_pareigos = "narys"
         db.session.commit()
-        assert 'title="Svarstomas gerovės komisijoje"' in _html(prisijunges_mokytojas.get("/mokiniai/"))
+        assert 'title="Svarstomas Vaiko gerovės komisijoje"' in _html(prisijunges_mokytojas.get("/mokiniai/"))
 
     def test_administratoriaus_eksporte_vgk_stulpeliai_yra(self, prisijunges_admin, vaikas, aktyvus_atvejis):
         assert "Gerovės komisija" in prisijunges_admin.get("/mokiniai/eksportas").get_data(as_text=True)
