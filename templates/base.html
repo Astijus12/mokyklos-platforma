@@ -172,6 +172,11 @@
                 <i data-lucide="file-text" class="w-4 h-4"></i>
                 <span>Dokumentai</span>
             </a>
+            <a href="{{ url_for('importas.ikelimas') }}"
+               class="nav-link {% if active.startswith('importas') %}nav-link-active{% endif %}">
+                <i data-lucide="file-up" class="w-4 h-4"></i>
+                <span>Duomenų importas</span>
+            </a>
             <a href="{{ url_for('automatizavimas.taisykles') }}"
                class="nav-link {% if active.startswith('automatizavimas') and active != 'automatizavimas.mano_nustatymai' %}nav-link-active{% endif %}">
                 <i data-lucide="workflow" class="w-4 h-4"></i>

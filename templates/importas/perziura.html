@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Importo peržiūra{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{{ url_for('importas.ikelimas') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>Duomenų importas
+    </a>
+</div>
+<div class="mb-5">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Importo peržiūra</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+        Failas <strong class="text-slate-700 dark:text-slate-200">{{ sesija.failo_vardas }}</strong>
+        · {{ sesija.eiluciu_sk }} {{ sesija.eiluciu_sk|lt_forma('eilutė', 'eilutės', 'eilučių') }} · įkelta {{ sesija.sukurta|vietinis_laikas }}
+    </p>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+    <div class="stat-card">
+        <p class="stat-label">Tinkamos eilutės</p>
+        <p class="stat-value text-green-700 dark:text-green-400">{{ sesija.tinkamu_sk }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Bus įrašytos į sistemą</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Klaidingos eilutės</p>
+        <p class="stat-value text-red-700 dark:text-red-400">{{ sesija.klaidu_sk }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Nebus įrašytos, reikia pataisyti faile</p>
+    </div>
+    <div class="stat-card">
+        <p class="stat-label">Pasikartojančios</p>
+        <p class="stat-value text-amber-700 dark:text-amber-400">{{ dublikatu }}</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Mokiniai jau yra sistemoje arba kartojasi faile</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header flex items-center justify-between flex-wrap gap-2">
+        <h2>Eilučių tikrinimo rezultatai</h2>
+        <nav class="flex gap-2" aria-label="Rodomos eilutės">
+            <a href="{{ url_for('importas.perziura', sesijos_id=sesija.id) }}" class="tag {{ 'tag-default' if rodyti_visas else 'tag-brand' }}">Probleminės ({{ problemines|length }})</a>
+            <a href="{{ url_for('importas.perziura', sesijos_id=sesija.id, rodyti='visas') }}" class="tag {{ 'tag-brand' if rodyti_visas else 'tag-default' }}">Visos ({{ sesija.eilutes|length }})</a>
+        </nav>
+    </div>
+    {% if eilutes %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Eilutė</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Mokinys</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Klasė</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Tėvų el. paštas</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Tikrinimo rezultatas</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for e in eilutes %}
+                <tr>
+                    <td class="px-4 py-3 text-sm tabular-nums text-slate-600 dark:text-slate-400">{{ e.eilutes_nr }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-900 dark:text-white">{{ e.duomenys.get('vardas', '') }} {{ e.duomenys.get('pavarde', '') }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ e.duomenys.get('klase', '') }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ e.duomenys.get('tevo_el_pastas', '') }}</td>
+                    <td class="px-4 py-3 text-sm">
+                        {% if e.busena == 'klaida' %}
+                        {% for klaida in e.klaidos.split('\n') %}<span class="tag tag-danger whitespace-nowrap mr-1">{{ klaida }}</span>{% endfor %}
+                        {% elif e.busena == 'dublikatas' %}
+                        <span class="tag tag-warning whitespace-nowrap">{{ e.klaidos }}</span>
+                        {% else %}
+                        <span class="tag tag-green whitespace-nowrap">Tinkama</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="p-4 text-sm text-green-700 dark:text-green-400">Probleminių eilučių nėra – visos eilutės tinkamos.</p>
+    {% endif %}
+</div>
+
+<div class="flex items-center justify-between flex-wrap gap-3">
+    <p class="text-sm text-slate-500 dark:text-slate-400 max-w-2xl">
+        Klaidingos ir pasikartojančios eilutės nebus įrašytos. Tinkamos eilutės, tėvų paskyros ir kvietimų laiškai
+        įrašomi viena transakcija.
+    </p>
+    <div class="flex flex-wrap gap-2">
+        <form method="POST" action="{{ url_for('importas.atsaukti', sesijos_id=sesija.id) }}">
+            <button type="submit" class="btn-secondary">Atšaukti</button>
+        </form>
+        <form method="POST" action="{{ url_for('importas.patvirtinti', sesijos_id=sesija.id) }}">
+            <button type="submit" class="btn-primary" {% if not sesija.tinkamu_sk %}disabled{% endif %}>
+                Įrašyti {{ sesija.tinkamu_sk }} {{ sesija.tinkamu_sk|lt_forma('mokinį', 'mokinius', 'mokinių') }}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

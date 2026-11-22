@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Duomenų importas{% endblock %}
+
+{% block content %}
+{% set spalvos = {'patikrinta': 'tag-blue', 'importuota': 'tag-green', 'atsaukta': 'tag-default', 'klaida': 'tag-danger'} %}
+<div class="mb-5">
+    <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight">Duomenų importas</h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Mokinių ir tėvų sąrašo įkėlimas iš XLSX arba CSV failo</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+    <div class="card lg:col-span-2">
+        <div class="card-header"><h2>Failo įkėlimas</h2></div>
+        <form method="POST" enctype="multipart/form-data" class="p-5 space-y-4">
+            <div>
+                <label for="failas" class="form-label">Failas (XLSX arba CSV, iki 2 MB ir {{ didziausias }} eilučių)</label>
+                <input type="file" id="failas" name="failas" required accept=".xlsx,.csv" class="form-input">
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-400">
+                Įkėlus failą, duomenys tik patikrinami – į sistemą jie įrašomi tik patvirtinus peržiūrą.
+            </p>
+            <button type="submit" class="btn-primary"><i data-lucide="file-up" class="w-3.5 h-3.5" aria-hidden="true"></i>Įkelti ir patikrinti</button>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-header"><h2>Šablonas</h2></div>
+        <div class="p-4 text-sm space-y-3">
+            <p class="text-slate-600 dark:text-slate-400">Pirmoje eilutėje turi būti stulpelių pavadinimai:</p>
+            <ul class="list-disc pl-5 text-slate-700 dark:text-slate-200">
+                {% for kodas, pavadinimas in stulpeliai %}
+                <li>{{ pavadinimas }}{% if kodas in ('vardas', 'pavarde', 'gimimo_data', 'klase') %} <span class="text-red-600">*</span>{% endif %}</li>
+                {% endfor %}
+            </ul>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Gimimo data – MMMM-MM-DD. Nurodžius tėvo el. paštą, sukuriama tėvo paskyra ir išsiunčiamas kvietimas.</p>
+            <a href="{{ url_for('importas.sablonas') }}" class="btn-secondary"><i data-lucide="download" class="w-3.5 h-3.5" aria-hidden="true"></i>Atsisiųsti šabloną</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h2>Ankstesni importai</h2></div>
+    {% if sesijos %}
+    <div class="overflow-x-auto">
+        <table class="w-full data-table">
+            <thead>
+                <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Data</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Failas</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Eilučių</th>
+                    <th scope="col" class="text-left px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Būsena</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                {% for s in sesijos %}
+                <tr>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ s.sukurta|vietinis_laikas }}</td>
+                    <td class="px-4 py-3 text-sm">
+                        <a href="{{ url_for('importas.perziura' if s.busena == 'patikrinta' else 'importas.ataskaita', sesijos_id=s.id) }}"
+                           class="font-medium text-brand-800 dark:text-brand-400 hover:underline">{{ s.failo_vardas }}</a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400 tabular-nums">{{ s.eiluciu_sk }}</td>
+                    <td class="px-4 py-3 text-sm"><span class="tag {{ spalvos.get(s.busena, 'tag-default') }}">{{ s.busenos_pavadinimas }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="p-4 text-sm text-slate-500 dark:text-slate-400">Importų dar nebuvo.</p>
+    {% endif %}
+</div>
+{% endblock %}

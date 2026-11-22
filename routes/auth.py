@@ -83,3 +83,22 @@ def logout():
     logout_user()
     flash("Sėkmingai atsijungėte.", "info")
     return redirect(url_for("auth.login"))
+
+
+@auth_bp.route("/slaptazodis/<zetonas>", methods=["GET", "POST"])
+def nustatyti_slaptazodi(zetonas):
+    """BD (FR-I06): importo metu sukurtas tėvas susikuria slaptažodį pagal kvietimo nuorodą."""
+    from services.paskyros import naudotojas_pagal_zetona, nustatyti_slaptazodi as nustatyti
+
+    naudotojas = naudotojas_pagal_zetona(zetonas)
+    if naudotojas is None:
+        flash("Nuoroda netinkama, pasibaigusi arba jau panaudota. Kreipkitės į mokyklą.", "danger")
+        return redirect(url_for("auth.login"))
+    if request.method == "POST":
+        klaida = nustatyti(naudotojas, request.form.get("slaptazodis"), request.form.get("pakartotas"))
+        if klaida:
+            flash(klaida, "danger")
+        else:
+            flash("Slaptažodis nustatytas. Dabar galite prisijungti.", "success")
+            return redirect(url_for("auth.login"))
+    return render_template("slaptazodzio_nustatymas.html", naudotojas=naudotojas)

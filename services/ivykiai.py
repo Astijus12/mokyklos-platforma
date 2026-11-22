@@ -182,7 +182,9 @@ def _importas(s, gavejas):
 
 
 def _paskyra(naudotojas, gavejas):
-    return {"paskyra": {"el_pastas": naudotojas.email}}, ("auth.login", {})
+    # Kvietime – vienkartinė nuoroda slaptažodžiui susikurti (slaptažodis laišku nesiunčiamas)
+    from services.paskyros import slaptazodzio_zetonas
+    return {"paskyra": {"el_pastas": naudotojas.email}},         ("auth.nustatyti_slaptazodi", {"zetonas": slaptazodzio_zetonas(naudotojas)})
 
 
 def _suvestine(dokumentas, gavejas):

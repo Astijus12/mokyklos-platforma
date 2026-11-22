@@ -64,14 +64,14 @@ class TestTaisykliuPuslapis:
     def test_sarasas_kaip_makete(self, prisijunges_admin, numatytosios_taisykles):
         html = _html(prisijunges_admin.get("/automatizavimas/"))
         assert "Automatizavimo taisyklės" in html
-        assert "16 taisyklių" in html and "12 aktyvių" in html
+        assert "17 taisyklių" in html and "13 aktyvių" in html
         assert "Naujas skelbimas tėvams" in html
         assert "1 diena iki renginio" in html
         assert "2 darbo dienos iki termino" in html
         assert "Kiekvieno mėnesio 1 d." in html
         assert "Nariai, tėvai" in html
         assert "Siuntimo žurnalas (paskutinės 24 val.)" in html
-        assert html.count('role="switch"') == 16
+        assert html.count('role="switch"') == 17
 
     def test_meniu_grupe_procesai(self, prisijunges_admin):
         html = _html(prisijunges_admin.get("/dashboard"))
