@@ -289,8 +289,17 @@ class Renginys(db.Model):
     matomas_tevams = db.Column(db.Boolean, default=True, nullable=False)
     vartotojo_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     sukurtas = db.Column(db.DateTime, default=utc_dabar)
+    # Renginys, sukurtas iš skelbimo su nurodyta renginio data (migracija 0006)
+    skelbimo_id = db.Column(
+        db.Integer,
+        db.ForeignKey("skelbimai.id", ondelete="CASCADE", name="fk_renginiai_skelbimo_id_skelbimai"),
+        nullable=True,
+    )
+
+    __table_args__ = (db.UniqueConstraint("skelbimo_id", name="uq_renginiai_skelbimo_id"),)
 
     autorius = db.relationship("User", backref="renginiai", lazy=True)
+    skelbimas = db.relationship("Skelbimas", backref=db.backref("renginys", uselist=False), lazy=True)
 
 
 class VeiklosZurnalas(db.Model):

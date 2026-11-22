@@ -87,11 +87,12 @@ migracijos. Fono procesas kas minutę siunčia pranešimus iš eilės, kasdien 7
 
 ## Render (demonstracinė svetainė)
 
-Nemokamame plane atskiro fono proceso nėra, todėl planuoklė paleidžiama žiniatinklio procese
-po pirmos užklausos (Render nustato `RENDER=true`, žr. `wsgi.py`). Duomenų bazė nurodoma kintamuoju
-`DATABASE_URL` (PostgreSQL); be jo naudojama SQLite, kuri Render'yje po kiekvieno paleidimo iš
-naujo sukuriama iš naujo su demonstraciniais duomenimis. Python versija – `.python-version`.
-PDF dokumentams naudojamas kartu su programa pateiktas šriftas `sriftai/DejaVuSans.ttf`.
+Render svetainė yra demonstracinė: kiekvieną kartą ją paleidžiant (taip pat po „užmigimo“ dėl
+neveiklumo) duomenų bazė sukuriama iš naujo su demonstraciniais duomenimis, nes nemokamame plane
+failai (PDF dokumentai, diplomai) neišlieka. Render nustato `RENDER=true`; norint duomenis išsaugoti,
+nurodykite `DEMO_SVETAINE=0`. Atskiro fono proceso nemokamame plane nėra, todėl planuoklė
+paleidžiama žiniatinklio procese po pirmos užklausos (žr. `wsgi.py`). Python versija –
+`.python-version`; PDF dokumentams naudojamas kartu su programa pateiktas šriftas `sriftai/DejaVuSans.ttf`.
 
 ## Demonstraciniai naudotojai
 
@@ -101,10 +102,16 @@ PDF dokumentams naudojamas kartu su programa pateiktas šriftas `sriftai/DejaVuS
 | Mokytoja, komisijos pirmininkė | ona@mokykla.lt | mokytojas123 |
 | Mokytojas, komisijos sekretorius | tomas@mokykla.lt | mokytojas123 |
 | Mokytojas | jonas@mokykla.lt | mokytojas123 |
-| Tėvas | tevas@demo.lt | tevas123 |
+| Tėvas (Aistės ir Domo) | tevas@demo.lt | tevas123 |
+| Mama (Justo) | lina.griciene@demo.lt | tevas123 |
 
-Demonstraciniuose duomenyse yra trys Vaiko gerovės komisijos atvejai: įvykęs posėdis su
-priemonėmis ir protokolu, suplanuotas posėdis ir naujas kreipimasis.
+Demonstraciniai duomenys (`seed.py`) apima visus modulius; datos skaičiuojamos nuo šiandienos:
+skelbimai su renginiais kalendoriuje, kiti renginiai (ekskursija rytoj – tėvams išsiunčiamas
+priminimas), trys seminarų pažymėjimai skiltyje „Diplomai“, Vaiko gerovės komisijos atvejai
+(įvykęs posėdis su priemonėmis ir protokolu, posėdis po 12 darbo dienų su išsiųstais kvietimais,
+naujas kreipimasis), pažymų prašymai (įvykdytas su PDF, atmestas, laukiantis), ataskaita,
+užbaigtas importas, išsiųsti pranešimai ir vienas nepavykęs laiškas siuntimo žurnale.
+Demonstraciniai el. laiškai visada įrašomi į failus (`duomenys/laiskai`), net jei nurodytas SMTP serveris.
 
 ## Testai
 

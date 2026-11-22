@@ -3,9 +3,19 @@
 {% block title %}{% if skelbimas %}Redaguoti{% else %}Naujas{% endif %} skelbimas{% endblock %}
 
 {% block content %}
+{# Reikšmės: po klaidos – iš pateiktos formos, redaguojant – iš skelbimo, kuriant – tuščios #}
+{% set r = skelbimas.renginys if skelbimas else None %}
+{% set f_pavadinimas = forma.get('pavadinimas', '') if forma else (skelbimas.pavadinimas if skelbimas else '') %}
+{% set f_turinys = forma.get('turinys', '') if forma else (skelbimas.turinys if skelbimas else '') %}
+{% set f_kategorija = forma.get('kategorija', 'bendra') if forma else (skelbimas.kategorija if skelbimas else 'bendra') %}
+{% set f_svarbus = (forma.get('svarbus') == 'on') if forma else (skelbimas.svarbus if skelbimas else False) %}
+{% set f_tevams = (forma.get('matomas_tevams') == 'on') if forma else (skelbimas.matomas_tevams if skelbimas else False) %}
+{% set f_data = forma.get('renginio_data', '') if forma else (r.pradzios_data.isoformat() if r else '') %}
+{% set f_laikas = forma.get('renginio_laikas', '') if forma else (r.pradzios_laikas.strftime('%H:%M') if r and r.pradzios_laikas else '') %}
+{% set f_vieta = forma.get('renginio_vieta', '') if forma else ((r.vieta or '') if r else '') %}
 <div class="mb-4">
     <a href="{{ url_for('announcements.saraso') }}" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1">
-        <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i>
         Visi skelbimai
     </a>
 </div>
@@ -20,36 +30,68 @@
     </div>
     <form method="POST" class="p-5 space-y-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div>
-            <label class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
-            <input type="text" name="pavadinimas" required maxlength="200"
-                   value="{{ skelbimas.pavadinimas if skelbimas else '' }}"
+            <label for="pavadinimas" class="form-label">Pavadinimas <span class="text-red-500">*</span></label>
+            <input type="text" id="pavadinimas" name="pavadinimas" required maxlength="200"
+                   value="{{ f_pavadinimas }}"
                    placeholder="pvz., Posėdis penktadienį 14:00"
                    class="form-input">
         </div>
 
         <div>
-            <label class="form-label">Turinys <span class="text-red-500">*</span></label>
-            <textarea name="turinys" required rows="8"
+            <label for="turinys" class="form-label">Turinys <span class="text-red-500">*</span></label>
+            <textarea id="turinys" name="turinys" required rows="8"
                       placeholder="Detalus skelbimo turinys..."
-                      class="form-input">{{ skelbimas.turinys if skelbimas else '' }}</textarea>
+                      class="form-input">{{ f_turinys }}</textarea>
         </div>
 
         <div>
-            <label class="form-label">Kategorija</label>
-            <select name="kategorija" class="form-input">
-                <option value="bendra" {% if skelbimas and skelbimas.kategorija == 'bendra' %}selected{% endif %}>Bendra informacija</option>
-                <option value="renginiai" {% if skelbimas and skelbimas.kategorija == 'renginiai' %}selected{% endif %}>Renginiai</option>
-                <option value="administracija" {% if skelbimas and skelbimas.kategorija == 'administracija' %}selected{% endif %}>Administracija</option>
-                <option value="vgk" {% if skelbimas and skelbimas.kategorija == 'vgk' %}selected{% endif %}>Vaiko gerovės komisija</option>
-                <option value="tevams" {% if skelbimas and skelbimas.kategorija == 'tevams' %}selected{% endif %}>Skirta tėvams</option>
-                <option value="mokytojams" {% if skelbimas and skelbimas.kategorija == 'mokytojams' %}selected{% endif %}>Mokytojams</option>
+            <label for="kategorija" class="form-label">Kategorija</label>
+            <select id="kategorija" name="kategorija" class="form-input">
+                {% for reiksme, pavadinimas in [('bendra', 'Bendra informacija'), ('renginiai', 'Renginiai'),
+                                                ('administracija', 'Administracija'), ('vgk', 'Vaiko gerovės komisija'),
+                                                ('tevams', 'Skirta tėvams'), ('mokytojams', 'Mokytojams')] %}
+                <option value="{{ reiksme }}" {% if f_kategorija == reiksme %}selected{% endif %}>{{ pavadinimas }}</option>
+                {% endfor %}
             </select>
         </div>
 
+        <fieldset class="border-t border-slate-100 dark:border-slate-700 pt-4">
+            <legend class="text-sm font-medium text-slate-900 dark:text-white flex items-center gap-1.5">
+                <i data-lucide="calendar-days" class="w-4 h-4 text-slate-500 dark:text-slate-400" aria-hidden="true"></i>
+                Renginys kalendoriuje
+            </legend>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-3" id="renginio-pagalba">
+                Jei skelbimas kviečia į renginį, nurodykite jo datą – renginys atsiras mokyklos kalendoriuje
+                (tėvams – jei skelbimas matomas tėvams), o dieną prieš renginį tėvams bus priminta.
+                Jei renginio nėra, palikite tuščią.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label for="renginio_data" class="form-label">Renginio data</label>
+                    <input type="date" id="renginio_data" name="renginio_data" value="{{ f_data }}"
+                           aria-describedby="renginio-pagalba" class="form-input">
+                </div>
+                <div>
+                    <label for="renginio_laikas" class="form-label">Pradžios laikas</label>
+                    <input type="time" id="renginio_laikas" name="renginio_laikas" value="{{ f_laikas }}" class="form-input">
+                </div>
+                <div>
+                    <label for="renginio_vieta" class="form-label">Vieta</label>
+                    <input type="text" id="renginio_vieta" name="renginio_vieta" maxlength="200" value="{{ f_vieta }}"
+                           placeholder="pvz., Mokyklos salė" class="form-input">
+                </div>
+            </div>
+            {% if r %}
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                Renginys jau yra <a href="{{ url_for('calendar.perziureti', renginio_id=r.id) }}" class="text-brand-700 dark:text-brand-400 hover:underline">kalendoriuje</a>.
+                Ištrynus datą, jis bus pašalintas iš kalendoriaus.
+            </p>
+            {% endif %}
+        </fieldset>
+
         <div class="border-t border-slate-100 dark:border-slate-700 pt-4 space-y-3">
             <label class="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" name="svarbus"
-                       {% if skelbimas and skelbimas.svarbus %}checked{% endif %}
+                <input type="checkbox" name="svarbus" {% if f_svarbus %}checked{% endif %}
                        class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
                 <div>
                     <span class="text-sm font-medium text-slate-900 dark:text-white">Pažymėti kaip svarbų skelbimą</span>
@@ -58,8 +100,7 @@
             </label>
 
             <label class="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" name="matomas_tevams"
-                       {% if skelbimas and skelbimas.matomas_tevams %}checked{% endif %}
+                <input type="checkbox" name="matomas_tevams" {% if f_tevams %}checked{% endif %}
                        class="w-4 h-4 mt-0.5 rounded border-slate-300 dark:border-slate-600 text-brand-700 focus:ring-brand-700">
                 <div>
                     <span class="text-sm font-medium text-slate-900 dark:text-white">Matomas tėvams</span>

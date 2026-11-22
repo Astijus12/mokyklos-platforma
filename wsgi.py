@@ -12,21 +12,27 @@ import threading
 from app import create_app
 from db_atnaujinimas import atnaujinti_duomenu_baze
 from models import db, User
-from seed import uzpildyti_db
+from seed import ar_demo_svetaine, uzpildyti_db
 from services.planuokle import ar_paleisti_web_procese, paleisti_fone
 
 app = create_app()
 
 with app.app_context():
-    print("Atnaujinama duomenų bazės schema (migracijos)...")
-    atnaujinti_duomenu_baze()
-    print("[OK] Schema atnaujinta.")
-
-    if User.query.count() == 0:
-        print("Pirmas paleidimas - užpildomi demo duomenys...")
-        uzpildyti_db(naudoti_esama_app=True, isvalyti=False)
+    if ar_demo_svetaine():
+        # Demonstracinė svetainė (Render): failai po paleidimo dingsta, todėl duomenų bazė
+        # kuriama iš naujo kartu su jais – duomenys ir PDF dokumentai visada sutampa
+        print("Demonstracinė svetainė: duomenų bazė kuriama iš naujo su demonstraciniais duomenimis...")
+        uzpildyti_db(naudoti_esama_app=True, isvalyti=True)
     else:
-        print(f"DB paruošta ({User.query.count()} vartotojai)")
+        print("Atnaujinama duomenų bazės schema (migracijos)...")
+        atnaujinti_duomenu_baze()
+        print("[OK] Schema atnaujinta.")
+
+        if User.query.count() == 0:
+            print("Pirmas paleidimas - užpildomi demo duomenys...")
+            uzpildyti_db(naudoti_esama_app=True, isvalyti=False)
+        else:
+            print(f"DB paruošta ({User.query.count()} vartotojai)")
 
     # Prisijungimai uždaromi prieš Gunicorn sukuriant darbinius procesus:
     # kiekvienas procesas turi atsidaryti savo prisijungimus prie duomenų bazės.

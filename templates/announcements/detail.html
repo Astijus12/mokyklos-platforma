@@ -60,6 +60,21 @@
                 <p class="text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed text-base">{{ skelbimas.turinys }}</p>
             </div>
 
+            {% if skelbimas.renginys %}
+            {% set r = skelbimas.renginys %}
+            <div class="mt-6 p-4 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-start gap-3">
+                <i data-lucide="calendar-days" class="w-5 h-5 text-brand-700 dark:text-brand-400 mt-0.5 flex-shrink-0" aria-hidden="true"></i>
+                <div class="text-sm">
+                    <p class="font-medium text-slate-900 dark:text-white">
+                        Renginys {{ r.pradzios_data.strftime('%Y-%m-%d') }}{% if r.pradzios_laikas %} {{ r.pradzios_laikas.strftime('%H:%M') }}{% endif %}
+                    </p>
+                    {% if r.vieta %}<p class="text-slate-600 dark:text-slate-300">{{ r.vieta }}</p>{% endif %}
+                    <a href="{{ url_for('calendar.rodinys', metai=r.pradzios_data.year, menuo=r.pradzios_data.month) }}"
+                       class="text-brand-700 dark:text-brand-400 hover:underline">Rodyti kalendoriuje</a>
+                </div>
+            </div>
+            {% endif %}
+
             {% if current_user.yra_administratorius or skelbimas.vartotojo_id == current_user.id %}
             <div class="flex gap-2 mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
                 <a href="{{ url_for('announcements.redaguoti', skelbimo_id=skelbimas.id) }}" class="btn-secondary">

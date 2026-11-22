@@ -44,6 +44,15 @@
         <p class="text-slate-500 dark:text-slate-400 italic">Aprašymas nepateiktas.</p>
         {% endif %}
 
+        {% if renginys.skelbimas %}
+        <p class="mt-4 text-sm">
+            <i data-lucide="megaphone" class="w-3.5 h-3.5 inline text-slate-500 dark:text-slate-400" aria-hidden="true"></i>
+            Renginys sukurtas iš skelbimo:
+            <a href="{{ url_for('parents.skelbimai') if current_user.yra_tevas else url_for('announcements.perziureti', skelbimo_id=renginys.skelbimas.id) }}"
+               class="text-brand-700 dark:text-brand-400 hover:underline">{{ renginys.skelbimas.pavadinimas }}</a>
+        </p>
+        {% endif %}
+
         <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
             Pridėjo {{ renginys.autorius.pilnas_vardas }} · {{ renginys.sukurtas.strftime('%Y-%m-%d %H:%M') }}
         </div>

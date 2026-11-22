@@ -7,8 +7,24 @@ Naudojama VGK posėdžio termino patikrai (FR-V04: kvietimai ne vėliau kaip pri
 visada būna sekmadienį (Velykos, Motinos ir Tėvo dienos), darbo dienų skaičiui
 įtakos neturi, todėl atskirai skaičiuojama tik Velykų antroji diena (pirmadienis).
 """
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from functools import lru_cache
+
+
+def data_is_formos(reiksme):
+    """Formos lauko reikšmė MMMM-MM-DD -> date (netinkama ar tuščia -> None)."""
+    try:
+        return datetime.strptime(reiksme, "%Y-%m-%d").date() if reiksme else None
+    except ValueError:
+        return None
+
+
+def laikas_is_formos(reiksme):
+    """Formos lauko reikšmė VV:MM -> time (netinkama ar tuščia -> None)."""
+    try:
+        return datetime.strptime(reiksme, "%H:%M").time() if reiksme else None
+    except ValueError:
+        return None
 
 # (mėnuo, diena)
 _FIKSUOTOS_SVENTES = (

@@ -8,7 +8,7 @@ Atšaukus posėdį atvejis grįžta į „Užregistruotas“, užbaigtą atvejį
 Visi būsenų perėjimai aprašyti tik čia – maršrutai būsenų tiesiogiai nekeičia.
 Apie posėdžius ir priemones pranešama per automatizavimo posistemį.
 """
-from datetime import date, datetime
+from datetime import date
 
 from models import (
     User,
@@ -22,7 +22,7 @@ from models import (
 )
 from services.dokumentai import ProtokoloGeneratorius
 from services.ivykiai import atsaukti_pranesimus, skelbti
-from services.kalendorius import darbo_dienos_iki
+from services.kalendorius import darbo_dienos_iki, data_is_formos, laikas_is_formos  # noqa: F401 (naudoja routes/vgk.py)
 
 # Kvietimai siunčiami ne vėliau kaip prieš 5 darbo dienas (ŠMSM 2024-07-19 įsak. Nr. V-818)
 MIN_DARBO_DIENU = 5
@@ -261,16 +261,3 @@ def pazymeti_veluojancias(siandien=None):
     db.session.commit()
     return len(veluojancios)
 
-
-def data_is_formos(reiksme):
-    try:
-        return datetime.strptime(reiksme, "%Y-%m-%d").date() if reiksme else None
-    except ValueError:
-        return None
-
-
-def laikas_is_formos(reiksme):
-    try:
-        return datetime.strptime(reiksme, "%H:%M").time() if reiksme else None
-    except ValueError:
-        return None
