@@ -28,6 +28,8 @@ services:
     volumes:
       - uploads:/app/static/uploads
       - dokumentai:/app/duomenys/dokumentai
+      # Ir demonstraciniai, ir fono proceso laiškai (.eml) matomi kompiuteryje: duomenys/laiskai
+      - ./duomenys/laiskai:/app/duomenys/laiskai
     restart: unless-stopped
     networks:
       - mokykla_net
@@ -79,8 +81,11 @@ services:
   backup:
     image: postgres:16-alpine
     container_name: mokykla_backup
+    # Pirmoji kopija daroma, kai web jau sukūrė schemą ir duomenis
     depends_on:
       db:
+        condition: service_healthy
+      web:
         condition: service_healthy
     environment:
       PGPASSWORD: ${DB_PASSWORD:-slaptas123}
