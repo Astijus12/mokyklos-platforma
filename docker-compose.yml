@@ -71,9 +71,10 @@ services:
     restart: unless-stopped
     networks:
       - mokykla_net
-    # Portą atskleisti tik lokaliai testavimui - produkcijoje išjungti
+    # Prievadas atveriamas tik šiame kompiuteryje (testavimui); produkcijoje išjungti.
+    # 5433, kad nesikirstų su vietiniu PostgreSQL, kuris dažniausiai naudoja 5432
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
 
   backup:
     image: postgres:16-alpine
@@ -86,11 +87,11 @@ services:
     volumes:
       - ./duomenys/atsargines_kopijos:/backups
       - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+    # Scenarijus prijungtas tik skaitymui, todėl paleidžiamas per sh (be chmod)
     entrypoint: ["/bin/sh", "-c"]
     command: |
-      "chmod +x /usr/local/bin/backup.sh &&
-       while true; do
-         /usr/local/bin/backup.sh
+      "while true; do
+         sh /usr/local/bin/backup.sh || echo 'Atsarginės kopijos sukurti nepavyko'
          sleep 86400
        done"
     restart: unless-stopped

@@ -52,7 +52,9 @@ uzpildyti_*.py
 sutrumpinti_*.py
 extract_text.py
 fix_quotes.py
-sukurti_demo_teva.py
+sukurti_*.py
+sutvarkyti_*.py
+perziureti_*.py
 
 # Docker
 Dockerfile

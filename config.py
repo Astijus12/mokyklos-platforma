@@ -11,6 +11,13 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 
+def sistemos_adresas(aplinka=None):
+    """Adresas nuorodoms el. laiškuose: SISTEMOS_ADRESAS, o Render'yje – jo pateikiamas
+    RENDER_EXTERNAL_URL (pvz., https://mokyklos-platforma-1.onrender.com)."""
+    aplinka = os.environ if aplinka is None else aplinka
+    return aplinka.get("SISTEMOS_ADRESAS") or aplinka.get("RENDER_EXTERNAL_URL") or "http://127.0.0.1:5000"
+
+
 def normalizuoti_db_adresa(adresas):
     """PostgreSQL adresui aiškiai nurodo tvarkyklę psycopg2 (ji įdiegta – psycopg2-binary).
 
@@ -40,7 +47,7 @@ class Config:
     MOKYKLOS_PAVADINIMAS_KILMININKAS = "Noriūnų Jono Černiaus mokyklos"
     # Adresas nuorodoms el. laiškuose (fono procesas neturi HTTP užklausos, todėl nurodomas čia)
     # (Docker Compose nenurodytą kintamąjį perduoda kaip tuščią eilutę, todėl naudojamas „or“)
-    SISTEMOS_ADRESAS = os.environ.get("SISTEMOS_ADRESAS") or "http://127.0.0.1:5000"
+    SISTEMOS_ADRESAS = sistemos_adresas()
     MAIL_SERVER = os.environ.get("MAIL_SERVER") or None
     MAIL_PORT = int(os.environ.get("MAIL_PORT") or 587)
     MAIL_USE_TLS = (os.environ.get("MAIL_USE_TLS") or "true").lower() == "true"

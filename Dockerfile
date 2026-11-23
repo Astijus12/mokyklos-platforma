@@ -1,5 +1,6 @@
 # Multi-stage build - mažesnis galutinis image
-FROM python:3.12-slim AS builder
+# Python 3.13 – ta pati versija kaip kūrimo aplinkoje ir Render (.python-version)
+FROM python:3.13-slim AS builder
 
 WORKDIR /build
 
@@ -12,7 +13,7 @@ COPY requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 # ============================================
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -28,7 +29,9 @@ COPY --from=builder /root/.local /home/flask/.local
 
 COPY --chown=flask:flask . .
 
-RUN mkdir -p /app/static/uploads /app/duomenys \
+# Katalogai, į kuriuos prijungiami tomai (volumes), sukuriami iš anksto: tada nauji tomai
+# perima naudotojo flask teises ir programa gali įrašyti PDF dokumentus bei laiškus
+RUN mkdir -p /app/static/uploads /app/duomenys/dokumentai /app/duomenys/laiskai \
     && chown -R flask:flask /app
 
 USER flask

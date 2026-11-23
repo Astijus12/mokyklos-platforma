@@ -1,16 +1,24 @@
+# Render „Blueprint“: sistema paleidžiama Render'yje vienu veiksmu
+# (Render → New → Blueprint → pasirinkti šią saugyklą → Apply).
+#
+# Nemokamas planas: atskiro fono proceso nėra, todėl planuoklė (pranešimai, priminimai)
+# veikia žiniatinklio procese (wsgi.py). Failai po paleidimo neišlieka, todėl svetainė
+# veikia demonstraciniu režimu – kiekvieną kartą paleidžiant duomenų bazė sukuriama iš naujo
+# su demonstraciniais duomenimis (seed.py). Norint duomenis išsaugoti, nurodykite
+# DATABASE_URL (PostgreSQL) ir DEMO_SVETAINE=0.
 services:
   - type: web
     name: mokyklos-platforma
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    # Vienas darbinis procesas: jame veikia ir planuoklė (žr. wsgi.py), todėl ji nesidubliuoja
+    # Vienas darbinis procesas: jame veikia ir planuoklė, todėl ji nesidubliuoja
     startCommand: gunicorn --preload --workers 1 wsgi:app
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.3
-      - key: SISTEMOS_ADRESAS
-        value: https://mokyklos-platforma-1.onrender.com
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHONIOENCODING

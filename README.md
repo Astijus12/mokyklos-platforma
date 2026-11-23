@@ -46,16 +46,51 @@ mokyklos-platforma/
 └── docker-compose.yml    # web, worker, db (PostgreSQL 16), backup
 ```
 
+## Paleidimo būdai
+
+Sistemą galima paleisti trimis būdais: debesyje (Render), viena komanda su Docker arba kūrimo
+aplinkoje be Docker. Visi trys naudoja tą patį kodą.
+
+## Paleidimas Render'yje (debesyje)
+
+Veikianti demonstracinė svetainė: https://mokyklos-platforma-1.onrender.com
+
+Nauja svetainė sukuriama pagal `render.yaml` vienu veiksmu:
+
+1. Prisijunkite prie https://dashboard.render.com (pvz., su GitHub paskyra).
+2. **New → Blueprint**, pasirinkite saugyklą `mokyklos-platforma` ir paspauskite **Apply**
+   (arba naudokite mygtuką žemiau).
+3. Po 3–5 min. svetainė pasiekiama Render suteiktu adresu (`https://…onrender.com`).
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Astijus12/mokyklos-platforma)
+
+Kurdami paslaugą ranka (**New → Web Service**), nurodykite: Build Command
+`pip install -r requirements.txt`, Start Command `gunicorn wsgi:app`, aplinkos kintamąjį
+`SECRET_KEY` (mygtukas **Generate**). Python versiją Render paima iš `.python-version`.
+Kiekvienas atnaujinimas, įkeltas į GitHub šaką `main`, įdiegiamas automatiškai.
+
+Render svetainė yra demonstracinė: kiekvieną kartą ją paleidžiant (taip pat po „užmigimo“ dėl
+neveiklumo) duomenų bazė sukuriama iš naujo su demonstraciniais duomenimis, nes nemokamame plane
+failai (PDF dokumentai, diplomai) neišlieka. Render nustato `RENDER=true`; norint duomenis išsaugoti,
+nurodykite `DATABASE_URL` (PostgreSQL) ir `DEMO_SVETAINE=0`. Atskiro fono proceso nemokamame plane
+nėra, todėl planuoklė paleidžiama žiniatinklio procese po pirmos užklausos (žr. `wsgi.py`).
+Nuorodoms el. laiškuose naudojamas Render pateikiamas adresas (`RENDER_EXTERNAL_URL`).
+
 ## Paleidimas su Docker
+
+Reikia „Docker Desktop“. Projekto kataloge:
 
 ```powershell
 docker compose up --build
 ```
 
-Sistema pasiekiama adresu http://localhost:8000. Paleidžiant automatiškai įvykdomos migracijos, o
-tuščioje duomenų bazėje sukuriami demonstraciniai duomenys. Kintamuosius (slaptasis raktas,
-el. pašto serveris) galima nurodyti faile `.env` – pavyzdys `.env.example`. Be el. pašto serverio
-laiškai neišsiunčiami, o įrašomi kaip `.eml` failai į katalogą `duomenys/laiskai`.
+Paleidžiami konteineriai `web` (programa), `worker` (fono procesas), `db` (PostgreSQL 16) ir
+`backup` (kasdienės atsarginės kopijos). Sistema pasiekiama adresu http://localhost:8000.
+Paleidžiant automatiškai įvykdomos migracijos, o tuščioje duomenų bazėje sukuriami demonstraciniai
+duomenys. Kintamuosius (slaptasis raktas, el. pašto serveris) galima nurodyti faile `.env` –
+pavyzdys `.env.example`. Be el. pašto serverio laiškai neišsiunčiami, o įrašomi kaip `.eml` failai
+į katalogą `duomenys/laiskai`. Duomenų bazė iš kompiuterio pasiekiama prievadu 5433 (kad nesikirstų
+su vietiniu PostgreSQL). Sustabdyti – `docker compose down`, ištrinti ir duomenis – `docker compose down -v`.
 
 ## Paleidimas be Docker (Windows)
 
@@ -84,15 +119,6 @@ laiškai neišsiunčiami, o įrašomi kaip `.eml` failai į katalogą `duomenys/
 Atidarykite http://127.0.0.1:5000. `python app.py` paleidžiant duomenų bazė atnaujinama iki naujausios
 migracijos. Fono procesas kas minutę siunčia pranešimus iš eilės, kasdien 7 val. siunčia priminimus ir
 žymi vėluojančias priemones, kiekvieno mėnesio 1 d. parengia mėnesio suvestinę.
-
-## Render (demonstracinė svetainė)
-
-Render svetainė yra demonstracinė: kiekvieną kartą ją paleidžiant (taip pat po „užmigimo“ dėl
-neveiklumo) duomenų bazė sukuriama iš naujo su demonstraciniais duomenimis, nes nemokamame plane
-failai (PDF dokumentai, diplomai) neišlieka. Render nustato `RENDER=true`; norint duomenis išsaugoti,
-nurodykite `DEMO_SVETAINE=0`. Atskiro fono proceso nemokamame plane nėra, todėl planuoklė
-paleidžiama žiniatinklio procese po pirmos užklausos (žr. `wsgi.py`). Python versija –
-`.python-version`; PDF dokumentams naudojamas kartu su programa pateiktas šriftas `sriftai/DejaVuSans.ttf`.
 
 ## Demonstraciniai naudotojai
 

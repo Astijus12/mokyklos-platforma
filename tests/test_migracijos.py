@@ -68,6 +68,18 @@ def test_db_adresui_nurodoma_tvarkykle(adresas, tiketina):
     assert normalizuoti_db_adresa(adresas) == tiketina
 
 
+@pytest.mark.parametrize("aplinka, tiketina", [
+    ({}, "http://127.0.0.1:5000"),
+    ({"RENDER_EXTERNAL_URL": "https://kita.onrender.com"}, "https://kita.onrender.com"),
+    ({"SISTEMOS_ADRESAS": "https://mokykla.lt", "RENDER_EXTERNAL_URL": "https://kita.onrender.com"},
+     "https://mokykla.lt"),
+], ids=["numatytasis", "render", "nurodytas"])
+def test_sistemos_adresas(aplinka, tiketina):
+    """Naujai Render svetainei nuorodų adresas nustatomas automatiškai (RENDER_EXTERNAL_URL)."""
+    from config import sistemos_adresas
+    assert sistemos_adresas(aplinka) == tiketina
+
+
 class TestTusciaDuomenuBaze:
     def test_sukuriamos_visos_lenteles(self, migracijos_app):
         atnaujinti_duomenu_baze()
