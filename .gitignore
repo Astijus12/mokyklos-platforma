@@ -28,3 +28,17 @@ duomenys/dokumentai/
 *.docx
 *.pdf
 !README*.pdf
+
+# Praktikos ir BD ataskaitų (Word) scenarijai bei vienkartiniai įrankiai – ne programos dalis,
+# laikomi tik vietoje (tik saugyklos šaknyje: programos katalogų tai neliečia)
+/paruosti_ataskaita.py
+/pataisyti_*.py
+/prideti_*.py
+/uzpildyti_*.py
+/sutrumpinti_*.py
+/sukurti_*.py
+/sutvarkyti_*.py
+/perziureti_*.py
+/extract_text.py
+/fix_quotes.py
+/migruoti_tevu_portala.py
