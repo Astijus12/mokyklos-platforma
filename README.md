@@ -78,19 +78,67 @@ Nuorodoms el. laiškuose naudojamas Render pateikiamas adresas (`RENDER_EXTERNAL
 
 ## Paleidimas su Docker
 
-Reikia „Docker Desktop“. Projekto kataloge:
+Reikia „Docker Desktop“ (arba Docker Engine su Compose), bent 1 GB laisvos operatyviosios atminties
+ir 2 GB disko vietos. Projekto kataloge:
 
 ```powershell
 docker compose up --build
 ```
 
-Paleidžiami konteineriai `web` (programa), `worker` (fono procesas), `db` (PostgreSQL 16) ir
-`backup` (kasdienės atsarginės kopijos). Sistema pasiekiama adresu http://localhost:8000.
-Paleidžiant automatiškai įvykdomos migracijos, o tuščioje duomenų bazėje sukuriami demonstraciniai
-duomenys. Kintamuosius (slaptasis raktas, el. pašto serveris) galima nurodyti faile `.env` –
-pavyzdys `.env.example`. Be el. pašto serverio laiškai neišsiunčiami, o įrašomi kaip `.eml` failai
-į katalogą `duomenys/laiskai`. Duomenų bazė iš kompiuterio pasiekiama prievadu 5433 (kad nesikirstų
-su vietiniu PostgreSQL). Sustabdyti – `docker compose down`, ištrinti ir duomenis – `docker compose down -v`.
+Sistema pasiekiama adresu http://localhost:8000. Paleidžiant automatiškai įvykdomos migracijos, o
+tuščioje duomenų bazėje sukuriami demonstraciniai duomenys. Kintamuosius (slaptasis raktas,
+duomenų bazės slaptažodis, el. pašto serveris) galima nurodyti faile `.env` – pavyzdys `.env.example`.
+Be el. pašto serverio laiškai neišsiunčiami, o įrašomi kaip `.eml` failai į katalogą `duomenys/laiskai`.
+
+| Konteineris | Paskirtis |
+|-------------|-----------|
+| `web` | Programa (Gunicorn, 2 darbiniai procesai), prievadas 8000 |
+| `worker` | Fono procesas: pranešimų siuntimas, priminimai, mėnesio suvestinė |
+| `db` | PostgreSQL 16; iš kompiuterio pasiekiama prievadu 5433 (nesikerta su vietiniu PostgreSQL) |
+| `backup` | Kasdienės duomenų bazės atsarginės kopijos |
+
+Duomenys išlieka perkraunant konteinerius: tomuose `postgres_data` (duomenų bazė), `uploads`
+(įkelti failai), `dokumentai` (PDF dokumentai) ir kompiuterio kataloguose `duomenys/laiskai`,
+`duomenys/atsargines_kopijos`.
+
+Dažniausios komandos:
+
+```powershell
+docker compose ps                          # konteinerių būsena
+docker compose logs -f web                 # programos žurnalas (taip pat worker, db, backup)
+docker compose up -d --build web worker    # perkrauti programą po kodo pakeitimo
+docker compose exec db psql -U mokykla -d mokykla_db    # prisijungti prie duomenų bazės
+docker compose down                        # sustabdyti (duomenys lieka)
+docker compose down -v                     # sustabdyti ir IŠTRINTI visus duomenis
+```
+
+Dažnos problemos:
+
+- **„port is already allocated“** – prievadą 8000 arba 5433 jau naudoja kita programa: ją sustabdykite
+  arba `docker-compose.yml` pakeiskite kairįjį prievado numerį (pvz., `"8080:8000"`).
+- **„database system is starting up“** – PostgreSQL dar paleidžiamas; `web` jo palaukia automatiškai.
+- **`web` sustoja paleidžiant** – žr. `docker compose logs web`; dažniausia priežastis – neteisingas
+  `DATABASE_URL` arba `DB_PASSWORD` faile `.env`.
+
+## Atsarginės kopijos ir atkūrimas (Docker)
+
+Konteineris `backup` kasdien sukuria failą `duomenys/atsargines_kopijos/mokykla_db_MMMM-MM-DD_VV-MM-SS.sql.gz`
+(pirmąjį – iškart paleidus sistemą) ir ištrina senesnes nei 30 dienų kopijas (`scripts/backup.sh`).
+Kopiją galima sukurti ir ranka:
+
+```powershell
+docker compose exec backup sh /usr/local/bin/backup.sh
+```
+
+**Atkūrimas** perrašo dabartinę duomenų bazę pasirinktos kopijos duomenimis (sistema turi veikti;
+failo pavadinimą pakeiskite savo kopijos pavadinimu):
+
+```powershell
+docker compose exec backup sh -c "gunzip -c /backups/mokykla_db_2026-11-23_19-55-55.sql.gz | psql -h db -U mokykla -d mokykla_db"
+```
+
+Linux ar macOS sistemoje (arba „Git Bash“) galima naudoti ir `sh scripts/restore.sh <kopija.sql.gz>` –
+jis prieš atkurdamas paklausia patvirtinimo. Kopijas rekomenduojama periodiškai perkelti į kitą laikmeną.
 
 ## Paleidimas be Docker (Windows)
 
@@ -139,6 +187,14 @@ naujas kreipimasis), pažymų prašymai (įvykdytas su PDF, atmestas, laukiantis
 užbaigtas importas, išsiųsti pranešimai ir vienas nepavykęs laiškas siuntimo žurnale.
 Demonstraciniai el. laiškai visada įrašomi į failus (`duomenys/laiskai`), net jei nurodytas SMTP serveris.
 
+## Naudotojų ir tėvų paskyros
+
+Paskyras kuria administratorius: **Vartotojai → Naujas vartotojas** (rolė – mokytojas, administratorius
+arba tėvas; mokytojui galima nurodyti pareigas Vaiko gerovės komisijoje). Tėvui vaikai priskiriami
+vartotojų sąraše mygtuku **„Priskirti vaikus“**. Importuojant mokinius (**Duomenų importas**) tėvų
+paskyros sukuriamos automatiškai, o tėvams išsiunčiamas kvietimas su vienkartine nuoroda slaptažodžiui
+nustatyti.
+
 ## Testai
 
 ```powershell
@@ -169,3 +225,22 @@ flask --app app db current            # dabartinė schemos versija
 - Dokumentai saugomi už viešo katalogo ribų, atsisiunčiami tik turint teisę; tikrinama SHA-256 suma
 - Importuojami failai tikrinami pagal dydį, plėtinį ir turinį; formulės nevykdomos, eksportuojant
   ataskaitą CSV formulių pradžios simboliai neutralizuojami
+
+## Diegimas realiam naudojimui
+
+Demonstraciniai nustatymai realiam naudojimui netinka. Prieš atveriant sistemą darbuotojams ir tėvams:
+
+1. Nurodyti stiprų atsitiktinį `SECRET_KEY` (bent 32 simboliai), o naudojant Docker – ir `DB_PASSWORD`
+   faile `.env` prieš pirmą paleidimą (vėliau duomenų bazėje jis nebepasikeičia):
+   ```powershell
+   python -c "import secrets; print('SECRET_KEY=' + secrets.token_urlsafe(32))"
+   python -c "import secrets; print('DB_PASSWORD=' + secrets.token_urlsafe(24))"
+   ```
+2. Pakeisti arba ištrinti demonstracinius naudotojus; administratoriams įjungti dviejų veiksnių
+   autentikaciją (Profilis → Dviejų veiksnių autentikacija).
+3. Naudoti HTTPS: prieš `web` konteinerį pastatyti atvirkštinį tarpinį serverį (pvz., Caddy arba nginx),
+   kuris gauna „Let's Encrypt“ sertifikatą.
+4. Neatverti duomenų bazės prievado: `docker-compose.yml` iš `db` pašalinti `ports`.
+5. Nurodyti el. pašto serverį (`MAIL_SERVER` ir kiti, žr. `.env.example`) ir `SISTEMOS_ADRESAS`.
+6. Atsargines kopijas reguliariai perkelti į kitą laikmeną, atnaujinti atvaizdus:
+   `docker compose pull`, tada `docker compose up -d --build`.

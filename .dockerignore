@@ -65,4 +65,3 @@ docker-compose*.yml
 *.log
 *.tmp
 README.md
-DEPLOY.md
