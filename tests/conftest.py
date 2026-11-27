@@ -148,7 +148,8 @@ def numatytosios_taisykles(db_session):
 
     Grąžina žodyną {įvykio tipas: taisyklė}.
     """
-    migracijos = [ikelti_migracija("0004_numatytieji_pranesimai.py"), ikelti_migracija("0005_tevo_kvietimas.py")]
+    migracijos = [ikelti_migracija("0004_numatytieji_pranesimai.py"), ikelti_migracija("0005_tevo_kvietimas.py"),
+                  ikelti_migracija("0007_skubus_posedis.py")]
     sablonai = {}
     for kodas, pavadinimas, tema, tekstas in [s for m in migracijos for s in m.SABLONAI]:
         sablonai[kodas] = PranesimoSablonas(kodas=kodas, pavadinimas=pavadinimas, tema=tema, tekstas=tekstas)

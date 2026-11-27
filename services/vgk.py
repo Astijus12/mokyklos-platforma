@@ -82,11 +82,13 @@ def dalyviu_grupes(atvejai):
 
 
 def issaugoti_posedi(posedis, data, laikas, vieta, atvejai, pazymetos_grupes, kviestiniai="",
-                     skubos_priezastis="", patvirtinti=False, siandien=None):
+                     skubos_priezastis="", patvirtinti=False, siandien=None, administratorius=False):
     """Išsaugo posėdžio juodraštį arba jį patvirtina ir išsiunčia kvietimus.
 
     Patvirtinant tikrinama: bent vienas atvejis ir ne mažiau kaip 5 darbo dienos
-    iki posėdžio; jei mažiau – būtina skubos priežastis (FR-V04).
+    iki posėdžio; jei mažiau – būtina skubos priežastis (FR-V04). Tokį skubų posėdį
+    tvirtina administratorius: kitų naudotojų patvirtintas posėdis gauna būseną
+    „Laukia patvirtinimo“, o kvietimai siunčiami tik administratoriui jį patvirtinus.
     """
     siandien = siandien or date.today()
     if posedis is not None and posedis.busena != VgkPosedis.JUODRASTIS:
@@ -98,10 +100,12 @@ def issaugoti_posedi(posedis, data, laikas, vieta, atvejai, pazymetos_grupes, kv
     if any(a.busena == VgkAtvejis.UZBAIGTAS for a in atvejai):
         raise VgkKlaida("Užbaigto atvejo įtraukti negalima – pirmiausia jį atnaujinkite.")
     skubos_priezastis = (skubos_priezastis or "").strip()
+    skubus = False
     if patvirtinti:
         if not atvejai:
             raise VgkKlaida("Į darbotvarkę įtraukite bent vieną atvejį.")
-        if darbo_dienu_iki_posedzio(data, siandien) < MIN_DARBO_DIENU and not skubos_priezastis:
+        skubus = darbo_dienu_iki_posedzio(data, siandien) < MIN_DARBO_DIENU
+        if skubus and not skubos_priezastis:
             raise VgkKlaida(f"Iki posėdžio liko mažiau nei {MIN_DARBO_DIENU} darbo dienos – "
                             "pasirinkite vėlesnę datą arba nurodykite skubos priežastį.")
 
@@ -133,12 +137,52 @@ def issaugoti_posedi(posedis, data, laikas, vieta, atvejai, pazymetos_grupes, kv
             posedis.dalyviai.append(VgkDalyvis(vardas_pavarde=eilute.strip()[:160], vaidmuo="kviestinis"))
 
     if patvirtinti:
-        posedis.busena = VgkPosedis.SUPLANUOTAS
-        for atvejis in atvejai:
-            if atvejis.busena == VgkAtvejis.UZREGISTRUOTAS:
-                atvejis.busena = VgkAtvejis.SVARSTOMAS
-        db.session.flush()
-        skelbti("vgk_posedis_suplanuotas", posedis)  # kvietimai nariams ir tėvams (FR-V05)
+        posedis.atmetimo_priezastis = None
+        if skubus and not administratorius:
+            posedis.busena = VgkPosedis.LAUKIA_PATVIRTINIMO
+            db.session.flush()
+            # Laiko žyma atskiria pakartotinį pateikimą (po atmetimo) nuo ankstesniojo
+            skelbti("vgk_posedis_laukia_patvirtinimo", posedis,
+                    papildomas_raktas=utc_dabar().strftime("%Y%m%d%H%M%S"))
+        else:
+            _patvirtinti(posedis)
+    db.session.commit()
+    return posedis
+
+
+def _patvirtinti(posedis):
+    """Posėdis suplanuotas: darbotvarkės atvejai svarstomi, išsiunčiami kvietimai (FR-V05)."""
+    posedis.busena = VgkPosedis.SUPLANUOTAS
+    for svarstymas in posedis.svarstymai:
+        if svarstymas.atvejis.busena == VgkAtvejis.UZREGISTRUOTAS:
+            svarstymas.atvejis.busena = VgkAtvejis.SVARSTOMAS
+    db.session.flush()
+    skelbti("vgk_posedis_suplanuotas", posedis)  # kvietimai nariams ir tėvams (FR-V05)
+
+
+def patvirtinti_skubu_posedi(posedis, siandien=None):
+    """Administratorius patvirtina skubų posėdį – išsiunčiami kvietimai (FR-V04, FR-V05)."""
+    siandien = siandien or date.today()
+    if posedis.busena != VgkPosedis.LAUKIA_PATVIRTINIMO:
+        raise VgkKlaida("Patvirtinti galima tik posėdį, kuris laukia patvirtinimo.")
+    if posedis.data < siandien:
+        raise VgkKlaida("Posėdžio data jau praėjo – atmeskite posėdį, kad būtų parinkta kita data.")
+    _patvirtinti(posedis)
+    db.session.commit()
+    return posedis
+
+
+def atmesti_skubu_posedi(posedis, priezastis):
+    """Administratorius atmeta skubų posėdį: jis grąžinamas į juodraščius, planuotojams pranešama."""
+    priezastis = (priezastis or "").strip()
+    if posedis.busena != VgkPosedis.LAUKIA_PATVIRTINIMO:
+        raise VgkKlaida("Atmesti galima tik posėdį, kuris laukia patvirtinimo.")
+    if not priezastis:
+        raise VgkKlaida("Nurodykite, kodėl posėdis atmetamas.")
+    posedis.busena = VgkPosedis.JUODRASTIS
+    posedis.atmetimo_priezastis = priezastis
+    db.session.flush()
+    skelbti("vgk_posedis_atmestas", posedis, papildomas_raktas=utc_dabar().strftime("%Y%m%d%H%M%S"))
     db.session.commit()
     return posedis
 
@@ -146,7 +190,7 @@ def issaugoti_posedi(posedis, data, laikas, vieta, atvejai, pazymetos_grupes, kv
 def atsaukti_posedi(posedis):
     """Atšaukia posėdį: neišsiųsti kvietimai atšaukiami (FR-A08), dalyviams pranešama,
     atvejai, kurie buvo svarstomi tik šiame posėdyje, grįžta į „Užregistruotas“."""
-    if posedis.busena not in (VgkPosedis.JUODRASTIS, VgkPosedis.SUPLANUOTAS):
+    if posedis.busena not in (VgkPosedis.JUODRASTIS, VgkPosedis.LAUKIA_PATVIRTINIMO, VgkPosedis.SUPLANUOTAS):
         raise VgkKlaida("Įvykusio ar jau atšaukto posėdžio atšaukti negalima.")
     buvo_suplanuotas = posedis.busena == VgkPosedis.SUPLANUOTAS
     posedis.busena = VgkPosedis.ATSAUKTAS

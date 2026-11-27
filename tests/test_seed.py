@@ -74,6 +74,15 @@ class TestDemonstraciniaiDuomenys:
         assert {a.busena for a in VgkAtvejis.query} == {VgkAtvejis.TAIKOMOS_PRIEMONES, VgkAtvejis.SVARSTOMAS,
                                                        VgkAtvejis.UZREGISTRUOTAS}
 
+    def test_skubus_posedis_laukia_administratoriaus(self, demo_kontekstas):
+        laukia = VgkPosedis.query.filter_by(busena=VgkPosedis.LAUKIA_PATVIRTINIMO).one()
+        assert laukia.skubos_priezastis and laukia.data > date.today()
+        assert [s.atvejis.busena for s in laukia.svarstymai] == [VgkAtvejis.UZREGISTRUOTAS]
+        admin = User.query.filter_by(email="admin@mokykla.lt").one()
+        assert EilesIrasas.query.filter(
+            EilesIrasas.gavejo_id == admin.id,
+            EilesIrasas.unikalus_raktas.contains("vgk_posedis_laukia_patvirtinimo")).count() == 2
+
     def test_pazymos_dokumentai_ir_diplomai_su_failais(self, demo_kontekstas):
         assert sorted(p.busena for p in PazymosPrasymas.query) == sorted(
             [PazymosPrasymas.IVYKDYTAS, PazymosPrasymas.ATMESTAS, PazymosPrasymas.PATEIKTAS])

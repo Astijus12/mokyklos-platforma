@@ -38,6 +38,11 @@ def _vgk_pirmininkas(objektas):
     return User.query.filter_by(vgk_pareigos="pirmininkas").order_by(User.id).all()
 
 
+def _vgk_valdytojai(objektas):
+    # Posėdžius planuojantys komisijos nariai (pvz., jiems pranešama, kad skubus posėdis atmestas)
+    return User.query.filter(User.vgk_pareigos.in_(("pirmininkas", "sekretorius"))).order_by(User.id).all()
+
+
 def _posedzio_dalyviai(objektas):
     # Kviestiniai asmenys be paskyros pranešimų negauna – jie kviečiami atskirai
     return [d.vartotojas for d in getattr(objektas, "dalyviai", []) if d.vartotojas is not None]
@@ -77,6 +82,7 @@ GAVEJU_GRUPES = {
     "administratoriai": GavejuGrupe("Administratorius", _administratoriai),
     "vgk_nariai": GavejuGrupe("Komisijos nariai", _vgk_nariai),
     "vgk_pirmininkas": GavejuGrupe("Komisijos pirmininkas", _vgk_pirmininkas),
+    "vgk_valdytojai": GavejuGrupe("Komisijos pirmininkas ir sekretorius", _vgk_valdytojai),
     "posedzio_dalyviai": GavejuGrupe("Nariai, tėvai", _posedzio_dalyviai),
     "atsakingas": GavejuGrupe("Atsakingas asmuo", _atsakingas),
     "prasymo_teikejas": GavejuGrupe("Prašymą pateikęs tėvas", _prasymo_teikejas),

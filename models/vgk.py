@@ -75,11 +75,13 @@ class VgkPosedis(db.Model):
     __tablename__ = "vgk_posedziai"
 
     JUODRASTIS = "juodrastis"
+    LAUKIA_PATVIRTINIMO = "laukia_patvirtinimo"
     SUPLANUOTAS = "suplanuotas"
     IVYKES = "ivykes"
     ATSAUKTAS = "atsauktas"
     BUSENOS = {
         JUODRASTIS: "Juodraštis",
+        LAUKIA_PATVIRTINIMO: "Laukia patvirtinimo",
         SUPLANUOTAS: "Suplanuotas",
         IVYKES: "Įvykęs",
         ATSAUKTAS: "Atšauktas",
@@ -90,8 +92,11 @@ class VgkPosedis(db.Model):
     laikas = db.Column(db.Time, nullable=False)
     vieta = db.Column(db.String(200), nullable=False)
     busena = db.Column(db.String(30), nullable=False, default=JUODRASTIS, index=True)
-    # FR-V04: jei iki posėdžio liko mažiau nei 5 darbo dienos, būtina nurodyti priežastį
+    # FR-V04: jei iki posėdžio liko mažiau nei 5 darbo dienos, būtina nurodyti priežastį,
+    # o tokį (skubų) posėdį tvirtina administratorius
     skubos_priezastis = db.Column(db.Text, nullable=True)
+    # Administratoriaus atmesto skubaus posėdžio priežastis (posėdis grąžinamas į juodraščius)
+    atmetimo_priezastis = db.Column(db.Text, nullable=True)
     protokolo_id = db.Column(
         db.Integer, db.ForeignKey("dokumentai.id", ondelete="SET NULL"), nullable=True
     )

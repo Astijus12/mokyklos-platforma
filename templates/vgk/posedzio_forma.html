@@ -15,6 +15,12 @@
 <h1 class="text-xl font-semibold text-slate-900 dark:text-white tracking-tight mb-5">
     {% if posedis %}Posėdžio juodraštis{% else %}Naujas komisijos posėdis{% endif %}
 </h1>
+{% if posedis and posedis.atmetimo_priezastis %}
+<div class="mb-4 p-3 rounded-md border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 text-sm text-red-900 dark:text-red-200" role="status">
+    <p class="font-medium">Administratorius skubaus posėdžio nepatvirtino</p>
+    <p class="mt-0.5">Priežastis: {{ posedis.atmetimo_priezastis }}</p>
+</div>
+{% endif %}
 
 <form method="POST" id="posedzio-forma"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="card mb-4">
@@ -36,6 +42,9 @@
         <div id="termino-ispejimas" class="mx-4 mb-4 p-3 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-700 text-sm text-amber-900 dark:text-amber-200" role="status" aria-live="polite" hidden>
             <p class="font-medium" id="termino-tekstas"></p>
             <p class="mt-0.5">Kvietimai turi būti išsiųsti ne vėliau kaip prieš {{ reikia_dienu }} darbo dienas. Pasirinkite vėlesnę datą arba nurodykite skubos priežastį.</p>
+            {% if not current_user.yra_administratorius %}
+            <p class="mt-0.5">Toks posėdis bus perduotas administratoriui patvirtinti, o kvietimai išsiųsti tik jį patvirtinus.</p>
+            {% endif %}
             <label for="skubos_priezastis" class="form-label mt-2">Skubos priežastis</label>
             <textarea id="skubos_priezastis" name="skubos_priezastis" rows="2" maxlength="1000" class="form-input">{{ skuba }}</textarea>
         </div>
@@ -91,7 +100,7 @@
         <p class="text-sm text-slate-500 dark:text-slate-400">Kvietimai bus išsiųsti el. paštu ir parodyti pranešimų centre.</p>
         <div class="flex flex-wrap gap-2">
             <button type="submit" name="veiksmas" value="juodrastis" class="btn-secondary" formnovalidate>Išsaugoti juodraštį</button>
-            <button type="submit" name="veiksmas" value="patvirtinti" class="btn-primary">Išsiųsti kvietimus</button>
+            <button type="submit" name="veiksmas" value="patvirtinti" class="btn-primary" id="patvirtinimo-mygtukas">Išsiųsti kvietimus</button>
         </div>
     </div>
 </form>
@@ -111,6 +120,9 @@
     const ispejimas = document.getElementById('termino-ispejimas');
     const tekstas = document.getElementById('termino-tekstas');
     const gerai = document.getElementById('termino-gerai');
+    const mygtukas = document.getElementById('patvirtinimo-mygtukas');
+    // Skubų posėdį tvirtina administratorius – kitiems naudotojams mygtukas jį tik pateikia
+    const administratorius = {{ 'true' if current_user.yra_administratorius else 'false' }};
 
     function dienuZodis(n) {
         if (n % 10 === 1 && n % 100 !== 11) return 'darbo diena';
@@ -130,6 +142,9 @@
                 gerai.hidden = !ats.pakanka;
                 tekstas.textContent = zinute;
                 gerai.textContent = zinute + ' Terminas pakankamas.';
+                if (!administratorius) {
+                    mygtukas.textContent = ats.pakanka ? 'Išsiųsti kvietimus' : 'Pateikti administratoriui';
+                }
             })
             .catch(() => {});
     }

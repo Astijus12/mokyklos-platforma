@@ -21,6 +21,7 @@ from models import (
 from services.kalendorius import prideti_darbo_dienas
 from services.vgk import (
     VgkKlaida,
+    atmesti_skubu_posedi,
     atnaujinti_atveji,
     atsaukti_posedi,
     dalyviu_grupes,
@@ -28,6 +29,7 @@ from services.vgk import (
     irasyti_posedzio_duomenis,
     issaugoti_posedi,
     pateikti_kreipimasi,
+    patvirtinti_skubu_posedi,
     pazymeti_ivykdyta,
     pazymeti_veluojancias,
     prideti_priemone,
@@ -123,10 +125,10 @@ class TestPosedzioPlanavimas:
         with pytest.raises(VgkKlaida, match="mažiau nei 5 darbo dienos"):
             issaugoti_posedi(None, _uz(3), LAIKAS, "Kabinetas", [atvejis], {"nariai"}, patvirtinti=True)
 
-    def test_su_skubos_priezastimi_galima(self, atvejis):
+    def test_su_skubos_priezastimi_perduodamas_administratoriui(self, atvejis):
         posedis = issaugoti_posedi(None, _uz(3), LAIKAS, "Kabinetas", [atvejis], {"nariai"},
                                    skubos_priezastis="Saugumo grėsmė", patvirtinti=True)
-        assert posedis.busena == VgkPosedis.SUPLANUOTAS
+        assert posedis.busena == VgkPosedis.LAUKIA_PATVIRTINIMO
         assert posedis.skubos_priezastis == "Saugumo grėsmė"
 
     @pytest.mark.parametrize("pakeitimai, klaida", [
@@ -170,6 +172,71 @@ class TestPosedzioPlanavimas:
         assert atsaukimai.count() == kvietimai  # apie atšaukimą pranešama tiems patiems dalyviams
         with pytest.raises(VgkKlaida):
             atsaukti_posedi(posedis)
+
+
+class TestSkubausPosedzioTvirtinimas:
+    """FR-V04: posėdį, iki kurio liko mažiau nei 5 darbo dienos, tvirtina tik administratorius."""
+
+    def _skubus(self, atvejis, **papildomai):
+        return issaugoti_posedi(None, _uz(3), LAIKAS, "Kabinetas", [atvejis], {"nariai", f"tevai_{atvejis.id}"},
+                                skubos_priezastis="Saugumo grėsmė", patvirtinti=True, **papildomai)
+
+    def test_laukia_patvirtinimo_kvietimai_nesiunciami(self, numatytosios_taisykles, atvejis, pirmininke,
+                                                       admin, tevas):
+        posedis = self._skubus(atvejis)
+        assert posedis.busena == VgkPosedis.LAUKIA_PATVIRTINIMO
+        assert atvejis.busena == VgkAtvejis.UZREGISTRUOTAS  # svarstomas tik patvirtinus
+        assert {i.gavejo_id for i in EilesIrasas.query} == {admin.id}  # kvietimų dalyviams dar nėra
+        laiskas = EilesIrasas.query.filter_by(gavejo_id=admin.id, kanalas="el_pastas").one()
+        assert f"/vgk/posedziai/{posedis.id}" in laiskas.tekstas
+        assert "Saugumo grėsmė" not in laiskas.tekstas  # NFR-10: priežastis matoma tik sistemoje
+
+    def test_administratoriaus_skubus_posedis_patvirtinamas_is_karto(self, numatytosios_taisykles, atvejis,
+                                                                      pirmininke, admin, tevas):
+        posedis = self._skubus(atvejis, administratorius=True)
+        assert posedis.busena == VgkPosedis.SUPLANUOTAS
+        assert {i.gavejo_id for i in EilesIrasas.query} == {pirmininke.id, tevas.id}
+
+    def test_patvirtinus_issiunciami_kvietimai(self, numatytosios_taisykles, atvejis, pirmininke, admin, tevas):
+        posedis = self._skubus(atvejis)
+        patvirtinti_skubu_posedi(posedis)
+        assert posedis.busena == VgkPosedis.SUPLANUOTAS
+        assert atvejis.busena == VgkAtvejis.SVARSTOMAS
+        kvietimai = EilesIrasas.query.filter(EilesIrasas.unikalus_raktas.contains("vgk_posedis_suplanuotas"))
+        assert {i.gavejo_id for i in kvietimai} == {pirmininke.id, tevas.id}
+        with pytest.raises(VgkKlaida, match="laukia patvirtinimo"):
+            patvirtinti_skubu_posedi(posedis)
+
+    def test_praejusios_datos_patvirtinti_negalima(self, atvejis):
+        posedis = self._skubus(atvejis)
+        with pytest.raises(VgkKlaida, match="praėjo"):
+            patvirtinti_skubu_posedi(posedis, siandien=posedis.data + timedelta(days=1))
+        assert posedis.busena == VgkPosedis.LAUKIA_PATVIRTINIMO
+
+    def test_atmetus_grazinamas_i_juodrascius(self, numatytosios_taisykles, atvejis, pirmininke, admin, tevas):
+        posedis = self._skubus(atvejis)
+        with pytest.raises(VgkKlaida, match="kodėl"):
+            atmesti_skubu_posedi(posedis, "  ")
+        atmesti_skubu_posedi(posedis, "Posėdį galima surengti kitą savaitę")
+        assert posedis.busena == VgkPosedis.JUODRASTIS
+        assert posedis.atmetimo_priezastis == "Posėdį galima surengti kitą savaitę"
+        pranesimai = EilesIrasas.query.filter(EilesIrasas.unikalus_raktas.contains("vgk_posedis_atmestas")).all()
+        assert {i.gavejo_id for i in pranesimai} == {pirmininke.id}
+        laiskas = next(i for i in pranesimai if i.kanalas == "el_pastas")
+        assert "kitą savaitę" not in laiskas.tekstas  # NFR-10
+        assert tevas.id not in {i.gavejo_id for i in EilesIrasas.query}
+
+        # Juodraštis pataisomas (vėlesnė data) ir patvirtinamas jau be administratoriaus
+        issaugoti_posedi(posedis, _uz(6), LAIKAS, "Kabinetas", [atvejis], {"nariai"}, patvirtinti=True)
+        assert posedis.busena == VgkPosedis.SUPLANUOTAS and posedis.atmetimo_priezastis is None
+
+    def test_laukianti_posedi_galima_atsaukti(self, numatytosios_taisykles, atvejis, admin):
+        posedis = self._skubus(atvejis)
+        atsaukti_posedi(posedis)
+        assert posedis.busena == VgkPosedis.ATSAUKTAS
+        assert {i.busena for i in EilesIrasas.query} == {EilesIrasas.ATSAUKTAS}  # administratoriui nebeaktualu
+        with pytest.raises(VgkKlaida):
+            patvirtinti_skubu_posedi(posedis)
 
 
 class TestPosedzioEigaIrPriemones:
@@ -291,6 +358,49 @@ class TestPuslapiaiIrTeises:
         }).get_data(as_text=True)
         assert "skubos priežastį" in html
         assert VgkPosedis.query.count() == 0
+
+    def test_skubu_posedi_puslapyje_tvirtina_tik_administratorius(self, client, numatytosios_taisykles,
+                                                                   pirmininke, admin, atvejis, tevas):
+        self._prisijungti(client, pirmininke, "slaptas123")
+        html = client.post("/vgk/posedziai/naujas", follow_redirects=True, data={
+            "data": _uz(2).isoformat(), "laikas": "14:00", "vieta": "Kabinetas", "atvejai": [str(atvejis.id)],
+            "grupes": ["nariai", f"tevai_{atvejis.id}"], "skubos_priezastis": "Saugumo grėsmė",
+            "veiksmas": "patvirtinti",
+        }).get_data(as_text=True)
+        posedis = VgkPosedis.query.one()
+        assert posedis.busena == VgkPosedis.LAUKIA_PATVIRTINIMO
+        assert "perduotas administratoriui" in html and "Laukia administratoriaus patvirtinimo" in html
+        assert "Patvirtinti ir išsiųsti kvietimus" not in html
+        assert client.post(f"/vgk/posedziai/{posedis.id}/patvirtinti").status_code == 403
+        assert client.post(f"/vgk/posedziai/{posedis.id}/atmesti",
+                           data={"atmetimo_priezastis": "Ne"}).status_code == 403
+        client.get("/logout")
+
+        self._prisijungti(client, admin, "admin123")
+        html = client.get(f"/vgk/posedziai/{posedis.id}").get_data(as_text=True)
+        assert "Skubos priežastis: Saugumo grėsmė" in html and "Patvirtinti ir išsiųsti kvietimus" in html
+        client.post(f"/vgk/posedziai/{posedis.id}/patvirtinti")
+        db.session.refresh(posedis)
+        assert posedis.busena == VgkPosedis.SUPLANUOTAS
+        assert EilesIrasas.query.filter_by(gavejo_id=tevas.id).count() == 2  # el. laiškas ir pranešimas sistemoje
+        assert VeiklosZurnalas.query.filter_by(veiksmas="vgk_posedis_patvirtintas").count() == 1
+
+    def test_atmesta_posedi_planuotojai_mato_su_priezastimi(self, client, numatytosios_taisykles, pirmininke,
+                                                             admin, atvejis):
+        posedis = issaugoti_posedi(None, _uz(2), LAIKAS, "Kabinetas", [atvejis], {"nariai"},
+                                   skubos_priezastis="Saugumo grėsmė", patvirtinti=True)
+        self._prisijungti(client, admin, "admin123")
+        html = client.post(f"/vgk/posedziai/{posedis.id}/atmesti", follow_redirects=True,
+                           data={"atmetimo_priezastis": " "}).get_data(as_text=True)
+        assert "kodėl posėdis atmetamas" in html
+        client.post(f"/vgk/posedziai/{posedis.id}/atmesti", data={"atmetimo_priezastis": "Pasirinkite kitą savaitę"})
+        db.session.refresh(posedis)
+        assert posedis.busena == VgkPosedis.JUODRASTIS
+        client.get("/logout")
+
+        self._prisijungti(client, pirmininke, "slaptas123")
+        html = client.get(f"/vgk/posedziai/{posedis.id}/redaguoti").get_data(as_text=True)
+        assert "Administratorius skubaus posėdžio nepatvirtino" in html and "Pasirinkite kitą savaitę" in html
 
     def test_posedzio_eiga_puslapyje_ir_protokolo_atsisiuntimas(self, client, pirmininke, atvejis, mokytojas):
         posedis = _patvirtintas_posedis(atvejis)

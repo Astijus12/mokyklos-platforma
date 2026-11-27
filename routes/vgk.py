@@ -5,6 +5,7 @@ Teisės:
   kitiems naudotojams grąžinamas 404 (nesužinoma net tai, kad duomenys yra);
 - posėdžius planuoja, dalyvius ir nutarimus įrašo pirmininkas, sekretorius
   arba administratorius;
+- skubų posėdį (iki jo mažiau nei 5 darbo dienos) tvirtina tik administratorius;
 - kreipimąsi gali pateikti bet kuris darbuotojas – jis mato tik savo kreipimųsi būseną;
 - priemonę įvykdyta pažymi atsakingas asmuo.
 Kiekviena VGK duomenų peržiūra ir keitimas registruojami veiklos žurnale (FR-V11).
@@ -21,6 +22,7 @@ from routes.auth import personalas_required
 from services.vgk import (
     MIN_DARBO_DIENU,
     VgkKlaida,
+    atmesti_skubu_posedi,
     atnaujinti_atveji,
     atsaukti_posedi,
     dalyviu_grupes,
@@ -33,6 +35,7 @@ from services.vgk import (
     issaugoti_posedi,
     laikas_is_formos,
     pateikti_kreipimasi,
+    patvirtinti_skubu_posedi,
     pazymeti_ivykdyta,
     prideti_priemone,
     uzbaigti_atveji,
@@ -49,8 +52,9 @@ ATVEJU_SPALVOS = {
 }
 PRIEMONIU_SPALVOS = {VgkPriemone.PASKIRTA: "tag-blue", VgkPriemone.VELUOJA: "tag-danger",
                      VgkPriemone.IVYKDYTA: "tag-green"}
-POSEDZIU_SPALVOS = {VgkPosedis.JUODRASTIS: "tag-default", VgkPosedis.SUPLANUOTAS: "tag-warning",
-                    VgkPosedis.IVYKES: "tag-green", VgkPosedis.ATSAUKTAS: "tag-danger"}
+POSEDZIU_SPALVOS = {VgkPosedis.JUODRASTIS: "tag-default", VgkPosedis.LAUKIA_PATVIRTINIMO: "tag-blue",
+                    VgkPosedis.SUPLANUOTAS: "tag-warning", VgkPosedis.IVYKES: "tag-green",
+                    VgkPosedis.ATSAUKTAS: "tag-danger"}
 
 
 @vgk_bp.context_processor
@@ -275,12 +279,19 @@ def posedzio_forma(posedzio_id=None):
                 kviestiniai=request.form.get("kviestiniai", ""),
                 skubos_priezastis=request.form.get("skubos_priezastis", ""),
                 patvirtinti=patvirtinti,
+                administratorius=current_user.yra_administratorius,
             )
         except VgkKlaida as klaida:
             db.session.rollback()
             flash(str(klaida), "danger")
             posedis = db.session.get(VgkPosedis, posedzio_id) if posedzio_id else None
         else:
+            if patvirtinti and posedis.busena == VgkPosedis.LAUKIA_PATVIRTINIMO:
+                registruoti("vgk_posedis_pateiktas_tvirtinti", "vgk_posedis", posedis.id,
+                            f"Skubus posėdis {posedis.data:%Y-%m-%d} perduotas administratoriui patvirtinti")
+                flash("Iki posėdžio liko mažiau nei 5 darbo dienos, todėl jis perduotas administratoriui "
+                      "patvirtinti. Kvietimai bus išsiųsti tik po patvirtinimo.", "info")
+                return redirect(url_for("vgk.posedis", posedzio_id=posedis.id))
             if patvirtinti:
                 registruoti("vgk_posedis_suplanuotas", "vgk_posedis", posedis.id,
                             f"Suplanuotas posėdis {posedis.data:%Y-%m-%d}, išsiųsti kvietimai")
@@ -378,3 +389,41 @@ def atsaukti(posedzio_id):
         registruoti("vgk_posedis_atsauktas", "vgk_posedis", p.id, f"Atšauktas posėdis {p.data:%Y-%m-%d}")
         flash("Posėdis atšauktas, dalyviams pranešta.", "info")
     return redirect(url_for("vgk.posedziai"))
+
+
+# --- Skubaus posėdžio tvirtinimas (FR-V04): tik administratorius ---------------------
+
+@vgk_bp.route("/posedziai/<int:posedzio_id>/patvirtinti", methods=["POST"])
+@vgk_narys_required
+def patvirtinti_skubu(posedzio_id):
+    if not current_user.yra_administratorius:
+        abort(403)
+    p = db.get_or_404(VgkPosedis, posedzio_id)
+    try:
+        patvirtinti_skubu_posedi(p)
+    except VgkKlaida as klaida:
+        db.session.rollback()
+        flash(str(klaida), "danger")
+    else:
+        registruoti("vgk_posedis_patvirtintas", "vgk_posedis", p.id,
+                    f"Administratorius patvirtino skubų posėdį {p.data:%Y-%m-%d}, išsiųsti kvietimai")
+        flash("Skubus posėdis patvirtintas, kvietimai išsiųsti dalyviams.", "success")
+    return redirect(url_for("vgk.posedis", posedzio_id=posedzio_id))
+
+
+@vgk_bp.route("/posedziai/<int:posedzio_id>/atmesti", methods=["POST"])
+@vgk_narys_required
+def atmesti_skubu(posedzio_id):
+    if not current_user.yra_administratorius:
+        abort(403)
+    p = db.get_or_404(VgkPosedis, posedzio_id)
+    try:
+        atmesti_skubu_posedi(p, request.form.get("atmetimo_priezastis"))
+    except VgkKlaida as klaida:
+        db.session.rollback()
+        flash(str(klaida), "danger")
+    else:
+        registruoti("vgk_posedis_atmestas", "vgk_posedis", p.id,
+                    f"Administratorius atmetė skubų posėdį {p.data:%Y-%m-%d}")
+        flash("Skubus posėdis atmestas ir grąžintas į juodraščius, pirmininkui ir sekretoriui pranešta.", "info")
+    return redirect(url_for("vgk.posedis", posedzio_id=posedzio_id))

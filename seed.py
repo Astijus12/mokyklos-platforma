@@ -236,7 +236,8 @@ def _mokiniai(*klases):
 
 def _vgk_demo(siandien, pirmininke, sekretorius, mokytojas, tevas, mokiniai):
     """Įvykęs posėdis su protokolu ir priemonėmis, posėdis gruodžio mėnesį (po 12 darbo dienų)
-    su išsiųstais kvietimais ir naujas kreipimasis. Grąžina (suplanuotas, įvykęs posėdis)."""
+    su išsiųstais kvietimais ir naujas kreipimasis, įtrauktas į skubų posėdį, kuris laukia
+    administratoriaus patvirtinimo. Grąžina (suplanuotas, įvykęs posėdis)."""
     # 1. Domas Butkus: kreipimasis prieš mėnesį, posėdis prieš dvi savaites, trys priemonės
     domas = VgkAtvejis(mokinio_id=mokiniai["Domas"].id, pateike_id=mokytojas.id,
                        priezastis="Aptarta mokinio adaptacijos eiga, sustiprintas individualus darbas "
@@ -282,9 +283,16 @@ def _vgk_demo(siandien, pirmininke, sekretorius, mokytojas, tevas, mokiniai):
         patvirtinti=True, siandien=siandien)
 
     # 3. Paulius Petraitis: naujas kreipimasis – pirmininkei pranešama
-    pateikti_kreipimasi(sekretorius, mokiniai["Paulius"],
-                        "Drausminio pobūdžio incidentas. Siūloma susitarti dėl elgesio sutarties su "
-                        "mokiniu ir tėvais.")
+    paulius = pateikti_kreipimasi(sekretorius, mokiniai["Paulius"],
+                                  "Drausminio pobūdžio incidentas. Siūloma susitarti dėl elgesio sutarties su "
+                                  "mokiniu ir tėvais.")
+    # Pirmininkė jį įtraukė į skubų posėdį (po 3 darbo dienų): posėdis laukia administratoriaus
+    # patvirtinimo, kvietimai dar neišsiųsti (FR-V04)
+    issaugoti_posedi(None, prideti_darbo_dienas(siandien, 3), time(15, 30), "Direktoriaus kabinetas", [paulius],
+                     {"nariai", "vadovai"},
+                     skubos_priezastis="Pasikartojantys drausminiai incidentai – būtina skubiai susitarti "
+                                       "dėl pagalbos mokiniui.",
+                     patvirtinti=True, siandien=siandien)
     return suplanuotas, ivykes
 
 

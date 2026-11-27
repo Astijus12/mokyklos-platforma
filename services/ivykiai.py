@@ -59,6 +59,11 @@ IVYKIU_TIPAI = {t.kodas: t for t in (
                 ("posedzio_dalyviai", "vgk_nariai"), VISI, privalomas=True),
     IvykioTipas("vgk_posedis_artejantis", "Artėjantis komisijos posėdis", "vgk_posedis",
                 ("posedzio_dalyviai",), VISI, priminimas=True, darbo_dienomis=True, privalomas=True),
+    # FR-V04: skubų posėdį (mažiau nei 5 darbo dienos) tvirtina administratorius
+    IvykioTipas("vgk_posedis_laukia_patvirtinimo", "Skubus posėdis laukia patvirtinimo", "vgk_posedis",
+                ("administratoriai",), TIK_ADMIN, privalomas=True),
+    IvykioTipas("vgk_posedis_atmestas", "Nepatvirtintas skubus posėdis", "vgk_posedis",
+                ("vgk_valdytojai", "vgk_pirmininkas"), DARBUOTOJAI),
     IvykioTipas("priemones_terminas_artejantis", "Artėja priemonės terminas", "vgk_priemone",
                 ("atsakingas",), DARBUOTOJAI, priminimas=True, darbo_dienomis=True),
     IvykioTipas("priemone_veluoja", "Vėluojanti priemonė", "vgk_priemone",

@@ -20,6 +20,17 @@
         {% if posedis.skubos_priezastis %}
         <p class="text-sm text-amber-800 dark:text-amber-300 mt-2">Skubos priežastis: {{ posedis.skubos_priezastis }}</p>
         {% endif %}
+        {% if posedis.busena == 'laukia_patvirtinimo' %}
+        <div class="mt-3 p-3 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800 text-sm text-blue-900 dark:text-blue-200" role="status">
+            <p class="font-medium">Laukia administratoriaus patvirtinimo</p>
+            <p class="mt-0.5">Iki posėdžio liko mažiau nei 5 darbo dienos, todėl jį turi patvirtinti administratorius. Kvietimai bus išsiųsti tik po patvirtinimo.</p>
+        </div>
+        {% elif posedis.busena == 'juodrastis' and posedis.atmetimo_priezastis %}
+        <div class="mt-3 p-3 rounded-md border border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800 text-sm text-red-900 dark:text-red-200" role="status">
+            <p class="font-medium">Administratorius skubaus posėdžio nepatvirtino</p>
+            <p class="mt-0.5">Priežastis: {{ posedis.atmetimo_priezastis }}</p>
+        </div>
+        {% endif %}
     </div>
     <div class="flex flex-wrap gap-2">
         {% if posedis.protokolas %}
@@ -29,6 +40,18 @@
         {% endif %}
         {% if galima_valdyti and posedis.busena == 'juodrastis' %}
         <a href="{{ url_for('vgk.posedzio_forma', posedzio_id=posedis.id) }}" class="btn-primary">Redaguoti juodraštį</a>
+        {% endif %}
+        {% if current_user.yra_administratorius and posedis.busena == 'laukia_patvirtinimo' %}
+        <form method="POST" action="{{ url_for('vgk.patvirtinti_skubu', posedzio_id=posedis.id) }}"
+              data-confirm="Patvirtinti skubų posėdį ir išsiųsti kvietimus dalyviams?" data-confirm-btn="Patvirtinti" data-confirm-variant="primary"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-primary"><i data-lucide="check" class="w-3.5 h-3.5" aria-hidden="true"></i>Patvirtinti ir išsiųsti kvietimus</button>
+        </form>
+        {% endif %}
+        {% if galima_valdyti and posedis.busena == 'laukia_patvirtinimo' %}
+        <form method="POST" action="{{ url_for('vgk.atsaukti', posedzio_id=posedis.id) }}"
+              data-confirm="Atšaukti posėdį? Kvietimai dar neišsiųsti." data-confirm-btn="Atšaukti posėdį"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-secondary text-red-700 dark:text-red-400">Atšaukti posėdį</button>
+        </form>
         {% endif %}
         {% if galima_valdyti and posedis.busena == 'suplanuotas' %}
         <form method="POST" action="{{ url_for('vgk.uzbaigti_posedi_marsrutas', posedzio_id=posedis.id) }}"
@@ -42,6 +65,14 @@
         {% endif %}
     </div>
 </div>
+
+{% if current_user.yra_administratorius and posedis.busena == 'laukia_patvirtinimo' %}
+<form method="POST" action="{{ url_for('vgk.atmesti_skubu', posedzio_id=posedis.id) }}" class="card mb-4 p-4"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="atmetimo_priezastis" class="form-label">Jei posėdžio netvirtinate, nurodykite priežastį</label>
+    <textarea id="atmetimo_priezastis" name="atmetimo_priezastis" rows="2" maxlength="1000" required class="form-input" placeholder="pvz., pasirinkite datą ne anksčiau kaip po 5 darbo dienų"></textarea>
+    <button type="submit" class="btn-secondary text-red-700 dark:text-red-400 mt-2">Atmesti ir grąžinti planuotojams</button>
+</form>
+{% endif %}
 
 {# Dalyviai ir nutarimai priklauso vienai formai; laukai susieti per atributą form #}
 <form method="POST" id="duomenu-forma" action="{{ url_for('vgk.posedzio_duomenys', posedzio_id=posedis.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"></form>
